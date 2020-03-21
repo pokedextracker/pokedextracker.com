@@ -1,17 +1,12 @@
-import { FontAwesomeIcon }          from '@fortawesome/react-fontawesome';
-import { faSearch, faTimes }        from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { useEffect, useRef }        from 'react';
+import PropTypes             from 'prop-types';
+import { FontAwesomeIcon }   from '@fortawesome/react-fontawesome';
+import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { useEffect, useRef } from 'react';
 
 import { ReactGA }  from '../utils/analytics';
-import { setQuery } from '../actions/search';
 
-export function SearchBar () {
-  const dispatch = useDispatch();
-
+export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }) {
   const inputRef = useRef(null);
-
-  const query = useSelector(({ query }) => query);
 
   useEffect(() => {
     const handleKeyup = (e) => {
@@ -26,14 +21,11 @@ export function SearchBar () {
     return () => document.removeEventListener('keyup', handleKeyup);
   }, [inputRef.current]);
 
-  useEffect(() => {
-    dispatch(setQuery(''));
-  }, []);
-
-  const handleInputChange = (e) => dispatch(setQuery(e.target.value));
+  const handleInputChange = (e) => setQuery(e.target.value);
+  const handleHideCaughtChange = (e) => setHideCaught(e.target.checked);
 
   const handleClearClick = () => {
-    dispatch(setQuery(''));
+    setQuery('');
     inputRef.current && inputRef.current.focus();
   };
 
@@ -63,7 +55,26 @@ export function SearchBar () {
             null
           }
         </div>
+        <div className="form-group">
+          <label>
+            <input
+              id="hide-caught"
+              name="hide-caught"
+              onChange={handleHideCaughtChange}
+              type="checkbox"
+              value={hideCaught}
+            />
+            <span><span /></span>Hide Caught
+          </label>
+        </div>
       </div>
     </div>
   );
 }
+
+SearchBar.propTypes = {
+  hideCaught: PropTypes.bool.isRequired,
+  query: PropTypes.string.isRequired,
+  setHideCaught: PropTypes.func.isRequired,
+  setQuery: PropTypes.func.isRequired
+};

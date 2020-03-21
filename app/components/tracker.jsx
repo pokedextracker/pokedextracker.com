@@ -26,10 +26,11 @@ export function Tracker () {
   const trackerRef = useRef(null);
 
   const dex = useSelector(({ currentDex, currentUser, users }) => users[currentUser] && users[currentUser].dexesBySlug[currentDex]);
-  const query = useSelector(({ query }) => query);
   const showScroll = useSelector(({ showScroll }) => showScroll);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [query, setQuery] = useState('');
+  const [hideCaught, setHideCaught] = useState(false);
 
   useEffect(() => {
     document.title = `${username}'s Living Dex | Pokédex Tracker`;
@@ -93,9 +94,19 @@ export function Tracker () {
       <Reload />
       <div className="tracker">
         <div className="dex-wrapper">
-          <SearchBar />
+          <SearchBar
+            hideCaught={hideCaught}
+            query={query}
+            setHideCaught={setHideCaught}
+            setQuery={setQuery}
+          />
           <div className="dex-column" onScroll={handleScroll} ref={trackerRef}>
-            <Dex onScrollButtonClick={handleScrollButtonClick} />
+            <Dex
+              hideCaught={hideCaught}
+              onScrollButtonClick={handleScrollButtonClick}
+              query={query}
+              setQuery={setQuery}
+            />
             <Footer />
           </div>
         </div>
