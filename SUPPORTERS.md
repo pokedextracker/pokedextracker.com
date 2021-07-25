@@ -63,3 +63,4 @@ This will be where we add the names for all of the users who've donated any amou
 - [Nikoala](https://pokedextracker.com/u/Nikoala)
 - [yamichip](https://pokedextracker.com/u/yamichip)
 - [Titania](https://pokedextracker.com/u/Titania)
+- [AaronMuskrat](https://pokedextracker.com/u/AaronMuskrat)
