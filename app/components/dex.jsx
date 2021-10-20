@@ -9,6 +9,7 @@ import { FriendCode }    from './friend-code';
 import { Header }        from './header';
 import { Notification }  from './notification';
 import { Progress }      from './progress';
+import { ToBeCapturedButton }      from './to-be-captured-pokemon';
 import { ReactGA }       from '../utils/analytics';
 import { Scroll }        from './scroll';
 import { SearchResults } from './search-results';
@@ -50,6 +51,9 @@ export function Dex ({ onScrollButtonClick }) {
         </header>
         <div className="percentage">
           <Progress caught={caught} total={total} />
+        </div>
+        <div className="to-be-caught">
+          <ToBeCapturedButton />
         </div>
         {query.length > 0 ? <SearchResults captures={dex.captures} /> : boxs}
       </div>

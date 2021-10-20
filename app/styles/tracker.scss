@@ -621,6 +621,12 @@ header {
   }
 }
 
+.to-be-caught {
+  width: fit-content;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
 @media (min-width: 751px) {
   .search-results .pokemon {
     margin-left: -2px;
