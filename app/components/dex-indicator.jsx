@@ -6,7 +6,9 @@ export function DexIndicator ({ dex }) {
   return (
     <div className="dex-indicator">
       {dex.shiny && <FontAwesomeIcon icon={faStar} title="Shiny" />}
-      <span className="label">{dex.regional ? 'Regional' : 'National'}</span>
+      {dex.dex_type.tags.map((tag) => (
+        <span className="label" key={tag}>{tag}</span>
+      ))}
       <span className="label">{dex.game.name}</span>
     </div>
   );

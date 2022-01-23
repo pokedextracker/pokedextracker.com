@@ -16,13 +16,14 @@ export function Box ({ captures, deferred }) {
 
   const empties = useMemo(() => Array.from({ length: BOX_SIZE - captures.length }).map((_, i) => i), [captures]);
 
+  const regional = dex.dex_type.tags.includes('regional');
   const firstPokemon = captures[0].pokemon;
   const lastPokemon = captures[captures.length - 1].pokemon;
   let title = firstPokemon.box;
 
   if (!title) {
-    const firstNumber = dex.regional ? firstPokemon[`${dex.game.game_family.id}_id`] : firstPokemon.national_id;
-    const lastNumber = dex.regional ? lastPokemon[`${dex.game.game_family.id}_id`] : lastPokemon.national_id;
+    const firstNumber = regional ? firstPokemon[`${dex.game.game_family.id}_id`] : firstPokemon.national_id;
+    const lastNumber = regional ? lastPokemon[`${dex.game.game_family.id}_id`] : lastPokemon.national_id;
     if (firstNumber === lastNumber) {
       title = padding(firstNumber, 3);
     } else {
@@ -33,8 +34,8 @@ export function Box ({ captures, deferred }) {
     const offset = parseInt(parts[1]);
     const prefix = parts[2];
 
-    let firstNumber = dex.regional ? firstPokemon[`${dex.game.game_family.id}_id`] : firstPokemon.national_id;
-    let lastNumber = dex.regional ? lastPokemon[`${dex.game.game_family.id}_id`] : lastPokemon.national_id;
+    let firstNumber = regional ? firstPokemon[`${dex.game.game_family.id}_id`] : firstPokemon.national_id;
+    let lastNumber = regional ? lastPokemon[`${dex.game.game_family.id}_id`] : lastPokemon.national_id;
 
     firstNumber -= offset;
     lastNumber -= offset;
