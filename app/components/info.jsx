@@ -33,8 +33,7 @@ export function Info () {
   useEffect(() => {
     if (!pokemon) {
       dispatch(retrievePokemon(currentPokemon, {
-        game_family: dex.game.game_family.id,
-        regional: dex.regional
+        dex_type: dex.dex_type.id
       }));
     }
   }, [currentPokemon, dex, pokemon]);

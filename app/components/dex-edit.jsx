@@ -1,5 +1,6 @@
 import Modal                                                          from 'react-modal';
 import PropTypes                                                      from 'prop-types';
+import find                                                           from 'lodash/find';
 import slug                                                           from 'slug';
 import { FontAwesomeIcon }                                            from '@fortawesome/react-fontawesome';
 import { faAsterisk, faChevronDown, faLongArrowAltRight, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
@@ -22,22 +23,26 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
 
   const games = useSelector(({ games }) => games);
   const gamesById = useSelector(({ gamesById }) => gamesById);
+  const dexTypesById = useSelector(({ dexTypesById }) => dexTypesById);
+  const dexTypesByGameFamilyId = useSelector(({ dexTypesByGameFamilyId }) => dexTypesByGameFamilyId);
   const nightMode = useSelector(({ nightMode }) => nightMode);
   const session = useSelector(({ session }) => session);
 
   const [error, setError] = useState(null);
   const [title, setTitle] = useState(dex.title);
   const [game, setGame] = useState(dex.game.id);
-  const [regional, setRegional] = useState(dex.regional);
+  const [dexType, setDexType] = useState(dex.dex_type.id);
   const [shiny, setShiny] = useState(dex.shiny);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isConfirmingUpdate, setIsConfirmingUpdate] = useState(false);
+
+  const regional = useMemo(() => dexTypesById[dexType].tags.includes('regional'), [dexTypesById, dexType]);
 
   const reset = () => {
     setError(null);
     setTitle(dex.title);
     setGame(dex.game.id);
-    setRegional(dex.regional);
+    setDexType(dex.dex_type.id);
     setShiny(dex.shiny);
     setIsConfirmingDelete(false);
     setIsConfirmingUpdate(false);
@@ -62,7 +67,7 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
     return differentFamily && lessNationalCount;
   }, [dex.id, game, gamesById, regional]);
 
-  const showRegionalWarning = useMemo(() => regional && !dex.regional, [dex.id, regional]);
+  const showRegionalWarning = useMemo(() => regional && !dex.dex_type.tags.includes('regional'), [dex.id, regional]);
   const showUrlWarning = useMemo(() => slug(title || 'Living Dex', { lower: true }) !== dex.slug, [dex.id, title]);
 
   const handleRequestClose = (shouldReload) => {
@@ -71,17 +76,24 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
   };
 
   const handleGameChange = (e) => {
-    const newGame = e.target.value;
+    const newGameId = e.target.value;
 
-    if (!gamesById[newGame].game_family.regional_support) {
-      setRegional(false);
+    // Update the dex type appropriately since every game family has a different
+    // set of dex types (even if the names are matching across them). First we
+    // check if the game family changed. If it didn't, then we don't need to do
+    // anything. If it did, we try to see if there is a matching dex type with
+    // the same name, and if there is, use that one. if not, just pick the first
+    // available dex type.
+    const oldGameFamilyId = gamesById[game].game_family.id;
+    const newGameFamilyId = gamesById[newGameId].game_family.id;
+    if (oldGameFamilyId !== newGameFamilyId) {
+      const oldDexType = dexTypesById[dexType];
+      const matchingNewDexType = find(dexTypesByGameFamilyId[newGameFamilyId], ['name', oldDexType.name]);
+      const newDexTypeId = matchingNewDexType?.id || dexTypesByGameFamilyId[gamesById[newGameId].game_family.id][0].id;
+      setDexType(newDexTypeId);
     }
 
-    if (!gamesById[newGame].game_family.national_support) {
-      setRegional(true);
-    }
-
-    setGame(newGame);
+    setGame(newGameId);
   };
 
   const handleTitleChange = (e) => setTitle(e.target.value);
@@ -119,7 +131,7 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
     const payload = {
       slug: dex.slug,
       username: session.username,
-      payload: { title, shiny, game, regional }
+      payload: { title, shiny, game, dex_type: dexType }
     };
 
     setError(null);
@@ -191,33 +203,20 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
           </div>
           <div className="form-group">
             <FormWarning message={showRegionalWarning && REGIONAL_WARNING} />
-            <label htmlFor="regional">Regionality</label>
-            <div className={`radio ${gamesById[game].game_family.national_support ? '' : 'disabled'}`}>
-              <label title={gamesById[game].game_family.national_support ? '' : 'National dex is not supported for this game at this time.'}>
-                <input
-                  checked={!regional}
-                  disabled={!gamesById[game].game_family.national_support}
-                  name="regional"
-                  onChange={() => setRegional(false)}
-                  type="radio"
-                  value="national"
-                />
-                <span className="radio-custom"><span /></span>National
-              </label>
-            </div>
-            <div className={`radio ${gamesById[game].game_family.regional_support ? '' : 'disabled'}`}>
-              <label title={gamesById[game].game_family.regional_support ? '' : 'Regional dex is not supported for this game at this time.'}>
-                <input
-                  checked={regional}
-                  disabled={!gamesById[game].game_family.regional_support}
-                  name="regional"
-                  onChange={() => setRegional(true)}
-                  type="radio"
-                  value="regional"
-                />
-                <span className="radio-custom"><span /></span>Regional
-              </label>
-            </div>
+            <label htmlFor="dex-type">Dex Type</label>
+            {dexTypesByGameFamilyId[gamesById[game].game_family.id].map((dt) => (
+              <div className="radio" key={dt.id}>
+                <label>
+                  <input
+                    checked={dexType === dt.id}
+                    name="dex-type"
+                    onChange={() => setDexType(dt.id)}
+                    type="radio"
+                  />
+                  <span className="radio-custom"><span /></span>{dt.name}
+                </label>
+              </div>
+            ))}
           </div>
           <div className="form-group">
             <label htmlFor="type">Type</label>

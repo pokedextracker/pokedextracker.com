@@ -1,5 +1,6 @@
 import Modal                                              from 'react-modal';
 import PropTypes                                          from 'prop-types';
+import find                                               from 'lodash/find';
 import slug                                               from 'slug';
 import { FontAwesomeIcon }                                from '@fortawesome/react-fontawesome';
 import { faAsterisk, faChevronDown, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
@@ -20,36 +21,45 @@ export function DexCreate ({ isOpen, onRequestClose }) {
 
   const games = useSelector(({ games }) => games);
   const gamesById = useSelector(({ gamesById }) => gamesById);
+  const dexTypesById = useSelector(({ dexTypesById }) => dexTypesById);
+  const dexTypesByGameFamilyId = useSelector(({ dexTypesByGameFamilyId }) => dexTypesByGameFamilyId);
   const nightMode = useSelector(({ nightMode }) => nightMode);
   const session = useSelector(({ session }) => session);
 
   const [error, setError] = useState(null);
   const [title, setTitle] = useState('');
   const [game, setGame] = useState(games[0].id);
-  const [regional, setRegional] = useState(!games[0].game_family.national_support);
+  const [dexType, setDexType] = useState(dexTypesByGameFamilyId[games[0].game_family.id][0].id);
   const [shiny, setShiny] = useState(false);
 
   const handleRequestClose = () => {
     setError(null);
     setTitle('');
     setGame(games[0].id);
-    setRegional(!games[0].game_family.national_support);
+    setDexType(dexTypesByGameFamilyId[games[0].game_family.id][0].id);
     setShiny(false);
     onRequestClose();
   };
 
   const handleGameChange = (e) => {
-    const newGame = e.target.value;
+    const newGameId = e.target.value;
 
-    if (!gamesById[newGame].game_family.regional_support) {
-      setRegional(false);
+    // Update the dex type appropriately since every game family has a different
+    // set of dex types (even if the names are matching across them). First we
+    // check if the game family changed. If it didn't, then we don't need to do
+    // anything. If it did, we try to see if there is a matching dex type with
+    // the same name, and if there is, use that one. if not, just pick the first
+    // available dex type.
+    const oldGameFamilyId = gamesById[game].game_family.id;
+    const newGameFamilyId = gamesById[newGameId].game_family.id;
+    if (oldGameFamilyId !== newGameFamilyId) {
+      const oldDexType = dexTypesById[dexType];
+      const matchingNewDexType = find(dexTypesByGameFamilyId[newGameFamilyId], ['name', oldDexType.name]);
+      const newDexTypeId = matchingNewDexType?.id || dexTypesByGameFamilyId[gamesById[newGameId].game_family.id][0].id;
+      setDexType(newDexTypeId);
     }
 
-    if (!gamesById[newGame].game_family.national_support) {
-      setRegional(true);
-    }
-
-    setGame(newGame);
+    setGame(newGameId);
   };
 
   const handleTitleChange = (e) => setTitle(e.target.value);
@@ -59,7 +69,7 @@ export function DexCreate ({ isOpen, onRequestClose }) {
 
     const payload = {
       username: session.username,
-      payload: { title, shiny, game, regional }
+      payload: { title, shiny, game, dex_type: dexType }
     };
 
     setError(null);
@@ -120,31 +130,20 @@ export function DexCreate ({ isOpen, onRequestClose }) {
             <FontAwesomeIcon icon={faChevronDown} />
           </div>
           <div className="form-group">
-            <label htmlFor="regional">Regionality</label>
-            <div className={`radio ${gamesById[game].game_family.national_support ? '' : 'disabled'}`}>
-              <label title={gamesById[game].game_family.national_support ? '' : 'National dex is not supported for this game at this time.'}>
-                <input
-                  checked={!regional}
-                  disabled={!gamesById[game].game_family.national_support}
-                  name="regional"
-                  onChange={() => setRegional(false)}
-                  type="radio"
-                />
-                <span className="radio-custom"><span /></span>National
-              </label>
-            </div>
-            <div className={`radio ${gamesById[game].game_family.regional_support ? '' : 'disabled'}`}>
-              <label title={gamesById[game].game_family.regional_support ? '' : 'Regional dex is not supported for this game at this time.'}>
-                <input
-                  checked={regional}
-                  disabled={!gamesById[game].game_family.regional_support}
-                  name="regional"
-                  onChange={() => setRegional(true)}
-                  type="radio"
-                />
-                <span className="radio-custom"><span /></span>Regional
-              </label>
-            </div>
+            <label htmlFor="dex-type">Dex Type</label>
+            {dexTypesByGameFamilyId[gamesById[game].game_family.id].map((dt) => (
+              <div className="radio" key={dt.id}>
+                <label>
+                  <input
+                    checked={dexType === dt.id}
+                    name="dex-type"
+                    onChange={() => setDexType(dt.id)}
+                    type="radio"
+                  />
+                  <span className="radio-custom"><span /></span>{dt.name}
+                </label>
+              </div>
+            ))}
           </div>
           <div className="form-group">
             <label htmlFor="type">Type</label>

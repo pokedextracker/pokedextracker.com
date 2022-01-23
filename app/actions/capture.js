@@ -23,11 +23,11 @@ export function deleteCaptures ({ payload, slug, username }) {
   };
 }
 
-export function listCaptures ({ id, slug }, username) {
+export function listCaptures ({ slug }, username) {
   return (dispatch) => {
     dispatch(checkVersion());
 
-    return API.get(`${Config.API_HOST}/captures`, { dex: id })
+    return API.get(`${Config.API_HOST}/users/${username}/dexes/${slug}/captures`)
       .then((captures) => {
         dispatch(setCaptures(captures, slug, username));
         return captures;

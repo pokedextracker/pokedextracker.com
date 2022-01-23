@@ -12,7 +12,7 @@
     "build:version": "date > public/version",
     "deploy": "./scripts/deploy.sh",
     "lint": "eslint -c .eslintrc --ext .js,.jsx app config",
-    "start": "webpack-dev-server --port 8080 --hot --inline"
+    "start": "webpack-dev-server --port 9898 --hot --inline"
   },
   "dependencies": {
     "@babel/core": "^7.8.6",

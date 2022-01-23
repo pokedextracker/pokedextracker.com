@@ -17,6 +17,7 @@ import { checkVersion }                          from '../actions/utils';
 import { listGames }                             from '../actions/game';
 import { retrieveUser, setCurrentUser, setUser } from '../actions/user';
 import { setShowShare }                          from '../actions/tracker';
+import { listDexTypes } from '../actions/dex-type';
 
 export function Profile () {
   const dispatch = useDispatch();
@@ -39,7 +40,8 @@ export function Profile () {
     try {
       const [u] = await Promise.all([
         dispatch(retrieveUser(username)),
-        dispatch(listGames())
+        dispatch(listGames()),
+        dispatch(listDexTypes())
       ]);
 
       dispatch(setUser(u));
