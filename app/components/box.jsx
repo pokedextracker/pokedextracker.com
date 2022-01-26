@@ -1,6 +1,5 @@
-import PropTypes       from 'prop-types';
-import { useMemo }     from 'react';
-import { useSelector } from 'react-redux';
+import PropTypes   from 'prop-types';
+import { useMemo } from 'react';
 
 import { MarkAllButton }     from './mark-all-button';
 import { Pokemon }           from './pokemon';
@@ -12,18 +11,15 @@ export const BOX_SIZE = 30;
 export function Box ({ captures, deferred }) {
   const render = useDeferredRender(!deferred);
 
-  const dex = useSelector(({ currentDex, currentUser, users }) => users[currentUser].dexesBySlug[currentDex]);
-
   const empties = useMemo(() => Array.from({ length: BOX_SIZE - captures.length }).map((_, i) => i), [captures]);
 
-  const regional = dex.dex_type.tags.includes('regional');
   const firstPokemon = captures[0].pokemon;
   const lastPokemon = captures[captures.length - 1].pokemon;
   let title = firstPokemon.box;
 
   if (!title) {
-    const firstNumber = regional ? firstPokemon[`${dex.game.game_family.id}_id`] : firstPokemon.national_id;
-    const lastNumber = regional ? lastPokemon[`${dex.game.game_family.id}_id`] : lastPokemon.national_id;
+    const firstNumber = firstPokemon.dex_number;
+    const lastNumber = lastPokemon.dex_number;
     if (firstNumber === lastNumber) {
       title = padding(firstNumber, 3);
     } else {
@@ -34,8 +30,8 @@ export function Box ({ captures, deferred }) {
     const offset = parseInt(parts[1]);
     const prefix = parts[2];
 
-    let firstNumber = regional ? firstPokemon[`${dex.game.game_family.id}_id`] : firstPokemon.national_id;
-    let lastNumber = regional ? lastPokemon[`${dex.game.game_family.id}_id`] : lastPokemon.national_id;
+    let firstNumber = firstPokemon.dex_number;
+    let lastNumber = lastPokemon.dex_number;
 
     firstNumber -= offset;
     lastNumber -= offset;
