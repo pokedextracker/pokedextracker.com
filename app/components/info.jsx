@@ -19,7 +19,8 @@ const SEREBII_LINKS = {
   ultra_sun_ultra_moon: 'pokedex-sm',
   lets_go_pikachu_eevee: 'pokedex-sm',
   sword_shield: 'pokedex-swsh',
-  sword_shield_expansion_pass: 'pokedex-swsh'
+  sword_shield_expansion_pass: 'pokedex-swsh',
+  brilliant_diamond_shining_pearl: 'pokedex-swsh'
 };
 
 export function Info () {
