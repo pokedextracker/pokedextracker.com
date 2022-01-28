@@ -18,7 +18,7 @@ export function Notification () {
   return (
     <div className="alert alert-muted">
       <FontAwesomeIcon icon={faTimes} onClick={handleClick} />
-      <p>We've updated for the Crown Tundra! <a href="http://bit.ly/pt-ct" rel="noopener noreferrer" target="_blank">Read more here</a>.</p>
+      <p>Track your BDSP dex now! <a href="http://bit.ly/pt-bdsp" rel="noopener noreferrer" target="_blank">Read more here</a>.</p>
     </div>
   );
 }
