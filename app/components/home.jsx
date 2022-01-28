@@ -29,6 +29,7 @@ export function Home () {
         <div className="sub">
           <h2>A tool for tracking your Living Dex progress! We currently support:</h2>
           <ul>
+            <li><h2>Pokémon Brilliant Diamond &amp; Shining Pearl <Link alt="Sample Brilliant Diamond Regional Living Dex" className="link" to="/u/ashketchum10/brilliant-diamond-regional-living-dex">Regional Dex</Link> and <Link alt="Sample Brilliant Diamond National Living Dex" className="link" to="/u/ashketchum10/brilliant-diamond-national-living-dex">National Dex</Link></h2></li>
             <li><h2><Link alt="Sample Generation 8 National Living Dex" className="link" to="/u/ashketchum10/sword-national-living-dex">Generation 8 National Dex</Link> (and Generations 6 + 7)</h2></li>
             <li><h2><Link alt="Sample Shield (Expansion Pass) Regional Living Dex" className="link" to="/u/ashketchum10/sword-expansion-pass-regional-living-dex">Pokémon Sword &amp; Shield (Expansion Pass) Regional Dex</Link></h2></li>
             <li><h2><Link alt="Sample Shield Regional Living Dex" className="link" to="/u/ashketchum10/sword-regional-living-dex">Pokémon Sword &amp; Shield Regional Dex</Link></h2></li>
