@@ -483,6 +483,10 @@ header {
   width: $pokemon-box-size;
   height: $pokemon-box-size;
 
+  &.pending {
+    background: linear-gradient(0deg, $brand-primary-light 0%, rgba(0, 0, 0, 0) 100%);
+  }
+
   &.captured {
     background-color: $brand-primary-light;
 

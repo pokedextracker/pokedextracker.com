@@ -1,5 +1,5 @@
 import { SET_DEX }                     from '../actions/dex';
-import { MARK_CAPTURED, SET_CAPTURES } from '../actions/capture';
+import { MARK_CAPTURED, MARK_PENDING, SET_CAPTURES } from '../actions/capture';
 import { captures }                    from '../reducers/captures';
 
 export function dexes (state = {}, action) {
@@ -19,6 +19,7 @@ export function dexes (state = {}, action) {
         }
       };
     case SET_CAPTURES:
+    case MARK_PENDING:
     case MARK_CAPTURED:
       return captures(state, action);
     default:

@@ -1,4 +1,4 @@
-import { MARK_CAPTURED, SET_CAPTURES } from '../actions/capture';
+import { MARK_CAPTURED, MARK_PENDING, SET_CAPTURES } from '../actions/capture';
 import { SET_DEX }                     from '../actions/dex';
 import { SET_USER }                    from '../actions/user';
 import { dexes }                       from '../reducers/dexes';
@@ -13,6 +13,7 @@ export function users (state = {}, action) {
           dexesBySlug: {}
         }
       };
+    case MARK_PENDING:
     case MARK_CAPTURED:
     case SET_CAPTURES:
     case SET_DEX:

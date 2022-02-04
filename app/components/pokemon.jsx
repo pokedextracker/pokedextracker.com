@@ -5,7 +5,7 @@ import { faInfo }                   from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { ReactGA }                        from '../utils/analytics';
-import { createCaptures, deleteCaptures } from '../actions/capture';
+import { createCaptures, deleteCaptures, markPending } from '../actions/capture';
 import { htmlName, iconClass }            from '../utils/pokemon';
 import { padding }                        from '../utils/formatting';
 import { setCurrentPokemon }              from '../actions/pokemon';
@@ -54,7 +54,8 @@ export function Pokemon ({ capture }) {
   const classes = {
     pokemon: true,
     viewing: !session || session.id !== user.id,
-    captured: capture.captured
+    captured: capture.captured,
+    pending: capture.pending,
   };
 
   return (

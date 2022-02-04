@@ -843,6 +843,10 @@ select {
   }
 
   .pokemon {
+    &.pending {
+      background: linear-gradient(0deg, $night-mode-primary 0%, rgba(0, 0, 0, 0) 100%);
+    }
+
     &.captured {
       background-color: $night-mode-primary;
       color: black;
