@@ -6,12 +6,41 @@ import { faVenus, faMars } from '@fortawesome/free-solid-svg-icons';
 import { BOX_SIZE } from '../components/box';
 import { padding }  from './formatting';
 
-export function groupBoxes (captures) {
+function sortByGeneration (captureA, captureB) {
+  if (captureA.pokemon.game_family.generation === captureB.pokemon.game_family.generation) {
+    if (captureA.pokemon.game_family.order > captureB.pokemon.game_family.order) {
+      return -1;
+    }
+
+    return 1;
+  }
+
+  if (captureA.pokemon.game_family.generation > captureB.pokemon.game_family.generation) {
+    return 1;
+  }
+
+  return -1;
+
+}
+
+export function groupBoxes (captures, byGeneration = false) {
   let lastBoxName = null;
   let lastBoxIndex = 0;
 
-  return captures.reduce((all, capture) => {
+  if (byGeneration === true) {
+    captures = [...captures].sort(sortByGeneration)
+  }
+
+  return captures
+    .reduce((all, capture) => {
     let boxIndex = all[lastBoxIndex].length === BOX_SIZE ? lastBoxIndex + 1 : lastBoxIndex;
+
+    if (byGeneration === true &&
+      all[boxIndex]?.length > 0 &&
+      capture.pokemon.game_family.generation !== all[boxIndex][0].pokemon.game_family.generation)
+    {
+      boxIndex++;
+    }
 
     if (capture.pokemon.box !== lastBoxName) {
       boxIndex++;
