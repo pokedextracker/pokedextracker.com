@@ -8,11 +8,11 @@ import { padding }  from './formatting';
 
 function sortByGeneration (captureA, captureB) {
   if (captureA.pokemon.game_family.generation === captureB.pokemon.game_family.generation) {
-    if (captureA.pokemon.game_family.order > captureB.pokemon.game_family.order) {
-      return -1;
+    if (captureA.pokemon.dex_number > captureB.pokemon.dex_number) {
+      return 1;
     }
 
-    return 1;
+    return -1;
   }
 
   if (captureA.pokemon.game_family.generation > captureB.pokemon.game_family.generation) {
