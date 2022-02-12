@@ -55,17 +55,22 @@ export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }) {
             null
           }
         </div>
-        <div className="form-group">
-          <label>
-            <input
-              id="hide-caught"
-              name="hide-caught"
-              onChange={handleHideCaughtChange}
-              type="checkbox"
-              value={hideCaught}
-            />
-            <span><span /></span>Hide Caught
-          </label>
+        <div className="dex-search-bar-filters">
+          <div className="form-group">
+            {/*<label>Filters</label>*/}
+            <div className="checkbox">
+              <label>
+                <input
+                  id="hide-caught"
+                  name="hide-caught"
+                  onChange={handleHideCaughtChange}
+                  type="checkbox"
+                  value={hideCaught}
+                />
+                <span className="checkbox-custom"><span /></span>Hide Caught Pokémon
+              </label>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -475,6 +475,65 @@ select {
     }
   }
 
+  .checkbox {
+    display: inline-block;
+    margin: 0 13px;
+
+    label {
+      font-family: $font-primary;
+      text-transform: none;
+      font-size: 15px;
+      font-weight: 400;
+      letter-spacing: 0;
+      margin-bottom: 0;
+      cursor: pointer;
+    }
+
+    input[type=checkbox] {
+      display: none;
+
+      &:checked+.checkbox-custom span {
+        opacity: 1;
+      }
+    }
+
+    .checkbox-custom {
+      display: inline-block;
+      position: relative;
+      top: 3px;
+      right: 7px;
+      width: 16px;
+      height: 16px;
+      border: 1px solid $gray-medium;
+      background-color: lighten($gray-light, 25%);
+
+      > span {
+        @include transition(all .15s ease-out);
+        display: inline-block;
+        opacity: 0;
+        position: absolute;
+        background-color: $brand-primary;
+        height: 10px;
+        width: 10px;
+        top: 50%;
+        left: 50%;
+        margin: -5px 0 0 -5px;
+      }
+    }
+
+    &.disabled {
+      color: $gray-medium;
+
+      .checkbox-custom {
+        border: 1px solid $gray-light;
+      }
+
+      label {
+        cursor: not-allowed;
+      }
+    }
+  }
+
   .svg-inline--fa {
     &:last-child {
       position: absolute;
@@ -792,6 +851,12 @@ select {
   .dex-search-bar {
     background-color: $night-mode;
     border-bottom: 1px solid $night-mode-dark;
+
+    .form-group {
+      .fa-search {
+        color: white;
+      }
+    }
   }
 
   header  {
@@ -872,14 +937,6 @@ select {
         .set-captured {
           border-color: $night-mode-primary-dark;
         }
-      }
-    }
-  }
-
-  .dex-search-bar {
-    .form-group {
-      .fa-search {
-        color: white;
       }
     }
   }
