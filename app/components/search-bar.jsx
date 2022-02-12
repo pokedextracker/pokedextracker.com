@@ -57,7 +57,6 @@ export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }) {
         </div>
         <div className="dex-search-bar-filters">
           <div className="form-group">
-            {/*<label>Filters</label>*/}
             <div className="checkbox">
               <label>
                 <input
