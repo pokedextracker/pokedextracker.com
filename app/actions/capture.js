@@ -6,7 +6,6 @@ export const MARK_PENDING = 'MARK_PENDING';
 export const MARK_CAPTURED = 'MARK_CAPTURED';
 export const SET_CAPTURES = 'SET_CAPTURES';
 
-
 export function createCaptures ({ payload, slug, username }) {
   return (dispatch) => {
     dispatch(checkVersion());
@@ -44,7 +43,7 @@ export function setCaptures (captures, slug, username) {
 }
 
 export function markPending (pokemon, slug, username) {
-  return { type: MARK_PENDING, captured: false, pokemon, slug, username };
+  return { type: MARK_PENDING, pokemon, slug, username };
 }
 
 export function markCaptured (captured, pokemon, slug, username) {

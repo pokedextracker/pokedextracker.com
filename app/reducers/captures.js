@@ -31,7 +31,7 @@ export function captures (state = {}, action) {
       const pendingIndex = pendingState[action.username].dexesBySlug[action.slug].captures.findIndex((c) => c.pokemon.id === action.pokemon[0]);
       for (let i = pendingIndex, count = 0; count < action.pokemon.length; i++) {
         if (action.pokemon.indexOf(pendingState[action.username].dexesBySlug[action.slug].captures[i].pokemon.id) !== -1) {
-          pendingState[action.username].dexesBySlug[action.slug].captures[i].captured = action.captured;
+          pendingState[action.username].dexesBySlug[action.slug].captures[i].captured = false;
           pendingState[action.username].dexesBySlug[action.slug].captures[i].pending = true;
           count++;
         }
