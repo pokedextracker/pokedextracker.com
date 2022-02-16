@@ -46,7 +46,8 @@ export function htmlName (name) {
 export function iconClass ({ national_id: nationalId, form }, dex) {
   const classes = {
     'color-shiny': dex.shiny,
-    [`form-${form}`]: Boolean(form)
+    [`form-${form}`]: Boolean(form),
+    [`game-family-${dex.dex_type.game_family_id}`]: true
   };
 
   return classNames('pkicon', `pkicon-${padding(nationalId, 3)}`, classes);
