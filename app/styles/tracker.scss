@@ -483,6 +483,10 @@ header {
   width: $pokemon-box-size;
   height: $pokemon-box-size;
 
+  &.pending {
+    background: rgba($brand-primary-light, .5);
+  }
+
   &.captured {
     background-color: $brand-primary-light;
 

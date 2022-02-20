@@ -843,6 +843,10 @@ select {
   }
 
   .pokemon {
+    &.pending {
+      background: rgba($night-mode-primary, .5);
+    }
+
     &.captured {
       background-color: $night-mode-primary;
       color: black;

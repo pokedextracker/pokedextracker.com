@@ -54,7 +54,8 @@ export function Pokemon ({ capture }) {
   const classes = {
     pokemon: true,
     viewing: !session || session.id !== user.id,
-    captured: capture.captured
+    captured: capture.captured,
+    pending: capture.pending
   };
 
   return (
