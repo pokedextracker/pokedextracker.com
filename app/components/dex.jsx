@@ -16,7 +16,7 @@ import { groupBoxes }    from '../utils/pokemon';
 
 const DEFER_CUTOFF = 1;
 
-export function Dex ({ hideCaught, onScrollButtonClick, query, setQuery }) {
+export function Dex ({ hideCaught, onScrollButtonClick, query, setHideCaught, setQuery }) {
   const dex = useSelector(({ currentDex, currentUser, users }) => users[currentUser].dexesBySlug[currentDex]);
   const username = useSelector(({ currentUser }) => currentUser);
 
@@ -55,6 +55,7 @@ export function Dex ({ hideCaught, onScrollButtonClick, query, setQuery }) {
             captures={dex.captures}
             hideCaught={hideCaught}
             query={query}
+            setHideCaught={setHideCaught}
             setQuery={setQuery}
           /> :
           boxs
@@ -68,5 +69,6 @@ Dex.propTypes = {
   hideCaught: PropTypes.bool.isRequired,
   onScrollButtonClick: PropTypes.func.isRequired,
   query: PropTypes.string.isRequired,
+  setHideCaught: PropTypes.func.isRequired,
   setQuery: PropTypes.func.isRequired
 };

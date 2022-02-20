@@ -60,11 +60,11 @@ export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }) {
             <div className="checkbox">
               <label>
                 <input
+                  checked={hideCaught}
                   id="hide-caught"
                   name="hide-caught"
                   onChange={handleHideCaughtChange}
                   type="checkbox"
-                  value={hideCaught}
                 />
                 <span className="checkbox-custom"><span /></span>Hide Caught Pokémon
               </label>

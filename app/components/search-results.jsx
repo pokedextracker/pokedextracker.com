@@ -5,7 +5,8 @@ import { Pokemon } from './pokemon';
 
 const DEFER_CUTOFF = 120;
 
-export function SearchResults ({ captures, hideCaught, query, setQuery }) {
+export function SearchResults ({ captures, hideCaught, query, setHideCaught, setQuery }) {
+  const handleClearCaughtFilter = () => setHideCaught(false);
   const handleClearClick = () => setQuery('');
 
   const filteredCaptures = useMemo(() => {
@@ -18,9 +19,19 @@ export function SearchResults ({ captures, hideCaught, query, setQuery }) {
   }, [captures, hideCaught, query]);
 
   if (filteredCaptures.length === 0) {
+    let message = <p>No results. <a className="link" onClick={handleClearClick}>Clear your search?</a></p>
+
+    if (hideCaught) {
+      if (query) {
+        message = <p>No results in uncaught Pokémon. <a className="link" onClick={handleClearCaughtFilter}>Include caught Pokémon</a> or <a className="link" onClick={handleClearClick}>clear your search</a>?</p>
+      } else {
+        message = <p>No uncaught Pokémon. <a className="link" onClick={handleClearCaughtFilter}>Show all Pokémon?</a></p>
+      }
+    }
+
     return (
       <div className="search-results search-results-empty">
-        <p>No results. <a className="link" onClick={handleClearClick}>Clear your search?</a></p>
+        {message}
       </div>
     );
   }
@@ -42,5 +53,6 @@ SearchResults.propTypes = {
   captures: PropTypes.arrayOf(PropTypes.object).isRequired,
   hideCaught: PropTypes.bool.isRequired,
   query: PropTypes.string.isRequired,
+  setHideCaught: PropTypes.func.isRequired,
   setQuery: PropTypes.func.isRequired
 };

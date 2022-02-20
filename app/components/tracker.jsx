@@ -105,6 +105,7 @@ export function Tracker () {
               hideCaught={hideCaught}
               onScrollButtonClick={handleScrollButtonClick}
               query={query}
+              setHideCaught={setHideCaught}
               setQuery={setQuery}
             />
             <Footer />
