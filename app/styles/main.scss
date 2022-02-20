@@ -995,6 +995,11 @@ select {
     border-color: $night-mode-24dp;
   }
 
+  .form-group .checkbox .checkbox-custom {
+    background-color: $night-mode-24dp;
+    border-color: $night-mode-24dp;
+  }
+
   .form-warning .tooltip {
     .fa {
       color: $night-mode-error;
