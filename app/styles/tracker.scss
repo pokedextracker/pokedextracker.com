@@ -37,6 +37,10 @@
     display: none;
   }
 
+  .pkicon.game-family-legends_arceus {
+    background-color: rgba($gray-light, .3);
+  }
+
   .info-collapse {
     @include flexbox();
     @include align-items(center);
@@ -494,6 +498,10 @@ header {
     .set-captured-mobile {
       border-color: darken($brand-primary-light, 5%);
     }
+
+    .game-family-legends_arceus {
+      background-color: rgba(#ffffff, .5);
+    }
   }
 
   &.disabled {
@@ -531,6 +539,10 @@ header {
         border-color: darken($brand-primary-light, 5%);
       }
     }
+  }
+
+  .game-family-legends_arceus {
+    background-color: rgba($gray-medium, .4);
   }
 }
 

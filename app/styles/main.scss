@@ -856,6 +856,10 @@ select {
       .set-info {
         border-color: $night-mode-primary-dark;
       }
+
+      .pkicon.game-family-legends_arceus {
+        background-color: rgba(#ffffff, .35);
+      }
     }
 
     &:not(.empty):not(.disabled):hover {
@@ -873,6 +877,10 @@ select {
           border-color: $night-mode-primary-dark;
         }
       }
+    }
+
+    .pkicon.game-family-legends_arceus {
+      background-color: rgba($gray-light, .2);
     }
   }
 
