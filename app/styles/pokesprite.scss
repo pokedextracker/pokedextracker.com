@@ -4,6 +4,10 @@
   display: inline-block;
   background-image: url('/pokesprite-v4.png');
   background-repeat: no-repeat;
+
+  &.game-family-legends_arceus {
+    border-radius: 50%;
+  }
 }
 
 .pkicon.pkicon-ball-love { width: 18px; height: 18px; background-position: 0px 0px; }
