@@ -10,8 +10,11 @@ import { htmlName, iconClass }            from '../utils/pokemon';
 import { padding }                        from '../utils/formatting';
 import { setCurrentPokemon }              from '../actions/pokemon';
 import { setShowInfo }                    from '../actions/tracker';
+import { useDelayedRender } from '../hooks/use-delayed-render';
 
-export function Pokemon ({ capture }) {
+export function Pokemon ({ capture, delay }) {
+  const render = useDelayedRender(delay);
+
   const dispatch = useDispatch();
 
   const currentDex = useSelector(({ currentDex }) => currentDex);
@@ -19,7 +22,7 @@ export function Pokemon ({ capture }) {
   const session = useSelector(({ session }) => session);
   const user = useSelector(({ currentUser, users }) => users[currentUser]);
 
-  if (!capture) {
+  if (!render || !capture) {
     return (
       <div className="pokemon empty">
         <div className="set-captured" />
@@ -81,6 +84,11 @@ export function Pokemon ({ capture }) {
   );
 }
 
+Pokemon.defaultProps = {
+  delay: 0
+};
+
 Pokemon.propTypes = {
-  capture: PropTypes.object
+  capture: PropTypes.object,
+  delay: PropTypes.number
 };
