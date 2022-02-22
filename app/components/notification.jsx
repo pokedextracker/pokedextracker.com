@@ -18,7 +18,7 @@ export function Notification () {
   return (
     <div className="alert alert-muted">
       <FontAwesomeIcon icon={faTimes} onClick={handleClick} />
-      <p>Track your BDSP dex now! <a href="http://bit.ly/pt-bdsp" rel="noopener noreferrer" target="_blank">Read more here</a>.</p>
+      <p>Legends: Arceus support is here! <a href="http://bit.ly/pt-la" rel="noopener noreferrer" target="_blank">Read more here</a>.</p>
     </div>
   );
 }
