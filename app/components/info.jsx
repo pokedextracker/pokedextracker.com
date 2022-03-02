@@ -20,7 +20,8 @@ const SEREBII_LINKS = {
   lets_go_pikachu_eevee: 'pokedex-sm',
   sword_shield: 'pokedex-swsh',
   sword_shield_expansion_pass: 'pokedex-swsh',
-  brilliant_diamond_shining_pearl: 'pokedex-swsh'
+  brilliant_diamond_shining_pearl: 'pokedex-swsh',
+  legends_arceus: 'pokedex-swsh'
 };
 
 export function Info () {
