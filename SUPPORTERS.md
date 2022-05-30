@@ -68,3 +68,4 @@ This will be where we add the names for all of the users who've donated any amou
 - [kieran20041](https://pokedextracker.com/u/kieran20041)
 - [Tokkan](https://pokedextracker.com/u/Tokkan)
 - [Eddeeeh16](https://pokedextracker.com/u/Eddeeeh16)
+- [stevo](https://pokedextracker.com/u/stevo)
