@@ -21,7 +21,8 @@ const SEREBII_LINKS = {
   sword_shield: 'pokedex-swsh',
   sword_shield_expansion_pass: 'pokedex-swsh',
   brilliant_diamond_shining_pearl: 'pokedex-swsh',
-  legends_arceus: 'pokedex-swsh'
+  legends_arceus: 'pokedex-swsh',
+  home: 'pokedex-swsh'
 };
 
 export function Info () {
@@ -46,12 +47,15 @@ export function Info () {
     }
 
     const swshLocation = find(pokemon.locations, (loc) => loc.game.game_family.id === 'sword_shield');
+    const bdspLocation = find(pokemon.locations, (loc) => loc.game.game_family.id === 'brilliant_diamond_shining_pearl');
+    const plaLocation = find(pokemon.locations, (loc) => loc.game.game_family.id === 'legends_arceus');
 
-    // If the Pokemon's location is 'Currently unavailable' for SwSh, that means
-    // they aren't available in this game because of dexit, so we go back to the
-    // the SuMo Serebii links. This will probably need to be updating with
-    // future generations.
-    if (swshLocation && swshLocation.value.length > 0 && swshLocation.value[0] === 'Currently unavailable') {
+    // If the Pokemon's location is 'Currently unavailable' for SwSh and they
+    // don't have locations for any other gen8 game, that means they aren't
+    // available in this generation, so they don't have a gen8 Serebii page.
+    // Because of this, we go back to the the SuMo Serebii links. This will
+    // probably need to be updating with future generations.
+    if (swshLocation && swshLocation.value.length > 0 && swshLocation.value[0] === 'Currently unavailable' && !bdspLocation && !plaLocation) {
       return 'pokedex-sm';
     }
 
