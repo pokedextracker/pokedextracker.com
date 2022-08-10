@@ -18,7 +18,7 @@ export function Notification () {
   return (
     <div className="alert alert-muted">
       <FontAwesomeIcon icon={faTimes} onClick={handleClick} />
-      <p>Legends: Arceus support is here! <a href="http://bit.ly/pt-la" rel="noopener noreferrer" target="_blank">Read more here</a>.</p>
+      <p>Track your full Pokémon HOME National dex ! <a href="http://bit.ly/pt-home" rel="noopener noreferrer" target="_blank">Read more</a>.</p>
     </div>
   );
 }
