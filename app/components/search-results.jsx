@@ -2,6 +2,7 @@ import PropTypes   from 'prop-types';
 import { useMemo } from 'react';
 
 import { Pokemon } from './pokemon';
+import { padding } from '../utils/formatting';
 
 const DEFER_CUTOFF = 120;
 
@@ -12,7 +13,13 @@ export function SearchResults ({ captures, hideCaught, query, setHideCaught, set
   const filteredCaptures = useMemo(() => {
     return captures.filter((capture) => {
       const matchesCaught = !hideCaught || !capture.captured;
-      const matchesQuery = capture.pokemon.name.toLowerCase().indexOf(query) === 0;
+      const matchesQuery =
+        // Case-insensitive name prefix match (e.g. bulba)
+        capture.pokemon.name.toLowerCase().indexOf(query.toLowerCase()) === 0 ||
+        // Exact national ID match (e.g. 1, 2, 3)
+        capture.pokemon.national_id.toString() === query ||
+        // Exact formatted national ID match (e.g. 001, 002, 003)
+        padding(capture.pokemon.national_id, 3) === query;
 
       return matchesCaught && matchesQuery;
     });
