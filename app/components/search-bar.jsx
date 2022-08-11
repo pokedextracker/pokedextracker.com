@@ -42,7 +42,7 @@ export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }) {
             id="search"
             name="search"
             onChange={handleInputChange}
-            placeholder="Search by Pokémon name (press / to quick search)"
+            placeholder="Search by Pokémon name or number (press / to quick search)"
             ref={inputRef}
             spellCheck="false"
             type="text"
