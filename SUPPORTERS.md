@@ -71,3 +71,6 @@ This will be where we add the names for all of the users who've donated any amou
 - [stevo](https://pokedextracker.com/u/stevo)
 - [yahav73](https://pokedextracker.com/u/yahav73)
 - [Jeizoid](https://pokedextracker.com/u/Jeizoid)
+- [Jimpo01](https://pokedextracker.com/u/Jimpo01)
+- [exsomet](https://pokedextracker.com/u/exsomet)
+- [gooseclaws](https://pokedextracker.com/u/gooseclaws)
