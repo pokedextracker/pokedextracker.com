@@ -74,3 +74,5 @@ This will be where we add the names for all of the users who've donated any amou
 - [Jimpo01](https://pokedextracker.com/u/Jimpo01)
 - [exsomet](https://pokedextracker.com/u/exsomet)
 - [gooseclaws](https://pokedextracker.com/u/gooseclaws)
+- [carltonbuck](https://pokedextracker.com/u/carltonbuck)
+- [MARTCHELO](https://pokedextracker.com/u/MARTCHELO)
