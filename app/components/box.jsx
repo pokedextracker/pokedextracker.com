@@ -8,11 +8,12 @@ import { useDeferredRender } from '../hooks/use-deferred-render';
 
 export const BOX_SIZE = 30;
 
-export function Box ({ captures, deferred }) {
+export function Box ({ captures, deferred, dexTotal }) {
   const render = useDeferredRender(!deferred);
 
   const empties = useMemo(() => Array.from({ length: BOX_SIZE - captures.length }).map((_, i) => i), [captures]);
 
+  const paddingDigits = dexTotal >= 1000 ? 4 : 3;
   const firstPokemon = captures[0].pokemon;
   const lastPokemon = captures[captures.length - 1].pokemon;
   let title = firstPokemon.box;
@@ -21,9 +22,9 @@ export function Box ({ captures, deferred }) {
     const firstNumber = firstPokemon.dex_number;
     const lastNumber = lastPokemon.dex_number;
     if (firstNumber === lastNumber) {
-      title = padding(firstNumber, 3);
+      title = padding(firstNumber, paddingDigits);
     } else {
-      title = `${padding(firstNumber, 3)} - ${padding(lastNumber, 3)}`;
+      title = `${padding(firstNumber, paddingDigits)} - ${padding(lastNumber, paddingDigits)}`;
     }
   } else if (title.indexOf('reset') === 0) {
     const parts = title.split(':');
@@ -37,9 +38,9 @@ export function Box ({ captures, deferred }) {
     lastNumber -= offset;
 
     if (firstNumber === lastNumber) {
-      title = padding(firstNumber, 3);
+      title = padding(firstNumber, paddingDigits);
     } else {
-      title = `${padding(firstNumber, 3)} - ${padding(lastNumber, 3)}`;
+      title = `${padding(firstNumber, paddingDigits)} - ${padding(lastNumber, paddingDigits)}`;
     }
 
     if (prefix) {
@@ -71,5 +72,6 @@ Box.defaultProps = {
 
 Box.propTypes = {
   captures: PropTypes.arrayOf(PropTypes.object).isRequired,
-  deferred: PropTypes.bool
+  deferred: PropTypes.bool,
+  dexTotal: PropTypes.number.isRequired
 };

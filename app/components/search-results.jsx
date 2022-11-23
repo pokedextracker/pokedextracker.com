@@ -2,7 +2,7 @@ import PropTypes   from 'prop-types';
 import { useMemo } from 'react';
 
 import { Pokemon } from './pokemon';
-import { padding } from '../utils/formatting';
+import { nationalId, padding } from '../utils/formatting';
 
 const DEFER_CUTOFF = 120;
 
@@ -12,14 +12,23 @@ export function SearchResults ({ captures, hideCaught, query, setHideCaught, set
 
   const filteredCaptures = useMemo(() => {
     return captures.filter((capture) => {
+      const dexId = capture.pokemon.dex_number;
+      const natId = nationalId(capture.pokemon.national_id);
+
       const matchesCaught = !hideCaught || !capture.captured;
       const matchesQuery =
         // Case-insensitive name prefix match (e.g. bulba)
         capture.pokemon.name.toLowerCase().indexOf(query.toLowerCase()) === 0 ||
         // Exact national ID match (e.g. 1, 2, 3)
         capture.pokemon.national_id.toString() === query ||
-        // Exact formatted national ID match (e.g. 001, 002, 003)
-        padding(capture.pokemon.national_id, 3) === query;
+        // Exact 3-digit formatted dex ID match (e.g. 001, 002, 003)
+        padding(dexId, 3) === query ||
+        // Exact 4-digit formatted dex ID match (e.g. 0001, 0002, 0003)
+        padding(dexId, 4) === query ||
+        // Exact 3-digit formatted national ID match (e.g. 001, 002, 003)
+        padding(natId, 3) === query ||
+        // Exact 4-digit formatted national ID match (e.g. 0001, 0002, 0003)
+        padding(natId, 4) === query;
 
       return matchesCaught && matchesQuery;
     });
