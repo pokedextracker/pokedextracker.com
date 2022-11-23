@@ -18,7 +18,7 @@ export function Notification () {
   return (
     <div className="alert alert-muted">
       <FontAwesomeIcon icon={faTimes} onClick={handleClick} />
-      <p>Track your full Pokémon HOME National dex! <a href="http://bit.ly/pt-home-launch" rel="noopener noreferrer" target="_blank">Read more</a>.</p>
+      <p>Pokémon Scarlet and Violet support is here! <a href="http://bit.ly/pt-sv-launch" rel="noopener noreferrer" target="_blank">Read more</a>.</p>
     </div>
   );
 }
