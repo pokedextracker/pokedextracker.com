@@ -29,6 +29,7 @@ export function Dex ({ hideCaught, onScrollButtonClick, query, setHideCaught, se
       <Box
         captures={box}
         deferred={i > DEFER_CUTOFF}
+        dexTotal={dex.total}
         key={box[0].pokemon.id}
       />
     ));

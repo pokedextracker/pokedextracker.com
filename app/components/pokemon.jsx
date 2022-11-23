@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ReactGA }                        from '../utils/analytics';
 import { createCaptures, deleteCaptures } from '../actions/capture';
 import { htmlName, iconClass }            from '../utils/pokemon';
-import { padding }                        from '../utils/formatting';
+import { nationalId, padding }            from '../utils/formatting';
 import { setCurrentPokemon }              from '../actions/pokemon';
 import { setShowInfo }                    from '../actions/tracker';
 import { useDelayedRender } from '../hooks/use-delayed-render';
@@ -61,6 +61,10 @@ export function Pokemon ({ capture, delay }) {
     pending: capture.pending
   };
 
+  const regional = dex.dex_type.tags.includes('regional');
+  const idToDisplay = regional ? (capture.pokemon.dex_number === -1 ? '---' : capture.pokemon.dex_number) : nationalId(capture.pokemon.national_id);
+  const paddingDigits = dex.total >= 1000 ? 4 : 3;
+
   return (
     <div className={classNames(classes)}>
       <div className="set-captured" onClick={handleSetCapturedClick}>
@@ -68,14 +72,14 @@ export function Pokemon ({ capture, delay }) {
         <div className="icon-wrapper">
           <i className={iconClass(capture.pokemon, dex)} />
         </div>
-        <p>#{padding(capture.pokemon.national_id, 3)}</p>
+        <p>#{padding(idToDisplay, paddingDigits)}</p>
       </div>
       <div className="set-captured-mobile" onClick={handleSetCapturedClick}>
         <div className="icon-wrapper">
           <i className={iconClass(capture.pokemon, dex)} />
         </div>
         <h4>{htmlName(capture.pokemon.name)}</h4>
-        <p>#{padding(capture.pokemon.national_id, 3)}</p>
+        <p>#{padding(idToDisplay, paddingDigits)}</p>
       </div>
       <div className="set-info" onClick={handleSetInfoClick}>
         <FontAwesomeIcon icon={faInfo} />

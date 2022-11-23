@@ -34,5 +34,37 @@ export function friendCodeSwitchFormatter (code) {
 }
 
 export function padding (number, digits, value = '0') {
+  if (parseInt(`${number}`, 10) >= 10 ** digits) {
+    return `${number}`;
+  }
   return `${value.repeat(digits)}${number}`.slice(-1 * digits);
+}
+
+// This is just to account for the national ID hack of Scarlet/Violet before
+// HOME support is released.
+export function nationalId (id) {
+  if (id >= 1906) {
+    // We shave off 1000 since that's what we added to all new Pokemon.
+    id -= 1000;
+  }
+  return id;
+}
+
+// Hopefully, we don't have to maintain this long-term once we get official
+// national IDs with HOME. Right now, Serebii skips IDs 980 and 987.
+export function serebiiNationalId (id) {
+  id = nationalId(id);
+  if (id >= 980) {
+    // We add 1 since Serebii skips 980.
+    id += 1;
+  }
+  if (id >= 987) {
+    // We add another 1 since Serebii skips 987.
+    id += 1;
+  }
+  return id;
+}
+
+export function serebiiLink (serebiiPath, nationalId) {
+  return `http://www.serebii.net/${serebiiPath}/${padding(serebiiNationalId(nationalId), 3)}.shtml`;
 }

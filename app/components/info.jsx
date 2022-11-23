@@ -8,7 +8,7 @@ import { EvolutionFamily }     from './evolution-family';
 import { InfoLocations }       from './info-locations';
 import { ReactGA }             from '../utils/analytics';
 import { htmlName, iconClass } from '../utils/pokemon';
-import { padding }             from '../utils/formatting';
+import { nationalId, padding, serebiiLink } from '../utils/formatting';
 import { retrievePokemon }     from '../actions/pokemon';
 import { setShowInfo }         from '../actions/tracker';
 
@@ -22,6 +22,7 @@ const SEREBII_LINKS = {
   sword_shield_expansion_pass: 'pokedex-swsh',
   brilliant_diamond_shining_pearl: 'pokedex-swsh',
   legends_arceus: 'pokedex-swsh',
+  scarlet_violet: 'pokedex-sv',
   home: 'pokedex-swsh'
 };
 
@@ -53,7 +54,7 @@ export function Info () {
     // If the Pokemon's location is 'Currently unavailable' for SwSh and they
     // don't have locations for any other gen8 game, that means they aren't
     // available in this generation, so they don't have a gen8 Serebii page.
-    // Because of this, we go back to the the SuMo Serebii links. This will
+    // Because of this, we go back to the SuMo Serebii links. This will
     // probably need to be updating with future generations.
     if (swshLocation && swshLocation.value.length > 0 && swshLocation.value[0] === 'Currently unavailable' && !bdspLocation && !plaLocation) {
       return 'pokedex-sm';
@@ -89,7 +90,7 @@ export function Info () {
         <div className="info-header">
           <i className={iconClass(pokemon, dex)} />
           <h1>{htmlName(pokemon.name)}</h1>
-          <h2>#{padding(pokemon.national_id, 3)}</h2>
+          <h2>#{padding(dex.dex_type.tags.includes('regional') ? (pokemon.dex_number === -1 ? '---' : pokemon.dex_number) : nationalId(pokemon.national_id), dex.total >= 1000 ? 4 : 3)}</h2>
         </div>
 
         <InfoLocations locations={pokemon.locations} />
@@ -106,7 +107,7 @@ export function Info () {
             Bulbapedia <FontAwesomeIcon icon={faLongArrowAltRight} />
           </a>
           <a
-            href={`http://www.serebii.net/${serebiiPath}/${padding(pokemon.national_id, 3)}.shtml`}
+            href={serebiiLink(serebiiPath, pokemon.national_id)}
             onClick={() => ReactGA.event({ action: 'open Serebii link', category: 'Info', label: pokemon.name })}
             rel="noopener noreferrer"
             target="_blank"
