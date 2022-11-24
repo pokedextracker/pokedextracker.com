@@ -19,8 +19,10 @@ export function SearchResults ({ captures, hideCaught, query, setHideCaught, set
       const matchesQuery =
         // Case-insensitive name prefix match (e.g. bulba)
         capture.pokemon.name.toLowerCase().indexOf(query.toLowerCase()) === 0 ||
+        // Exact dex ID match (e.g. 1, 2, 3)
+        dexId.toString() === query ||
         // Exact national ID match (e.g. 1, 2, 3)
-        capture.pokemon.national_id.toString() === query ||
+        natId.toString() === query ||
         // Exact 3-digit formatted dex ID match (e.g. 001, 002, 003)
         padding(dexId, 3) === query ||
         // Exact 4-digit formatted dex ID match (e.g. 0001, 0002, 0003)
