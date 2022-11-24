@@ -5,7 +5,8 @@ import slug                                                           from 'slug
 import { FontAwesomeIcon }                                            from '@fortawesome/react-fontawesome';
 import { faAsterisk, faChevronDown, faLongArrowAltRight, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector }                                   from 'react-redux';
-import { useEffect, useMemo, useRef, useState }                       from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState }             from 'react';
+
 
 import { Alert }                from './alert';
 import { FormWarning }          from './form-warning';
@@ -162,11 +163,11 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
     >
       <div className="dex-delete-container">
         {isConfirmingDelete ?
-          <div>
+          <Fragment>
             Are you sure?&nbsp;
             <a className="link" onClick={handleDeleteClick}>Yes</a>&nbsp;
             <a className="link" onClick={() => setIsConfirmingDelete(false)}>No</a>
-          </div> :
+          </Fragment> :
           <a className="link" onClick={handleDeleteClick}>
             <FontAwesomeIcon icon={faTrashAlt} />
           </a>

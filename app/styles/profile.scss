@@ -87,11 +87,11 @@
   top: 10px;
   right: 12px;
   z-index: 1;
+  font-size: 14px;
 
   a:first-child {
     color: $error;
     margin: 0 3px;
-    font-size: 14px;
 
     &:hover {
       color: darken($error, 5%);
