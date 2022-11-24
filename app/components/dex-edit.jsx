@@ -7,7 +7,6 @@ import { faAsterisk, faChevronDown, faLongArrowAltRight, faTrashAlt } from '@for
 import { useDispatch, useSelector }                                   from 'react-redux';
 import { Fragment, useEffect, useMemo, useRef, useState }             from 'react';
 
-
 import { Alert }                from './alert';
 import { FormWarning }          from './form-warning';
 import { ReactGA }              from '../utils/analytics';
