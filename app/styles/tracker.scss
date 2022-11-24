@@ -459,7 +459,7 @@ header {
     margin-bottom: 10px;
 
     h1 {
-      @include flex(1 0 auto);
+      @include flex(1 0);
 
       margin: 0;
       font-family: $font-secondary;
@@ -468,10 +468,12 @@ header {
     }
 
     .btn {
-      display: inline-block;
+      @include align-self(center);
+
       height: auto;
       width: auto;
       padding: 8px 12px;
+      margin-left: 10px;
       font-size: 10px;
     }
   }
@@ -713,6 +715,10 @@ header {
     }
   }
 
+  .search-results:not(.search-results-empty) {
+    border: 1px solid $gray-light;
+  }
+
   .pokemon {
     width: 100%;
     height: 80px;
@@ -754,6 +760,10 @@ header {
 @media (max-width: 400px) {
   .dex {
     padding: 15px 35px 15px 15px;
+  }
+
+  .dex-search-bar {
+    padding: 10px 35px 10px 10px;
   }
 
   .info {
