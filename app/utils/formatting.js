@@ -40,28 +40,24 @@ export function padding (number, digits, value = '0') {
   return `${value.repeat(digits)}${number}`.slice(-1 * digits);
 }
 
-// This is just to account for the national ID hack of Scarlet/Violet before
-// HOME support is released.
+// This is a centralized place where we ave the ability to transform the
+// national ID from what is stored in the database to what we want to show the
+// to user. This isn't used all the time, but sometimes, when a new game comes
+// out, we don't know the national IDs for sure, so we offset them to make the
+// update when we do know the real national IDs easier. Most of the time, this
+// function will just return the ID again because our database national IDs will
+// be correct.
 export function nationalId (id) {
-  if (id >= 1906) {
-    // We shave off 1000 since that's what we added to all new Pokemon.
-    id -= 1000;
-  }
   return id;
 }
 
-// Hopefully, we don't have to maintain this long-term once we get official
-// national IDs with HOME. Right now, Serebii skips IDs 980 and 987.
+// Sometimes, when it's not clear what the national IDs are for Pokemon, Serebii
+// picks IDs that we don't go along with. So this function is a centralized
+// location where we can transform it if we need to. Most of the time, this
+// function will just return the ID again because our database national IDs will
+// be correct.
 export function serebiiNationalId (id) {
   id = nationalId(id);
-  if (id >= 980) {
-    // We add 1 since Serebii skips 980.
-    id += 1;
-  }
-  if (id >= 987) {
-    // We add another 1 since Serebii skips 987.
-    id += 1;
-  }
   return id;
 }
 
