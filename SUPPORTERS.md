@@ -79,3 +79,5 @@ This will be where we add the names for all of the users who've donated any amou
 - [andrewism](https://pokedextracker.com/u/andrewism)
 - [ShinyViola](https://pokedextracker.com/u/ShinyViola)
 - [peachesm](https://pokedextracker.com/u/peachesm)
+- [GrimmsGC](https://pokedextracker.com/u/GrimmsGC)
+- [Sparkrdom](https://pokedextracker.com/u/Sparkrdom)
