@@ -41,6 +41,7 @@ export function App () {
           <Route component={Login} exact path="/login" />
           <Route component={Register} exact path="/register" />
           <Route component={Account} exact path="/account" />
+          <Route component={Profile} exact path="/u/me" />
           <Route component={Profile} exact path="/u/:username" />
           <Route component={Tracker} exact path="/u/:username/:slug" />
           <Route component={NotFound} path="/" />

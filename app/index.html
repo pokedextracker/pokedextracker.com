@@ -17,7 +17,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-chrome-192x192.png">
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
-    <link rel="manifest" href="/favicon/manifest.json">
+    <link rel="manifest" href="/manifest.json">
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-TileImage" content="/favicon/mstile-144x144.png">
     <meta name="theme-color" content="#ffffff">
@@ -45,5 +45,18 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+      // Register a service worker hosted at the root of the
+      // site using the default scope.
+      navigator.serviceWorker.register('/sw.js', {
+        scope: '.',
+      }).then((registration) => {
+        console.log('Service worker registration succeeded:', registration);
+      });
+    } else {
+      console.error('Service workers are not supported.');
+    }
+    </script>
   </body>
 </html>

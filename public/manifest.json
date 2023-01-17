@@ -1,0 +1,17 @@
+{
+  "id": "/u/me",
+  "short_name": "Pokédex Tracker",
+  "description": "A tool for tracking your Living Dex progress",
+  "name": "Pokédex Tracker",
+  "icons": [
+    {
+      "src": "/favicon/mstile-144x144.png",
+      "type": "image/png",
+      "sizes": "144x144"
+    }
+  ],
+  "start_url": "/u/me",
+  "display": "standalone",
+  "theme_color": "#ffd924",
+  "background_color": "#ffffff"
+}
