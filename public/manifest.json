@@ -1,17 +1,70 @@
 {
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
   "id": "/u/me",
   "short_name": "Pokédex Tracker",
   "description": "A tool for tracking your Living Dex progress",
   "name": "Pokédex Tracker",
   "icons": [
     {
+      "src": "/favicon/mstile-70x70.png",
+      "type": "image/png",
+      "sizes": "128x128"
+    },
+    {
       "src": "/favicon/mstile-144x144.png",
       "type": "image/png",
       "sizes": "144x144"
+    },
+    {
+      "src": "/favicon/mstile-310x310.png",
+      "type": "image/png",
+      "sizes": "558x558"
     }
   ],
   "start_url": "/u/me",
   "display": "standalone",
   "theme_color": "#ffd924",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+  "screenshots" : [
+    {
+      "src": "/screenshot-bd-ash.png",
+      "sizes": "1915x1752",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "Example Pokédex"
+    },
+    {
+      "src": "/screenshot-bd-ash-wide.png",
+      "sizes": "3837x1962",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Example Pokédex"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Account Settings",
+      "url": "/account",
+      "description": "Profile account settings",
+      "icons": [
+        {
+          "src": "/favicon/favicon-96x96.png",
+          "type": "image/png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "My Profile",
+      "url": "/u/me",
+      "description": "List of my Pokédexes",
+      "icons": [
+        {
+          "src": "/favicon/favicon-96x96.png",
+          "type": "image/png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
 }
