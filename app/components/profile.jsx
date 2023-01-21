@@ -26,13 +26,12 @@ export function Profile () {
   const user = useSelector(({ currentUser, users }) => users[currentUser]);
 
   const username = (() => {
-    console.debug(useParams(), session)
     if (useParams() && useParams().username) {
-      return useParams().username
+      return useParams().username;
     }
     // In the case where the helper 'me' is used, navigate to authed user.
-    return session.username
-  })()
+    return session.username;
+  })();
 
   const [isLoading, setIsLoading] = useState(true);
   const [showDexCreate, setShowDexCreate] = useState(false);
