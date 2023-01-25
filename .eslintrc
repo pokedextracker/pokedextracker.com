@@ -37,7 +37,7 @@
     "eol-last": 2,
     "eqeqeq": 2,
     "generator-star-spacing": 2,
-    "indent": [2, 2, { "SwitchCase": 1 }],
+    "indent": [2, 2, { "SwitchCase": 1, "ignoredNodes": ["TemplateLiteral"] }],
     "jsx-quotes": [2, "prefer-double"],
     "key-spacing": [2, { "beforeColon": false, "afterColon": true, "mode": "strict" }],
     "keyword-spacing": 2,
