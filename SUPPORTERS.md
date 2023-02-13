@@ -81,3 +81,4 @@ This will be where we add the names for all of the users who've donated any amou
 - [peachesm](https://pokedextracker.com/u/peachesm)
 - [GrimmsGC](https://pokedextracker.com/u/GrimmsGC)
 - [Sparkrdom](https://pokedextracker.com/u/Sparkrdom)
+- [kittynubs](https://pokedextracker.com/u/kittynubs)
