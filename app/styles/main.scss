@@ -1,3 +1,5 @@
+@use "sass:math";
+
 html {
   -webkit-font-smoothing: antialiased;
 }
@@ -606,7 +608,7 @@ select {
     position: absolute;
     bottom: 27px;
     left: 50%;
-    margin-left: -($tooltip-width / 2);
+    margin-left: math.div($tooltip-width, -2);
     z-index: 1;
     width: $tooltip-width;
     padding: 5px;

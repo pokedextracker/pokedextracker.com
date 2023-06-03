@@ -9,7 +9,7 @@ module.exports = {
   entry: ['whatwg-fetch', './app/index.jsx'],
   output: {
     path: `${__dirname}/public`,
-    filename: PRODUCTION ? '[name].[contenthash].js' : '[name].[hash].js',
+    filename: PRODUCTION ? '[name].[contenthash].js' : '[name].[fullhash].js',
     publicPath: '/'
   },
   resolve: {
@@ -17,15 +17,17 @@ module.exports = {
   },
   devtool: PRODUCTION ? 'source-map' : 'inline-source-map',
   devServer: {
-    contentBase: 'public/',
     historyApiFallback: true,
-    host: '0.0.0.0'
+    host: '0.0.0.0',
+    hot: true,
+    port: 9898,
+    static: 'public/',
   },
-  mode: PRODUCTION ? 'production' : 'development',
+  mode: PRODUCTION ? 'production' : 'none',
   module: {
     rules: [
       { test: /\.jsx?$/, loader: 'babel-loader', exclude: /node_modules/ },
-      { test: /\.scss$/, use: ['style-loader', 'css-loader', 'sass-loader'] }
+      { test: /\.scss$/, use: ['style-loader', { loader: 'css-loader', options: { url: false } }, 'sass-loader'] }
     ]
   },
   plugins: [
