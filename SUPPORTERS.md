@@ -84,3 +84,5 @@ This will be where we add the names for all of the users who've donated any amou
 - [kittynubs](https://pokedextracker.com/u/kittynubs)
 - [Soninn](https://pokedextracker.com/u/Soninn)
 - [irrelivant](https://pokedextracker.com/u/irrelivant)
+- [wroyce](https://pokedextracker.com/u/wroyce)
+- [thehoove](https://pokedextracker.com/u/thehoove)
