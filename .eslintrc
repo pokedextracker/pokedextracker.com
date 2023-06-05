@@ -5,7 +5,7 @@
     "node": true
   },
   "ignorePatterns": ["public"],
-  "parser": "babel-eslint",
+  "parser": "@babel/eslint-parser",
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true

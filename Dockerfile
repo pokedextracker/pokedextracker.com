@@ -1,4 +1,4 @@
-FROM node:12.16.1 as build
+FROM --platform=$BUILDPLATFORM node:18.16.0 as build
 
 ENV NODE_ENV=production
 

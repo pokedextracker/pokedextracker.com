@@ -1,3 +1,5 @@
+@use "sass:math";
+
 .tracker {
   @include flexbox();
   @include flex(1 1 auto);
@@ -409,7 +411,7 @@ header {
       left: 50%;
       width: $share-width;
       padding: 10px;
-      margin-left: -($share-width / 2);
+      margin-left: math.div($share-width, -2);
       z-index: 1;
       border: 2px solid $gray-light;
       background-color: lighten($gray-light, 10%);
