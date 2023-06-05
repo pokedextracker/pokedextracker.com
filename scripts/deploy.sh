@@ -16,18 +16,29 @@ fi
 
 KUBE_CONTEXT="$(echo "${KUBE_CONTEXTS}" | grep pokedextracker)"
 
+if ! docker buildx ls | grep -q multiarch; then
+  echo
+  echo -e "\033[1;32m==> Creating multiarch builder instance...\033[0m"
+  echo
+
+  docker buildx create --name multiarch --node multiarch
+fi
+
 echo
-echo -e "\033[1;32m==> Building ${TAG}...\033[0m"
+echo -e "\033[1;32m==> Building and pushing ${TAG}...\033[0m"
 echo
 
-DOCKER_BUILDKIT=1 docker build --build-arg VERSION=${TAG} -t ${REPO}:${TAG} .
-
-echo
-echo -e "\033[1;32m==> Pushing ${TAG} to ${REPO}...\033[0m"
-echo
-
-# this will fail if you're not logged in
-docker push ${REPO}:${TAG}
+# When building for other architectures, we can't keep the image locally, so we
+# need to push it in the same command that we build it. We build and push for
+# x86_64 and ARM64v8, just so we have both just in case. This will fail if
+# you're not logged in.
+DOCKER_BUILDKIT=1 docker buildx build \
+  --push \
+  --builder multiarch \
+  --platform linux/arm64,linux/amd64 \
+  --build-arg VERSION=${TAG} \
+  --tag ${REPO}:${TAG} \
+  .
 
 echo
 echo -e "\033[1;32m==> Updating Helm repos\033[0m"
