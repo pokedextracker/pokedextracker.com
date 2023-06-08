@@ -23,7 +23,7 @@ const SEREBII_LINKS = {
   brilliant_diamond_shining_pearl: 'pokedex-swsh',
   legends_arceus: 'pokedex-swsh',
   scarlet_violet: 'pokedex-sv',
-  home: 'pokedex-swsh'
+  home: 'pokedex-sv'
 };
 
 export function Info () {
@@ -50,14 +50,21 @@ export function Info () {
     const swshLocation = find(pokemon.locations, (loc) => loc.game.game_family.id === 'sword_shield');
     const bdspLocation = find(pokemon.locations, (loc) => loc.game.game_family.id === 'brilliant_diamond_shining_pearl');
     const plaLocation = find(pokemon.locations, (loc) => loc.game.game_family.id === 'legends_arceus');
+    const svLocation = find(pokemon.locations, (loc) => loc.game.game_family.id === 'scarlet_violet');
 
-    // If the Pokemon's location is 'Currently unavailable' for SwSh and they
-    // don't have locations for any other gen8 game, that means they aren't
-    // available in this generation, so they don't have a gen8 Serebii page.
-    // Because of this, we go back to the SuMo Serebii links. This will
-    // probably need to be updating with future generations.
-    if (swshLocation && swshLocation.value.length > 0 && swshLocation.value[0] === 'Currently unavailable' && !bdspLocation && !plaLocation) {
-      return 'pokedex-sm';
+    if (dex.game.game_family.id === 'home' && !svLocation) {
+      if (swshLocation && swshLocation.value.length > 0 && swshLocation.value[0] === 'Currently unavailable' && !bdspLocation && !plaLocation) {
+        // If the Pokemon's location is 'Currently unavailable' for SwSh and they
+        // don't have locations for any other gen8 game, that means they aren't
+        // available in this generation, so they don't have a gen8 Serebii page.
+        // Because of this, we go back to the SuMo Serebii links. This will
+        // probably need to be updating with future generations.
+        return 'pokedex-sm';
+      }
+
+      // This is a HOME dex, there is no SV location, and there is a gen8
+      // location, so we use the SwSh link.
+      return 'pokedex-swsh';
     }
 
     return SEREBII_LINKS[dex.game.game_family.id];
