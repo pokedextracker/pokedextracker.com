@@ -18,7 +18,7 @@ export function Notification () {
   return (
     <div className="alert alert-muted">
       <FontAwesomeIcon icon={faTimes} onClick={handleClick} />
-      <p>Pokémon Scarlet and Violet support is here! <a href="http://bit.ly/pt-sv-launch" rel="noopener noreferrer" target="_blank">Read more</a>.</p>
+      <p>Pokémon HOME dexes have been updated for Scarlet and Violet! <a href="http://bit.ly/pt-sv-home" rel="noopener noreferrer" target="_blank">Read more</a>.</p>
     </div>
   );
 }
