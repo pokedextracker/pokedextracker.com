@@ -1,5 +1,6 @@
 import { stringify } from 'qs';
 
+import { Config } from '../../config';
 import { Store } from '../stores';
 
 async function handleResponse (response) {
@@ -16,7 +17,8 @@ async function handleResponse (response) {
 function getHeaders () {
   return {
     Authorization: `Bearer ${Store.getState().token}`,
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'X-Version': Config.VERSION
   };
 }
 
@@ -30,7 +32,10 @@ export const API = {
     return handleResponse(response);
   },
   async get (url, params) {
-    const response = await fetch(`${url}?${stringify(params)}`);
+    const query = stringify(params);
+    const response = await fetch(`${url}${query ? `?${query}` : ''}`, {
+      headers: getHeaders()
+    });
     return handleResponse(response);
   },
   async post (url, payload) {
