@@ -58,8 +58,8 @@ export function Account () {
     const payload = {
       username: session.username,
       payload: {
-        password,
-        password_confirm: passwordConfirm,
+        password: isEditingPassword ? password : undefined,
+        password_confirm: isEditingPassword ? passwordConfirm : undefined,
         friend_code_3ds: friendCode3ds,
         friend_code_switch: friendCodeSwitch
       }
