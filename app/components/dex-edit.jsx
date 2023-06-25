@@ -131,7 +131,13 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
     const payload = {
       slug: dex.slug,
       username: session.username,
-      payload: { title, shiny, game, dex_type: dexType }
+      payload: {
+        title,
+        slug: title !== dex.title ? slug(title, { lower: true }) : undefined,
+        shiny,
+        game,
+        dex_type: dexType
+      }
     };
 
     setError(null);

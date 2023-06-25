@@ -73,6 +73,7 @@ export function Register () {
       friend_code_3ds: friendCode3ds,
       friend_code_switch: friendCodeSwitch,
       title,
+      slug: slug(title, { lower: true }),
       shiny,
       game,
       dex_type: dexType
@@ -84,7 +85,7 @@ export function Register () {
       await dispatch(createUser(payload));
       ReactGA.event({ action: 'register', category: 'Session' });
       dispatch(setNotification(true));
-      history.push(`/u/${username}/${slug(title, { lower: true })}`);
+      history.push(`/u/${username}/${payload.slug}`);
     } catch (err) {
       setError(err.message);
       window.scrollTo({ top: 0 });
