@@ -69,7 +69,7 @@ export function DexCreate ({ isOpen, onRequestClose }) {
 
     const payload = {
       username: session.username,
-      payload: { title, shiny, game, dex_type: dexType }
+      payload: { title, slug: slug(title, { lower: true }), shiny, game, dex_type: dexType }
     };
 
     setError(null);
