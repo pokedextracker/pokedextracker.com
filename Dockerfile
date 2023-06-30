@@ -21,8 +21,11 @@ RUN yarn build
 
 FROM nginx:1.17.9-alpine
 
+RUN apk add curl
+
 RUN rm -f /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d/dashboard.conf
+COPY scripts/upload-source-maps.sh /usr/local/bin/upload-source-maps
 
 RUN rm -rf /usr/share/nginx/html
 COPY --from=build /app/public /usr/share/nginx/html
