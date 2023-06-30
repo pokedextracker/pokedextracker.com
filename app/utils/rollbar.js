@@ -9,6 +9,11 @@ const Rollbar = new Constructor({
   environment: Config.ENVIRONMENT,
   captureUncaught: true,
   captureUnhandledRejections: true,
+  autoInstrument: {
+    networkRequestBody: true,
+    networkResponseBody: true,
+    networkResponseHeaders: true
+  },
   payload: {
     client: {
       javascript: {
