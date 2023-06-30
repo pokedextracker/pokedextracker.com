@@ -19,7 +19,7 @@ if (testLocalStorage()) {
       this._data[id] = String(val);
     },
     getItem: function (id) {
-      this._data.hasOwnProperty(id) ? this._data[id] : undefined;
+      return this._data.hasOwnProperty(id) ? this._data[id] : undefined;
     },
     removeItem: function (id) {
       Reflect.deleteProperty(this._data, id);

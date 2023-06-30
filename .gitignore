@@ -20,6 +20,7 @@ typings
 coverage
 public/*.js
 public/*.map
+public/*.LICENSE.txt
 public/version
 public/index.html
 
@@ -27,3 +28,5 @@ public/index.html
 .DS_Store
 
 xunit.xml
+
+.env

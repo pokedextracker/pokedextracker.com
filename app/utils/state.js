@@ -1,15 +1,19 @@
-import { Sentry }       from '../utils/sentry';
-import { localStorage } from '../utils/local-storage';
+import { Rollbar } from './rollbar';
+import { localStorage } from './local-storage';
 
 export function tokenToUser (token) {
   if (!token) {
-    Sentry.setUser(null);
+    Rollbar.configure({
+      payload: { user: null }
+    });
     return null;
   }
 
   const user = JSON.parse(atob(token.split('.')[1]));
 
-  Sentry.setUser({ id: user.id, username: user.username });
+  Rollbar.configure({
+    payload: { user: { id: user.id, username: user.username } }
+  });
 
   return user;
 }

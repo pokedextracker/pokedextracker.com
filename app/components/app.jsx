@@ -1,5 +1,6 @@
 import { Route, Router, Switch }    from 'react-router-dom';
 import { createBrowserHistory }     from 'history';
+import { historyContext } from '@rollbar/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect }                from 'react';
 
@@ -9,6 +10,7 @@ import { Login }          from './login';
 import { NotFound }       from './not-found';
 import { Profile }        from './profile';
 import { Register }       from './register';
+import { Rollbar } from '../utils/rollbar';
 import { Tracker }        from './tracker';
 import { logPageView }    from '../utils/analytics';
 import { retrieveUser }   from '../actions/user';
@@ -16,6 +18,7 @@ import { setSessionUser } from '../actions/session';
 
 const history = createBrowserHistory();
 history.listen(() => logPageView());
+history.listen(historyContext(Rollbar));
 logPageView();
 
 export function App () {

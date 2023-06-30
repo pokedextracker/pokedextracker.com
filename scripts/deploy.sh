@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+# Load any secrets.
+test -f .env && . .env
+
 CHART_VERSION=v0.1.0
 NOW=$(date +'%s')
 REPO="pokedextracker/pokedextracker.com"
@@ -39,6 +42,23 @@ DOCKER_BUILDKIT=1 docker buildx build \
   --build-arg VERSION=${TAG} \
   --tag ${REPO}:${TAG} \
   .
+
+if ! [ -z $ROLLBAR_TOKEN ]; then
+  echo
+  echo -e "\033[1;32m==> Uploading source maps to Rollbar\033[0m"
+  echo
+
+  docker run \
+    --rm \
+    -e ROLLBAR_TOKEN=${ROLLBAR_TOKEN} \
+    -e VERSION=${TAG} \
+    ${REPO}:${TAG} \
+    upload-source-maps
+else
+  echo
+  echo -e "\033[1;33m==> Skipping uploading source maps to Rollbar\033[0m"
+  echo
+fi
 
 echo
 echo -e "\033[1;32m==> Updating Helm repos\033[0m"
