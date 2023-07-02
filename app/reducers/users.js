@@ -1,7 +1,7 @@
 import { MARK_CAPTURED, MARK_PENDING, SET_CAPTURES } from '../actions/capture';
-import { SET_DEX }                     from '../actions/dex';
-import { SET_USER }                    from '../actions/user';
-import { dexes }                       from '../reducers/dexes';
+import { SET_DEX } from '../actions/dex';
+import { SET_USER } from '../actions/user';
+import { dexes } from '../reducers/dexes';
 
 export function users (state = {}, action) {
   switch (action.type) {
@@ -10,8 +10,8 @@ export function users (state = {}, action) {
         ...state,
         [action.user.username]: {
           ...action.user,
-          dexesBySlug: {}
-        }
+          dexesBySlug: {},
+        },
       };
     case MARK_PENDING:
     case MARK_CAPTURED:

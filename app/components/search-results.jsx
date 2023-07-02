@@ -1,4 +1,4 @@
-import PropTypes   from 'prop-types';
+import PropTypes from 'prop-types';
 import { useMemo } from 'react';
 
 import { Pokemon } from './pokemon';
@@ -72,5 +72,5 @@ SearchResults.propTypes = {
   hideCaught: PropTypes.bool.isRequired,
   query: PropTypes.string.isRequired,
   setHideCaught: PropTypes.func.isRequired,
-  setQuery: PropTypes.func.isRequired
+  setQuery: PropTypes.func.isRequired,
 };

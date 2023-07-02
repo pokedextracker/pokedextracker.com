@@ -1,4 +1,4 @@
-import PropTypes  from 'prop-types';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
 export function Alert ({ className, message, type }) {
@@ -16,5 +16,5 @@ export function Alert ({ className, message, type }) {
 Alert.propTypes = {
   className: PropTypes.string,
   message: PropTypes.any,
-  type: PropTypes.oneOf(['error', 'success']).isRequired
+  type: PropTypes.oneOf(['error', 'success']).isRequired,
 };

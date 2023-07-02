@@ -1,16 +1,16 @@
-import find                                               from 'lodash/find';
-import { FontAwesomeIcon }                                from '@fortawesome/react-fontawesome';
+import find from 'lodash/find';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretLeft, faCaretRight, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector }                       from 'react-redux';
-import { useEffect, useMemo }                             from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useMemo } from 'react';
 
-import { EvolutionFamily }     from './evolution-family';
-import { InfoLocations }       from './info-locations';
-import { ReactGA }             from '../utils/analytics';
+import { EvolutionFamily } from './evolution-family';
+import { InfoLocations } from './info-locations';
+import { ReactGA } from '../utils/analytics';
 import { htmlName, iconClass } from '../utils/pokemon';
 import { nationalId, padding, serebiiLink } from '../utils/formatting';
-import { retrievePokemon }     from '../actions/pokemon';
-import { setShowInfo }         from '../actions/tracker';
+import { retrievePokemon } from '../actions/pokemon';
+import { setShowInfo } from '../actions/tracker';
 
 const SEREBII_LINKS = {
   x_y: 'pokedex-xy',
@@ -23,7 +23,7 @@ const SEREBII_LINKS = {
   brilliant_diamond_shining_pearl: 'pokedex-swsh',
   legends_arceus: 'pokedex-swsh',
   scarlet_violet: 'pokedex-sv',
-  home: 'pokedex-sv'
+  home: 'pokedex-sv',
 };
 
 export function Info () {
@@ -37,7 +37,7 @@ export function Info () {
   useEffect(() => {
     if (!pokemon) {
       dispatch(retrievePokemon(currentPokemon, {
-        dex_type: dex.dex_type.id
+        dex_type: dex.dex_type.id,
       }));
     }
   }, [currentPokemon, dex, pokemon]);

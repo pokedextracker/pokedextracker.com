@@ -1,5 +1,5 @@
-import { API }          from '../utils/api';
-import { Config }       from '../../config';
+import { API } from '../utils/api';
+import { Config } from '../../config';
 import { checkVersion } from './utils';
 
 export const SET_DEX = 'SET_DEX';
@@ -26,10 +26,10 @@ export function retrieveDex (slug, username) {
     dispatch(checkVersion());
 
     return API.get(`${Config.API_HOST}/users/${username}/dexes/${slug}`)
-      .then((dex) => {
-        dispatch(setDex(dex, username));
-        return dex;
-      });
+    .then((dex) => {
+      dispatch(setDex(dex, username));
+      return dex;
+    });
   };
 }
 
@@ -38,10 +38,10 @@ export function updateDex ({ payload, slug, username }) {
     dispatch(checkVersion());
 
     return API.post(`${Config.API_HOST}/users/${username}/dexes/${slug}`, payload)
-      .then((dex) => {
-        dispatch(setDex(dex, username));
-        return dex;
-      });
+    .then((dex) => {
+      dispatch(setDex(dex, username));
+      return dex;
+    });
   };
 }
 

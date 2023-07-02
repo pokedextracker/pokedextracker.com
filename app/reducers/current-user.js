@@ -1,4 +1,4 @@
-import { SET_CURRENT_DEX }  from '../actions/dex';
+import { SET_CURRENT_DEX } from '../actions/dex';
 import { SET_CURRENT_USER } from '../actions/user';
 
 export function currentUser (state = null, action) {

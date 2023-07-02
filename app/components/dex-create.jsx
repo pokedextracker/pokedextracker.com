@@ -1,15 +1,15 @@
-import Modal                                              from 'react-modal';
-import PropTypes                                          from 'prop-types';
-import find                                               from 'lodash/find';
-import slug                                               from 'slug';
-import { FontAwesomeIcon }                                from '@fortawesome/react-fontawesome';
+import Modal from 'react-modal';
+import PropTypes from 'prop-types';
+import find from 'lodash/find';
+import slug from 'slug';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAsterisk, faChevronDown, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector }                       from 'react-redux';
-import { useHistory }                                     from 'react-router';
-import { useRef, useState }                               from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router';
+import { useRef, useState } from 'react';
 
-import { Alert }     from './alert';
-import { ReactGA }   from '../utils/analytics';
+import { Alert } from './alert';
+import { ReactGA } from '../utils/analytics';
 import { createDex } from '../actions/dex';
 
 export function DexCreate ({ isOpen, onRequestClose }) {
@@ -69,7 +69,7 @@ export function DexCreate ({ isOpen, onRequestClose }) {
 
     const payload = {
       username: session.username,
-      payload: { title, slug: slug(title, { lower: true }), shiny, game, dex_type: dexType }
+      payload: { title, slug: slug(title, { lower: true }), shiny, game, dex_type: dexType },
     };
 
     setError(null);
@@ -180,5 +180,5 @@ export function DexCreate ({ isOpen, onRequestClose }) {
 
 DexCreate.propTypes = {
   isOpen: PropTypes.bool.isRequired,
-  onRequestClose: PropTypes.func.isRequired
+  onRequestClose: PropTypes.func.isRequired,
 };

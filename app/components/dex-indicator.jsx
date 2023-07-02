@@ -1,6 +1,6 @@
-import PropTypes           from 'prop-types';
+import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar }          from '@fortawesome/free-solid-svg-icons';
+import { faStar } from '@fortawesome/free-solid-svg-icons';
 
 export function DexIndicator ({ dex }) {
   return (
@@ -15,5 +15,5 @@ export function DexIndicator ({ dex }) {
 }
 
 DexIndicator.propTypes = {
-  dex: PropTypes.object.isRequired
+  dex: PropTypes.object.isRequired,
 };

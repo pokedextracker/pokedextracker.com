@@ -1,15 +1,15 @@
-import PropTypes                    from 'prop-types';
-import classNames                   from 'classnames';
-import { FontAwesomeIcon }          from '@fortawesome/react-fontawesome';
-import { faInfo }                   from '@fortawesome/free-solid-svg-icons';
+import PropTypes from 'prop-types';
+import classNames from 'classnames';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faInfo } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { ReactGA }                        from '../utils/analytics';
+import { ReactGA } from '../utils/analytics';
 import { createCaptures, deleteCaptures } from '../actions/capture';
-import { htmlName, iconClass }            from '../utils/pokemon';
-import { nationalId, padding }            from '../utils/formatting';
-import { setCurrentPokemon }              from '../actions/pokemon';
-import { setShowInfo }                    from '../actions/tracker';
+import { htmlName, iconClass } from '../utils/pokemon';
+import { nationalId, padding } from '../utils/formatting';
+import { setCurrentPokemon } from '../actions/pokemon';
+import { setShowInfo } from '../actions/tracker';
 import { useDelayedRender } from '../hooks/use-delayed-render';
 
 export function Pokemon ({ capture, delay }) {
@@ -58,7 +58,7 @@ export function Pokemon ({ capture, delay }) {
     pokemon: true,
     viewing: !session || session.id !== user.id,
     captured: capture.captured,
-    pending: capture.pending
+    pending: capture.pending,
   };
 
   const regional = dex.dex_type.tags.includes('regional');
@@ -89,10 +89,10 @@ export function Pokemon ({ capture, delay }) {
 }
 
 Pokemon.defaultProps = {
-  delay: 0
+  delay: 0,
 };
 
 Pokemon.propTypes = {
   capture: PropTypes.object,
-  delay: PropTypes.number
+  delay: PropTypes.number,
 };

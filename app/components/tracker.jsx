@@ -1,22 +1,22 @@
-import throttle                                     from 'lodash/throttle';
+import throttle from 'lodash/throttle';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector }                 from 'react-redux';
-import { useParams }                                from 'react-router';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router';
 
-import { Dex }                                    from './dex';
-import { Footer }                                 from './footer';
-import { Info }                                   from './info';
-import { Nav }                                    from './nav';
-import { NotFound }                               from './not-found';
-import { Reload }                                 from './reload';
+import { Dex } from './dex';
+import { Footer } from './footer';
+import { Info } from './info';
+import { Nav } from './nav';
+import { NotFound } from './not-found';
+import { Reload } from './reload';
 import { SCROLL_DEBOUNCE, SHOW_SCROLL_THRESHOLD } from './scroll';
-import { SearchBar }                              from './search-bar';
-import { checkVersion }                           from '../actions/utils';
-import { clearPokemon, setCurrentPokemon }        from '../actions/pokemon';
-import { listCaptures }                           from '../actions/capture';
-import { retrieveDex, setCurrentDex }             from '../actions/dex';
-import { retrieveUser, setUser }                  from '../actions/user';
-import { setShowScroll, setShowShare }            from '../actions/tracker';
+import { SearchBar } from './search-bar';
+import { checkVersion } from '../actions/utils';
+import { clearPokemon, setCurrentPokemon } from '../actions/pokemon';
+import { listCaptures } from '../actions/capture';
+import { retrieveDex, setCurrentDex } from '../actions/dex';
+import { retrieveUser, setUser } from '../actions/user';
+import { setShowScroll, setShowShare } from '../actions/tracker';
 
 export function Tracker () {
   const dispatch = useDispatch();

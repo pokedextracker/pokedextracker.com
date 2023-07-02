@@ -1,5 +1,5 @@
-import PropTypes                 from 'prop-types';
-import { FontAwesomeIcon }       from '@fortawesome/react-fontawesome';
+import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 
 export function FormWarning ({ message }) {
@@ -18,5 +18,5 @@ export function FormWarning ({ message }) {
 }
 
 FormWarning.propTypes = {
-  message: PropTypes.any
+  message: PropTypes.any,
 };

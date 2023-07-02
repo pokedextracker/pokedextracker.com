@@ -18,5 +18,5 @@ export function InfoLocations ({ locations }) {
 }
 
 InfoLocations.propTypes = {
-  locations: PropTypes.arrayOf(PropTypes.object).isRequired
+  locations: PropTypes.arrayOf(PropTypes.object).isRequired,
 };

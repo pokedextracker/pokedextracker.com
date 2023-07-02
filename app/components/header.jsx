@@ -1,14 +1,14 @@
-import PropTypes                    from 'prop-types';
-import { FontAwesomeIcon }          from '@fortawesome/react-fontawesome';
-import { faLink }                   from '@fortawesome/free-solid-svg-icons';
-import { faTwitter }                from '@fortawesome/free-brands-svg-icons';
+import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLink } from '@fortawesome/free-solid-svg-icons';
+import { faTwitter } from '@fortawesome/free-brands-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { useEffect }                from 'react';
+import { useEffect } from 'react';
 
 import { DexIndicator } from './dex-indicator';
 import { DonatedFlair } from './donated-flair';
-import { ReactGA }      from '../utils/analytics';
-import { Share }        from './share';
+import { ReactGA } from '../utils/analytics';
+import { Share } from './share';
 import { setShowShare } from '../actions/tracker';
 
 export function Header ({ profile }) {
@@ -65,9 +65,9 @@ export function Header ({ profile }) {
 }
 
 Header.defaultProps = {
-  profile: false
+  profile: false,
 };
 
 Header.propTypes = {
-  profile: PropTypes.bool
+  profile: PropTypes.bool,
 };
