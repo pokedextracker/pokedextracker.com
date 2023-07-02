@@ -1,0 +1,25 @@
+# Docs: https://fly.io/docs/reference/configuration/
+
+app = "pokedextracker-production-frontend"
+primary_region = "sjc"
+
+[deploy]
+  strategy = "rolling"
+
+[[services]]
+  processes = ["web"]
+  internal_port = 4939
+  protocol = "tcp"
+  auto_stop_machines = false
+  auto_start_machines = false
+  min_machines_running = 1
+  [[services.http_checks]]
+    interval = 10000
+    grace_period = "5s"
+    method = "get"
+    path = "/health"
+    protocol = "http"
+    timeout = 2000
+
+[processes]
+  web = "nginx -g 'daemon off;'"
