@@ -29,4 +29,4 @@ jobs:
             - ~/.cache/yarn
       - run:
           name: Run linter
-          command: yarn lint
+          command: yarn lint:all

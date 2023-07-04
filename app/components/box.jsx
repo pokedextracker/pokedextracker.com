@@ -1,9 +1,9 @@
-import PropTypes   from 'prop-types';
+import PropTypes from 'prop-types';
 import { useMemo } from 'react';
 
-import { MarkAllButton }     from './mark-all-button';
-import { Pokemon }           from './pokemon';
-import { padding }           from '../utils/formatting';
+import { MarkAllButton } from './mark-all-button';
+import { Pokemon } from './pokemon';
+import { padding } from '../utils/formatting';
 import { useDeferredRender } from '../hooks/use-deferred-render';
 
 export const BOX_SIZE = 30;
@@ -28,7 +28,7 @@ export function Box ({ captures, deferred, dexTotal }) {
     }
   } else if (title.indexOf('reset') === 0) {
     const parts = title.split(':');
-    const offset = parseInt(parts[1]);
+    const offset = parseInt(parts[1], 10);
     const prefix = parts[2];
 
     let firstNumber = firstPokemon.dex_number;
@@ -67,11 +67,11 @@ export function Box ({ captures, deferred, dexTotal }) {
 }
 
 Box.defaultProps = {
-  deferred: false
+  deferred: false,
 };
 
 Box.propTypes = {
   captures: PropTypes.arrayOf(PropTypes.object).isRequired,
   deferred: PropTypes.bool,
-  dexTotal: PropTypes.number.isRequired
+  dexTotal: PropTypes.number.isRequired,
 };

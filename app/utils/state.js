@@ -4,7 +4,7 @@ import { localStorage } from './local-storage';
 export function tokenToUser (token) {
   if (!token) {
     Rollbar.configure({
-      payload: { user: null }
+      payload: { user: null },
     });
     return null;
   }
@@ -12,7 +12,7 @@ export function tokenToUser (token) {
   const user = JSON.parse(atob(token.split('.')[1]));
 
   Rollbar.configure({
-    payload: { user: { id: user.id, username: user.username } }
+    payload: { user: { id: user.id, username: user.username } },
   });
 
   return user;

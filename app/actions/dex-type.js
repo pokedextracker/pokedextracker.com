@@ -1,5 +1,5 @@
-import { API }          from '../utils/api';
-import { Config }       from '../../config';
+import { API } from '../utils/api';
+import { Config } from '../../config';
 import { checkVersion } from './utils';
 
 export const SET_DEX_TYPES = 'SET_DEX_TYPES';
@@ -9,10 +9,10 @@ export function listDexTypes () {
     dispatch(checkVersion());
 
     return API.get(`${Config.API_HOST}/dex-types`)
-      .then((dexTypes) => {
-        dispatch(setDexTypes(dexTypes));
-        return dexTypes;
-      });
+    .then((dexTypes) => {
+      dispatch(setDexTypes(dexTypes));
+      return dexTypes;
+    });
   };
 }
 

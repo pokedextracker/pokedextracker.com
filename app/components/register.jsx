@@ -1,23 +1,23 @@
-import find                                                                 from 'lodash/find';
-import groupBy                                                              from 'lodash/groupBy';
-import isEmpty                                                              from 'lodash/isEmpty';
-import slug                                                                 from 'slug';
-import { FontAwesomeIcon }                                                  from '@fortawesome/react-fontawesome';
-import { Link }                                                             from 'react-router-dom';
+import find from 'lodash/find';
+import groupBy from 'lodash/groupBy';
+import isEmpty from 'lodash/isEmpty';
+import slug from 'slug';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Link } from 'react-router-dom';
 import { faAsterisk, faChevronDown, faLongArrowAltRight, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector }                                         from 'react-redux';
-import { useEffect, useState }                                              from 'react';
-import { useHistory }                                                       from 'react-router';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { useHistory } from 'react-router';
 
-import { Alert }                                             from './alert';
-import { Footer }                                            from './footer';
-import { Nav }                                               from './nav';
-import { ReactGA }                                           from '../utils/analytics';
-import { Reload }                                            from './reload';
-import { createUser }                                        from '../actions/user';
+import { Alert } from './alert';
+import { Footer } from './footer';
+import { Nav } from './nav';
+import { ReactGA } from '../utils/analytics';
+import { Reload } from './reload';
+import { createUser } from '../actions/user';
 import { friendCode3dsFormatter, friendCodeSwitchFormatter } from '../utils/formatting';
-import { listGames }                                         from '../actions/game';
-import { setNotification }                                   from '../actions/utils';
+import { listGames } from '../actions/game';
+import { setNotification } from '../actions/utils';
 import { listDexTypes } from '../actions/dex-type';
 
 export function Register () {
@@ -76,7 +76,7 @@ export function Register () {
       slug: slug(title, { lower: true }),
       shiny,
       game,
-      dex_type: dexType
+      dex_type: dexType,
     };
 
     setError(null);
@@ -289,7 +289,7 @@ export function Register () {
           </div>
 
           <div className="form-column">
-            <button className="btn btn-blue" type="submit">Let's go! <FontAwesomeIcon icon={faLongArrowAltRight} /></button>
+            <button className="btn btn-blue" type="submit">Let&apos;s go! <FontAwesomeIcon icon={faLongArrowAltRight} /></button>
             <p>Already have an account? <Link className="link" to="/login">Login here</Link>!</p>
           </div>
         </form>

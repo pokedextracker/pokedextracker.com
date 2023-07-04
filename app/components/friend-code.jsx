@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Link }            from 'react-router-dom';
-import { faPencilAlt }     from '@fortawesome/free-solid-svg-icons';
-import { useSelector }     from 'react-redux';
+import { Link } from 'react-router-dom';
+import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
+import { useSelector } from 'react-redux';
 
 import { ReactGA } from '../utils/analytics';
 

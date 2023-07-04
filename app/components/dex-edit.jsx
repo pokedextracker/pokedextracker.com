@@ -1,15 +1,15 @@
-import Modal                                                          from 'react-modal';
-import PropTypes                                                      from 'prop-types';
-import find                                                           from 'lodash/find';
-import slug                                                           from 'slug';
-import { FontAwesomeIcon }                                            from '@fortawesome/react-fontawesome';
+import Modal from 'react-modal';
+import PropTypes from 'prop-types';
+import find from 'lodash/find';
+import slug from 'slug';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAsterisk, faChevronDown, faLongArrowAltRight, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector }                                   from 'react-redux';
-import { Fragment, useEffect, useMemo, useRef, useState }             from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Alert }                from './alert';
-import { FormWarning }          from './form-warning';
-import { ReactGA }              from '../utils/analytics';
+import { Alert } from './alert';
+import { FormWarning } from './form-warning';
+import { ReactGA } from '../utils/analytics';
 import { deleteDex, updateDex } from '../actions/dex';
 
 const GAME_WARNING = 'Any capture info specific to your old game will be lost.';
@@ -136,8 +136,8 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
         slug: title !== dex.title ? slug(title, { lower: true }) : undefined,
         shiny,
         game,
-        dex_type: dexType
-      }
+        dex_type: dexType,
+      },
     };
 
     setError(null);
@@ -261,5 +261,5 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
 DexEdit.propTypes = {
   dex: PropTypes.object.isRequired,
   isOpen: PropTypes.bool.isRequired,
-  onRequestClose: PropTypes.func.isRequired
+  onRequestClose: PropTypes.func.isRequired,
 };

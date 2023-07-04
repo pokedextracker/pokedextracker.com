@@ -1,13 +1,13 @@
-import PropTypes           from 'prop-types';
+import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Link }            from 'react-router-dom';
-import { faPencilAlt }     from '@fortawesome/free-solid-svg-icons';
-import { useSelector }     from 'react-redux';
-import { useState }        from 'react';
+import { Link } from 'react-router-dom';
+import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
+import { useSelector } from 'react-redux';
+import { useState } from 'react';
 
-import { DexEdit }      from './dex-edit';
+import { DexEdit } from './dex-edit';
 import { DexIndicator } from './dex-indicator';
-import { Progress }     from './progress';
+import { Progress } from './progress';
 
 export function DexPreview ({ dex, reload }) {
   const session = useSelector(({ session }) => session);
@@ -48,5 +48,5 @@ export function DexPreview ({ dex, reload }) {
 
 DexPreview.propTypes = {
   dex: PropTypes.object.isRequired,
-  reload: PropTypes.func.isRequired
+  reload: PropTypes.func.isRequired,
 };

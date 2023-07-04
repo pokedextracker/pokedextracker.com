@@ -18,5 +18,5 @@ export function Progress ({ caught, total }) {
 
 Progress.propTypes = {
   caught: PropTypes.number.isRequired,
-  total: PropTypes.number.isRequired
+  total: PropTypes.number.isRequired,
 };

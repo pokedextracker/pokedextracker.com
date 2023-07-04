@@ -1,8 +1,8 @@
-import PropTypes                    from 'prop-types';
+import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Evolutions }        from './evolutions';
-import { iconClass }         from '../utils/pokemon';
+import { Evolutions } from './evolutions';
+import { iconClass } from '../utils/pokemon';
 import { setCurrentPokemon } from '../actions/pokemon';
 
 export function EvolutionFamily ({ family }) {
@@ -51,5 +51,5 @@ export function EvolutionFamily ({ family }) {
 }
 
 EvolutionFamily.propTypes = {
-  family: PropTypes.object.isRequired
+  family: PropTypes.object.isRequired,
 };

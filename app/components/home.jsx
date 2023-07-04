@@ -1,9 +1,9 @@
-import { FontAwesomeIcon }            from '@fortawesome/react-fontawesome';
-import { Link }                       from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Link } from 'react-router-dom';
 import { faLongArrowAltRight, faRss } from '@fortawesome/free-solid-svg-icons';
-import { faTwitter }                  from '@fortawesome/free-brands-svg-icons';
-import { useDispatch, useSelector }   from 'react-redux';
-import { useEffect }                  from 'react';
+import { faTwitter } from '@fortawesome/free-brands-svg-icons';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
 
 import { checkVersion } from '../actions/utils';
 
@@ -35,7 +35,7 @@ export function Home () {
             <li><h2>Pokémon Brilliant Diamond &amp; Shining Pearl <Link alt="Sample Brilliant Diamond Regional Living Dex" className="link" to="/u/ashketchum10/brilliant-diamond-regional-living-dex">Regional Dex</Link> and <Link alt="Sample Brilliant Diamond National Living Dex" className="link" to="/u/ashketchum10/brilliant-diamond-national-living-dex">National Dex</Link></h2></li>
             <li><h2><Link alt="Sample Shield (Expansion Pass) Regional Living Dex" className="link" to="/u/ashketchum10/sword-expansion-pass-regional-living-dex">Pokémon Sword &amp; Shield (Expansion Pass) Regional Dex</Link></h2></li>
             <li><h2><Link alt="Sample Shield Regional Living Dex" className="link" to="/u/ashketchum10/sword-regional-living-dex">Pokémon Sword &amp; Shield Regional Dex</Link></h2></li>
-            <li><h2>Previous Games: <Link alt="Sample Let's Go, Pikachu Regional Living Dex" className="link" to="/u/ashketchum10/lets-go-pikachu-regional-living-dex">Let's Go, Pikachu &amp; Let's Go, Eevee</Link>, <Link alt="Sample Ultra Sun Regional Living Dex" className="link" to="/u/ashketchum10/ultra-sun-regional-living-dex">Ultra Sun &amp; Ultra Moon</Link>, <Link alt="Sample Sun Regional Living Dex" className="link" to="/u/ashketchum10/sun-regional-living-dex">Sun &amp; Moon</Link>, <Link alt="Sample Omega Ruby Regional Living Dex" className="link" to="/u/ashketchum10/omega-ruby-regional-living-dex">Omega Ruby &amp; Alpha Sapphire</Link>, and <Link alt="Sample X Regional Living Dex" className="link" to="/u/ashketchum10/x-regional-living-dex">X &amp; Y</Link></h2></li>
+            <li><h2>Previous Games: <Link alt="Sample Let's Go, Pikachu Regional Living Dex" className="link" to="/u/ashketchum10/lets-go-pikachu-regional-living-dex">Let&apos;s Go, Pikachu &amp; Let&apos;s Go, Eevee</Link>, <Link alt="Sample Ultra Sun Regional Living Dex" className="link" to="/u/ashketchum10/ultra-sun-regional-living-dex">Ultra Sun &amp; Ultra Moon</Link>, <Link alt="Sample Sun Regional Living Dex" className="link" to="/u/ashketchum10/sun-regional-living-dex">Sun &amp; Moon</Link>, <Link alt="Sample Omega Ruby Regional Living Dex" className="link" to="/u/ashketchum10/omega-ruby-regional-living-dex">Omega Ruby &amp; Alpha Sapphire</Link>, and <Link alt="Sample X Regional Living Dex" className="link" to="/u/ashketchum10/x-regional-living-dex">X &amp; Y</Link></h2></li>
             <li><h2><Link alt="Sample Shiny Living Dex" className="link" to="/u/ashketchum10/shinies">Shiny Dexes</Link> for all of the above!</h2></li>
           </ul>
 

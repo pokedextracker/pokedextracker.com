@@ -1,17 +1,17 @@
-import { FontAwesomeIcon }                 from '@fortawesome/react-fontawesome';
-import { Link }                            from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Link } from 'react-router-dom';
 import { faAsterisk, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector }        from 'react-redux';
-import { useEffect, useState }             from 'react';
-import { useHistory }                      from 'react-router';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { useHistory } from 'react-router';
 
-import { Alert }        from './alert';
-import { Footer }       from './footer';
-import { Nav }          from './nav';
-import { ReactGA }      from '../utils/analytics';
-import { Reload }       from './reload';
+import { Alert } from './alert';
+import { Footer } from './footer';
+import { Nav } from './nav';
+import { ReactGA } from '../utils/analytics';
+import { Reload } from './reload';
 import { checkVersion } from '../actions/utils';
-import { login }        from '../actions/session';
+import { login } from '../actions/session';
 
 export function Login () {
   const dispatch = useDispatch();
@@ -100,8 +100,8 @@ export function Login () {
             />
             <FontAwesomeIcon icon={faAsterisk} />
           </div>
-          <button className="btn btn-blue" type="submit">Let's go! <FontAwesomeIcon icon={faLongArrowAltRight} /></button>
-          <p>Don't have an account yet? <Link className="link" to="/register">Register here</Link>!</p>
+          <button className="btn btn-blue" type="submit">Let&apos;s go! <FontAwesomeIcon icon={faLongArrowAltRight} /></button>
+          <p>Don&apos;t have an account yet? <Link className="link" to="/register">Register here</Link>!</p>
         </form>
       </div>
       <Footer />

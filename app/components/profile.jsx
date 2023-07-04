@@ -1,22 +1,22 @@
-import { FontAwesomeIcon }          from '@fortawesome/react-fontawesome';
-import { faLongArrowAltRight }      from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { useEffect, useState }      from 'react';
-import { useParams }                from 'react-router';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router';
 
-import { DexCreate }                             from './dex-create';
-import { DexPreview }                            from './dex-preview';
-import { Footer }                                from './footer';
-import { FriendCode }                            from './friend-code';
-import { Header }                                from './header';
-import { Nav }                                   from './nav';
-import { NotFound }                              from './not-found';
-import { Notification }                          from './notification';
-import { Reload }                                from './reload';
-import { checkVersion }                          from '../actions/utils';
-import { listGames }                             from '../actions/game';
+import { DexCreate } from './dex-create';
+import { DexPreview } from './dex-preview';
+import { Footer } from './footer';
+import { FriendCode } from './friend-code';
+import { Header } from './header';
+import { Nav } from './nav';
+import { NotFound } from './not-found';
+import { Notification } from './notification';
+import { Reload } from './reload';
+import { checkVersion } from '../actions/utils';
+import { listGames } from '../actions/game';
 import { retrieveUser, setCurrentUser, setUser } from '../actions/user';
-import { setShowShare }                          from '../actions/tracker';
+import { setShowShare } from '../actions/tracker';
 import { listDexTypes } from '../actions/dex-type';
 
 export function Profile () {
@@ -41,7 +41,7 @@ export function Profile () {
       const [u] = await Promise.all([
         dispatch(retrieveUser(username)),
         dispatch(listGames()),
-        dispatch(listDexTypes())
+        dispatch(listDexTypes()),
       ]);
 
       dispatch(setUser(u));

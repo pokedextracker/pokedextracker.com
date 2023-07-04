@@ -10,10 +10,10 @@ export function captures (state = {}, action) {
           dexesBySlug: {
             [action.slug]: {
               ...state[action.username].dexesBySlug[action.slug],
-              captures: action.captures
-            }
-          }
-        }
+              captures: action.captures,
+            },
+          },
+        },
       };
     case MARK_PENDING:
       const pendingState = {
@@ -23,10 +23,10 @@ export function captures (state = {}, action) {
           dexesBySlug: {
             [action.slug]: {
               ...state[action.username].dexesBySlug[action.slug],
-              captures: state[action.username].dexesBySlug[action.slug].captures.slice()
-            }
-          }
-        }
+              captures: state[action.username].dexesBySlug[action.slug].captures.slice(),
+            },
+          },
+        },
       };
       const pendingIndex = pendingState[action.username].dexesBySlug[action.slug].captures.findIndex((c) => c.pokemon.id === action.pokemon[0]);
       for (let i = pendingIndex, count = 0; count < action.pokemon.length; i++) {
@@ -45,10 +45,10 @@ export function captures (state = {}, action) {
           dexesBySlug: {
             [action.slug]: {
               ...state[action.username].dexesBySlug[action.slug],
-              captures: state[action.username].dexesBySlug[action.slug].captures.slice()
-            }
-          }
-        }
+              captures: state[action.username].dexesBySlug[action.slug].captures.slice(),
+            },
+          },
+        },
       };
       const index = newState[action.username].dexesBySlug[action.slug].captures.findIndex((c) => c.pokemon.id === action.pokemon[0]);
       for (let i = index, count = 0; count < action.pokemon.length; i++) {

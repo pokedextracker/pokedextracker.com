@@ -7,15 +7,15 @@ let VERSION;
 export function checkVersion () {
   return (dispatch) => {
     return fetch('/version')
-      .then((response) => response.text())
-      .then((version) => {
-        if (!VERSION) {
-          VERSION = version;
-        } else if (VERSION !== version) {
-          dispatch(setReload(true));
-        }
-      })
-      .catch(() => {});
+    .then((response) => response.text())
+    .then((version) => {
+      if (!VERSION) {
+        VERSION = version;
+      } else if (VERSION !== version) {
+        dispatch(setReload(true));
+      }
+    })
+    .catch(() => {});
   };
 }
 

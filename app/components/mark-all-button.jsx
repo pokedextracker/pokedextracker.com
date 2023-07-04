@@ -1,12 +1,12 @@
-import PropTypes                    from 'prop-types';
+import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { useMemo, useState }        from 'react';
-import { FontAwesomeIcon }          from '@fortawesome/react-fontawesome';
-import { faCircleNotch }            from '@fortawesome/free-solid-svg-icons';
+import { useMemo, useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleNotch } from '@fortawesome/free-solid-svg-icons';
 
-import { ReactGA }                        from '../utils/analytics';
+import { ReactGA } from '../utils/analytics';
 import { createCaptures, deleteCaptures } from '../actions/capture';
-import { padding }                        from '../utils/formatting';
+import { padding } from '../utils/formatting';
 
 export function MarkAllButton ({ captures }) {
   const dispatch = useDispatch();
@@ -31,8 +31,8 @@ export function MarkAllButton ({ captures }) {
   const handleButtonClick = async () => {
     const deleting = uncaught === 0;
     const pokemon = captures
-      .filter((capture) => capture.captured === deleting)
-      .map((capture) => capture.pokemon.id);
+    .filter((capture) => capture.captured === deleting)
+    .map((capture) => capture.pokemon.id);
     const payload = { dex: dex.id, pokemon };
 
     setIsLoading(true);
@@ -46,7 +46,7 @@ export function MarkAllButton ({ captures }) {
     ReactGA.event({
       category: 'Box',
       label: `${padding(captures[0].pokemon.national_id, 3)} - ${padding(captures[captures.length - 1].pokemon.national_id, 3)}`,
-      action: deleting ? 'unmark all' : 'mark all'
+      action: deleting ? 'unmark all' : 'mark all',
     });
 
     setIsLoading(false);
@@ -66,5 +66,5 @@ export function MarkAllButton ({ captures }) {
 }
 
 MarkAllButton.propTypes = {
-  captures: PropTypes.arrayOf(PropTypes.object).isRequired
+  captures: PropTypes.arrayOf(PropTypes.object).isRequired,
 };

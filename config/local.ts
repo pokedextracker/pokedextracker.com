@@ -1,7 +1,9 @@
-export const Local = {
+import type { Config } from './types';
+
+export const Local: Config = {
   API_HOST: 'http://localhost:8647',
   ENVIRONMENT: 'development',
   GA_ID: 'UA-45307701-5',
   ROLLBAR_TOKEN: '3695370c334447daa140a0d0e902360b',
-  VERSION: process.env.VERSION
+  VERSION: process.env.VERSION || 'unknown',
 };

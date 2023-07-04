@@ -12,17 +12,17 @@ const Rollbar = new Constructor({
   autoInstrument: {
     networkRequestBody: true,
     networkResponseBody: true,
-    networkResponseHeaders: true
+    networkResponseHeaders: true,
   },
   payload: {
     client: {
       javascript: {
         source_map_enabled: true,
         code_version: Config.VERSION,
-        guess_uncaught_frames: true
-      }
-    }
-  }
+        guess_uncaught_frames: true,
+      },
+    },
+  },
 });
 
 export { Rollbar };

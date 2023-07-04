@@ -1,17 +1,17 @@
-import { FontAwesomeIcon }                                               from '@fortawesome/react-fontawesome';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAsterisk, faChevronDown, faCircleNotch, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector }                                      from 'react-redux';
-import { useEffect, useState }                                           from 'react';
-import { useHistory }                                                    from 'react-router';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { useHistory } from 'react-router';
 
-import { Alert }                                             from './alert';
-import { Footer }                                            from './footer';
-import { Nav }                                               from './nav';
-import { ReactGA }                                           from '../utils/analytics';
-import { Reload }                                            from './reload';
-import { checkVersion }                                      from '../actions/utils';
+import { Alert } from './alert';
+import { Footer } from './footer';
+import { Nav } from './nav';
+import { ReactGA } from '../utils/analytics';
+import { Reload } from './reload';
+import { checkVersion } from '../actions/utils';
 import { friendCode3dsFormatter, friendCodeSwitchFormatter } from '../utils/formatting';
-import { updateUser }                                        from '../actions/user';
+import { updateUser } from '../actions/user';
 
 export function Account () {
   const dispatch = useDispatch();
@@ -61,8 +61,8 @@ export function Account () {
         password: isEditingPassword ? password : undefined,
         password_confirm: isEditingPassword ? passwordConfirm : undefined,
         friend_code_3ds: friendCode3ds,
-        friend_code_switch: friendCodeSwitch
-      }
+        friend_code_switch: friendCodeSwitch,
+      },
     };
 
     setError(null);
@@ -92,7 +92,7 @@ export function Account () {
       <Nav />
       <Reload />
       <div className="form">
-        <h1>{user.username}'s Account</h1>
+        <h1>{user.username}&apos;s Account</h1>
         <form className="form-column" onSubmit={handleSubmit}>
           <Alert message={error} type="error" />
           <Alert message={success} type="success" />

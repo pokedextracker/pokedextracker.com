@@ -1,10 +1,10 @@
-import classNames          from 'classnames';
+import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Fragment }        from 'react';
+import { Fragment } from 'react';
 import { faVenus, faMars } from '@fortawesome/free-solid-svg-icons';
 
 import { BOX_SIZE } from '../components/box';
-import { padding }  from './formatting';
+import { padding } from './formatting';
 
 export function groupBoxes (captures) {
   let lastBoxName = null;
@@ -47,7 +47,7 @@ export function iconClass ({ national_id: nationalId, form }, dex) {
   const classes = {
     'color-shiny': dex.shiny,
     [`form-${form}`]: Boolean(form),
-    [`game-family-${dex.dex_type.game_family_id}`]: true
+    [`game-family-${dex.dex_type.game_family_id}`]: true,
   };
 
   return classNames('pkicon', `pkicon-${padding(nationalId, 3)}`, classes);

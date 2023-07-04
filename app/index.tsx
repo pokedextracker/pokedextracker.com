@@ -1,11 +1,11 @@
 import './styles';
 
-import Modal        from 'react-modal';
+import Modal from 'react-modal';
 import { ErrorBoundary, Provider as RollbarProvider } from '@rollbar/react';
 import { Provider } from 'react-redux';
-import { render }   from 'react-dom';
+import { render } from 'react-dom';
 
-import { App }   from './components/app';
+import { App } from './components/app';
 import { Rollbar } from './utils/rollbar';
 import { Store } from './stores';
 

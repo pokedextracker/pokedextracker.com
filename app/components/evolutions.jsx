@@ -1,6 +1,6 @@
-import PropTypes                                                 from 'prop-types';
-import uniqBy                                                    from 'lodash/uniqBy';
-import { FontAwesomeIcon }                                       from '@fortawesome/react-fontawesome';
+import PropTypes from 'prop-types';
+import uniqBy from 'lodash/uniqBy';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLongArrowAltLeft, faLongArrowAltRight, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
 import { capitalize } from '../utils/formatting';
@@ -64,5 +64,5 @@ export function Evolutions ({ evolutions, pokemonId }) {
 
 Evolutions.propTypes = {
   evolutions: PropTypes.arrayOf(PropTypes.object).isRequired,
-  pokemonId: PropTypes.number
+  pokemonId: PropTypes.number,
 };

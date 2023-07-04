@@ -1,6 +1,6 @@
-import PropTypes       from 'prop-types';
-import { useParams }   from 'react-router';
-import { useRef }      from 'react';
+import PropTypes from 'prop-types';
+import { useParams } from 'react-router';
+import { useRef } from 'react';
 import { useSelector } from 'react-redux';
 
 import { ReactGA } from '../utils/analytics';
@@ -36,5 +36,5 @@ export function Share ({ profile }) {
 }
 
 Share.propTypes = {
-  profile: PropTypes.bool.isRequired
+  profile: PropTypes.bool.isRequired,
 };

@@ -18,7 +18,7 @@ function getHeaders () {
   return {
     Authorization: `Bearer ${Store.getState().token}`,
     'Content-Type': 'application/json',
-    'X-Version': Config.VERSION
+    'X-Version': Config.VERSION,
   };
 }
 
@@ -27,14 +27,14 @@ export const API = {
     const response = await fetch(url, {
       method: 'DELETE',
       body: JSON.stringify(payload),
-      headers: getHeaders()
+      headers: getHeaders(),
     });
     return handleResponse(response);
   },
   async get (url, params) {
     const query = stringify(params);
     const response = await fetch(`${url}${query ? `?${query}` : ''}`, {
-      headers: getHeaders()
+      headers: getHeaders(),
     });
     return handleResponse(response);
   },
@@ -42,8 +42,8 @@ export const API = {
     const response = await fetch(url, {
       method: 'POST',
       body: JSON.stringify(payload),
-      headers: getHeaders()
+      headers: getHeaders(),
     });
     return handleResponse(response);
-  }
+  },
 };

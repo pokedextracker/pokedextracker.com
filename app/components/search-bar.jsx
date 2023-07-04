@@ -1,9 +1,9 @@
-import PropTypes             from 'prop-types';
-import { FontAwesomeIcon }   from '@fortawesome/react-fontawesome';
+import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useRef } from 'react';
 
-import { ReactGA }  from '../utils/analytics';
+import { ReactGA } from '../utils/analytics';
 
 export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }) {
   const inputRef = useRef(null);
@@ -80,5 +80,5 @@ SearchBar.propTypes = {
   hideCaught: PropTypes.bool.isRequired,
   query: PropTypes.string.isRequired,
   setHideCaught: PropTypes.func.isRequired,
-  setQuery: PropTypes.func.isRequired
+  setQuery: PropTypes.func.isRequired,
 };

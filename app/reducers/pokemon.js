@@ -5,7 +5,7 @@ export function pokemon (state = {}, action) {
     case SET_POKEMON:
       return {
         ...state,
-        [action.pokemon.id]: action.pokemon
+        [action.pokemon.id]: action.pokemon,
       };
     case CLEAR_POKEMON:
       return {};
