@@ -30,7 +30,7 @@ function getHeaders () {
 }
 
 export const API = {
-  async delete<T, U = any> (path: string, payload: U): Promise<T> {
+  async delete<T, U = any> (path: string, payload?: U): Promise<T> {
     const response = await fetch(Config.API_HOST + path, {
       method: 'DELETE',
       body: JSON.stringify(payload),

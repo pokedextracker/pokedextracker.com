@@ -1,7 +1,9 @@
 import { Rollbar } from './rollbar';
 import { localStorage } from './local-storage';
 
-export function tokenToUser (token) {
+import type { Session } from '../types';
+
+export function tokenToUser (token: string): Session | null {
   if (!token) {
     Rollbar.configure({
       payload: { user: null },
@@ -9,7 +11,7 @@ export function tokenToUser (token) {
     return null;
   }
 
-  const user = JSON.parse(atob(token.split('.')[1]));
+  const user = JSON.parse(atob(token.split('.')[1])) as Session;
 
   Rollbar.configure({
     payload: { user: { id: user.id, username: user.username } },
@@ -28,7 +30,15 @@ export function loadState () {
   return { nightMode, notification: notif20230608, session, showInfo, token };
 }
 
-export function saveState ({ nightMode, notification, showInfo, token }) {
+// We'll be removing redux and the concept of state soon, so this is just a stopgap.
+interface State {
+  nightMode: string;
+  notification: string;
+  showInfo: string;
+  token: string;
+}
+
+export function saveState ({ nightMode, notification, showInfo, token }: State) {
   if (token) {
     localStorage.setItem('token', token);
   } else {
