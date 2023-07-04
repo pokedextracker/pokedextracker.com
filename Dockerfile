@@ -9,7 +9,8 @@ COPY package.json package.json
 COPY yarn.lock yarn.lock
 RUN yarn --production --silent
 
-COPY .babelrc .babelrc
+COPY babel.config.js babel.config.js
+COPY tsconfig.json tsconfig.json
 COPY webpack.config.js webpack.config.js
 COPY config config
 COPY public public
