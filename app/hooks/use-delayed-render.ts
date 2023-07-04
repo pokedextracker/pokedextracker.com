@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-export function useDelayedRender (delay) {
+export function useDelayedRender (delay: number): boolean {
   const [render, setRender] = useState(delay <= 0);
 
   useEffect(() => {
