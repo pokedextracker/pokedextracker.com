@@ -1,20 +1,16 @@
-import PropTypes from 'prop-types';
-import { useParams } from 'react-router';
 import { useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useParams } from 'react-router';
 
 import { ReactGA } from '../../utils/analytics';
 
-export function Share ({ profile }) {
-  const { slug, username } = useParams();
+interface Props {
+  profile: boolean;
+}
 
-  const inputRef = useRef(null);
+export function Share ({ profile }: Props) {
+  const { username, slug } = useParams<{ username: string; slug: string }>();
 
-  const showShare = useSelector(({ showShare }) => showShare);
-
-  if (!showShare) {
-    return null;
-  }
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleClick = () => {
     ReactGA.event({ action: 'select link', category: 'Share' });
@@ -34,7 +30,3 @@ export function Share ({ profile }) {
     </div>
   );
 }
-
-Share.propTypes = {
-  profile: PropTypes.bool.isRequired,
-};

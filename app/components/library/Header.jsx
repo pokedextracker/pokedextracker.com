@@ -2,25 +2,23 @@ import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLink } from '@fortawesome/free-solid-svg-icons';
 import { faTwitter } from '@fortawesome/free-brands-svg-icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 import { DexIndicator } from './DexIndicator';
 import { DonatedFlair } from './DonatedFlair';
 import { ReactGA } from '../../utils/analytics';
 import { Share } from './Share';
-import { setShowShare } from '../../actions/tracker';
 
 export function Header ({ profile }) {
-  const dispatch = useDispatch();
-
   const dex = useSelector(({ currentDex, currentUser, users }) => users[currentUser].dexesBySlug[currentDex]);
   const session = useSelector(({ session }) => session);
-  const showShare = useSelector(({ showShare }) => showShare);
   const user = useSelector(({ currentUser, users }) => users[currentUser]);
 
+  const [showShare, setShowShare] = useState(false);
+
   useEffect(() => {
-    const closeShare = () => dispatch(setShowShare(false));
+    const closeShare = () => setShowShare(false);
 
     window.addEventListener('click', closeShare);
 
@@ -32,7 +30,7 @@ export function Header ({ profile }) {
 
     ReactGA.event({ action: showShare ? 'close' : 'open', category: 'Share' });
 
-    dispatch(setShowShare(!showShare));
+    setShowShare((prev) => !prev);
   };
 
   const handleTweetClick = () => ReactGA.event({ action: 'click tweet', category: 'Share' });
@@ -46,7 +44,7 @@ export function Header ({ profile }) {
         <div className="share-container">
           <a onClick={handleShareClick}>
             <FontAwesomeIcon icon={faLink} />
-            <Share profile={profile} />
+            {showShare && <Share profile={profile} />}
           </a>
           <a
             href={`https://twitter.com/intent/tweet?text=Check out ${ownPage ? 'my' : `${user.username}'s`} ${profile ? 'profile' : 'living dex progress'} on @PokedexTracker! https://pokedextracker.com/u/${user.username}${profile ? '' : `/${dex.slug}`}`}
