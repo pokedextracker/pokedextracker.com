@@ -1,8 +1,13 @@
-import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 
-export function DexIndicator ({ dex }) {
+import type { Dex } from '../../types';
+
+interface Props {
+  dex: Dex;
+}
+
+export function DexIndicator ({ dex }: Props) {
   return (
     <div className="dex-indicator">
       {dex.shiny && <FontAwesomeIcon icon={faStar} title="Shiny" />}
@@ -13,7 +18,3 @@ export function DexIndicator ({ dex }) {
     </div>
   );
 }
-
-DexIndicator.propTypes = {
-  dex: PropTypes.object.isRequired,
-};
