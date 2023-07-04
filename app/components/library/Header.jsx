@@ -58,7 +58,7 @@ export function Header ({ profile }) {
           </a>
         </div>
       </h1>
-      {profile && <DonatedFlair />}
+      {profile && <DonatedFlair user={user} />}
       {!profile && <DexIndicator dex={dex} />}
     </div>
   );

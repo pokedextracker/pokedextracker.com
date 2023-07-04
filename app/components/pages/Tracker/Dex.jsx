@@ -19,6 +19,7 @@ const DEFER_CUTOFF = 1;
 export function Dex ({ hideCaught, onScrollButtonClick, query, setHideCaught, setQuery }) {
   const dex = useSelector(({ currentDex, currentUser, users }) => users[currentUser].dexesBySlug[currentDex]);
   const username = useSelector(({ currentUser }) => currentUser);
+  const user = useSelector(({ currentUser, users }) => users[currentUser]);
 
   const caught = useMemo(() => dex.captures.filter(({ captured }) => captured).length, [dex.captures]);
   const total = dex.captures.length;
@@ -44,7 +45,7 @@ export function Dex ({ hideCaught, onScrollButtonClick, query, setHideCaught, se
           <Header />
           <h3>
             <Link onClick={() => ReactGA.event({ action: 'click view profile', category: 'User' })} to={`/u/${username}`}>/u/{username}</Link>
-            <DonatedFlair />
+            <DonatedFlair user={user} />
           </h3>
           <FriendCode />
         </header>
