@@ -11,7 +11,7 @@
     "allowSyntheticDefaultImports": true,
 
     /* Base directory to resolve non-absolute module names. */
-    "baseUrl": "src",
+    "baseUrl": "app",
 
     /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
     "esModuleInterop": true,
@@ -86,7 +86,7 @@
 
     /* List of folders to include type definitions from. */
     "typeRoots": [
-      "src/*",
+      "app/*",
       "node_modules/@types"
     ],
 
