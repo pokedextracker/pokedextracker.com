@@ -36,6 +36,5 @@ module.exports = {
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV) || 'undefined',
       'process.env.VERSION': JSON.stringify(process.env.VERSION || 'development'),
     }),
-    new Webpack.ProvidePlugin({ React: 'react' }),
   ],
 };
