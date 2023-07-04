@@ -5,13 +5,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 
-import { Alert } from './alert';
-import { Footer } from './footer';
-import { Nav } from './nav';
-import { ReactGA } from '../utils/analytics';
-import { Reload } from './reload';
-import { checkVersion } from '../actions/utils';
-import { login } from '../actions/session';
+import { Alert } from '../library/Alert';
+import { Footer } from '../library/Footer';
+import { Nav } from '../library/Nav';
+import { ReactGA } from '../../utils/analytics';
+import { Reload } from '../library/Reload';
+import { checkVersion } from '../../actions/utils';
+import { login } from '../../actions/session';
 
 export function Login () {
   const dispatch = useDispatch();

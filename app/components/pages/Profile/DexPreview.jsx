@@ -5,9 +5,9 @@ import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { useSelector } from 'react-redux';
 import { useState } from 'react';
 
-import { DexEdit } from './dex-edit';
-import { DexIndicator } from './dex-indicator';
-import { Progress } from './progress';
+import { DexEdit } from './DexEdit';
+import { DexIndicator } from '../../library/DexIndicator';
+import { Progress } from '../../library/Progress';
 
 export function DexPreview ({ dex, reload }) {
   const session = useSelector(({ session }) => session);

@@ -5,11 +5,11 @@ import { faTwitter } from '@fortawesome/free-brands-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 
-import { DexIndicator } from './dex-indicator';
-import { DonatedFlair } from './donated-flair';
-import { ReactGA } from '../utils/analytics';
-import { Share } from './share';
-import { setShowShare } from '../actions/tracker';
+import { DexIndicator } from './DexIndicator';
+import { DonatedFlair } from './DonatedFlair';
+import { ReactGA } from '../../utils/analytics';
+import { Share } from './Share';
+import { setShowShare } from '../../actions/tracker';
 
 export function Header ({ profile }) {
   const dispatch = useDispatch();

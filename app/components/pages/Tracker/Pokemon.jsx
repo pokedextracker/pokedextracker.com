@@ -4,13 +4,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInfo } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { ReactGA } from '../utils/analytics';
-import { createCaptures, deleteCaptures } from '../actions/capture';
-import { htmlName, iconClass } from '../utils/pokemon';
-import { nationalId, padding } from '../utils/formatting';
-import { setCurrentPokemon } from '../actions/pokemon';
-import { setShowInfo } from '../actions/tracker';
-import { useDelayedRender } from '../hooks/use-delayed-render';
+import { ReactGA } from '../../../utils/analytics';
+import { createCaptures, deleteCaptures } from '../../../actions/capture';
+import { htmlName, iconClass } from '../../../utils/pokemon';
+import { nationalId, padding } from '../../../utils/formatting';
+import { setCurrentPokemon } from '../../../actions/pokemon';
+import { setShowInfo } from '../../../actions/tracker';
+import { useDelayedRender } from '../../../hooks/use-delayed-render';
 
 export function Pokemon ({ capture, delay }) {
   const render = useDelayedRender(delay);

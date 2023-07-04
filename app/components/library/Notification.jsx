@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { setNotification } from '../actions/utils';
+import { setNotification } from '../../actions/utils';
 
 export function Notification () {
   const dispatch = useDispatch();

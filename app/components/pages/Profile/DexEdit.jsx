@@ -7,10 +7,10 @@ import { faAsterisk, faChevronDown, faLongArrowAltRight, faTrashAlt } from '@for
 import { useDispatch, useSelector } from 'react-redux';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Alert } from './alert';
-import { FormWarning } from './form-warning';
-import { ReactGA } from '../utils/analytics';
-import { deleteDex, updateDex } from '../actions/dex';
+import { Alert } from '../../library/Alert';
+import { FormWarning } from './FormWarning';
+import { ReactGA } from '../../../utils/analytics';
+import { deleteDex, updateDex } from '../../../actions/dex';
 
 const GAME_WARNING = 'Any capture info specific to your old game will be lost.';
 const REGIONAL_WARNING = 'Any non-regional capture info will be lost.';

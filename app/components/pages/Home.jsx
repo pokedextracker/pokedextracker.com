@@ -5,7 +5,7 @@ import { faTwitter } from '@fortawesome/free-brands-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 
-import { checkVersion } from '../actions/utils';
+import { checkVersion } from '../../actions/utils';
 
 export function Home () {
   const dispatch = useDispatch();

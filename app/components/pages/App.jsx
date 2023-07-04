@@ -4,17 +4,17 @@ import { historyContext } from '@rollbar/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 
-import { Account } from './account';
-import { Home } from './home';
-import { Login } from './login';
-import { NotFound } from './not-found';
-import { Profile } from './profile';
-import { Register } from './register';
-import { Rollbar } from '../utils/rollbar';
-import { Tracker } from './tracker';
-import { logPageView } from '../utils/analytics';
-import { retrieveUser } from '../actions/user';
-import { setSessionUser } from '../actions/session';
+import { Account } from './Account';
+import { Home } from './Home';
+import { Login } from './Login';
+import { NotFound } from './NotFound';
+import { Profile } from './Profile';
+import { Register } from './Register';
+import { Rollbar } from '../../utils/rollbar';
+import { Tracker } from './Tracker';
+import { logPageView } from '../../utils/analytics';
+import { retrieveUser } from '../../actions/user';
+import { setSessionUser } from '../../actions/session';
 
 const history = createBrowserHistory();
 history.listen(() => logPageView());

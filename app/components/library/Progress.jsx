@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 
-import { decimal } from '../utils/formatting';
+import { decimal } from '../../utils/formatting';
 
 export function Progress ({ caught, total }) {
   const percent = 100 * caught / total;

@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Fragment } from 'react';
 import { faVenus, faMars } from '@fortawesome/free-solid-svg-icons';
 
-import { BOX_SIZE } from '../components/box';
+import { BOX_SIZE } from '../components/pages/Tracker/Box';
 import { padding } from './formatting';
 
 export function groupBoxes (captures) {

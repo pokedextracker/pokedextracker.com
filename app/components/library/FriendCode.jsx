@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { useSelector } from 'react-redux';
 
-import { ReactGA } from '../utils/analytics';
+import { ReactGA } from '../../utils/analytics';
 
 export function FriendCode () {
   const session = useSelector(({ session }) => session);

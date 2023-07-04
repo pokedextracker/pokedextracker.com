@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types';
 import { useMemo } from 'react';
 
-import { MarkAllButton } from './mark-all-button';
-import { Pokemon } from './pokemon';
-import { padding } from '../utils/formatting';
-import { useDeferredRender } from '../hooks/use-deferred-render';
+import { MarkAllButton } from './MarkAllButton';
+import { Pokemon } from './Pokemon';
+import { padding } from '../../../utils/formatting';
+import { useDeferredRender } from '../../../hooks/use-deferred-render';
 
 export const BOX_SIZE = 30;
 

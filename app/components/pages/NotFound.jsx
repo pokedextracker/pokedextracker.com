@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { Nav } from './nav';
+import { Nav } from '../library/Nav';
 
 export function NotFound () {
   useEffect(() => {

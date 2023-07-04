@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import { useMemo } from 'react';
 
-import { Pokemon } from './pokemon';
-import { nationalId, padding } from '../utils/formatting';
+import { Pokemon } from './Pokemon';
+import { nationalId, padding } from '../../../utils/formatting';
 
 const DEFER_CUTOFF = 120;
 

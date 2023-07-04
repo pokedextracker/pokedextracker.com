@@ -3,7 +3,7 @@ import { useParams } from 'react-router';
 import { useRef } from 'react';
 import { useSelector } from 'react-redux';
 
-import { ReactGA } from '../utils/analytics';
+import { ReactGA } from '../../utils/analytics';
 
 export function Share ({ profile }) {
   const { slug, username } = useParams();

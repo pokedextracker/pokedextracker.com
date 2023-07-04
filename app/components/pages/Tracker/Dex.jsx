@@ -3,16 +3,16 @@ import { Link } from 'react-router-dom';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
-import { Box } from './box';
-import { DonatedFlair } from './donated-flair';
-import { FriendCode } from './friend-code';
-import { Header } from './header';
-import { Notification } from './notification';
-import { Progress } from './progress';
-import { ReactGA } from '../utils/analytics';
-import { Scroll } from './scroll';
-import { SearchResults } from './search-results';
-import { groupBoxes } from '../utils/pokemon';
+import { Box } from './Box';
+import { DonatedFlair } from '../../library/DonatedFlair';
+import { FriendCode } from '../../library/FriendCode';
+import { Header } from '../../library/Header';
+import { Notification } from '../../library/Notification';
+import { Progress } from '../../library/Progress';
+import { ReactGA } from '../../../utils/analytics';
+import { Scroll } from './Scroll';
+import { SearchResults } from './SearchResults';
+import { groupBoxes } from '../../../utils/pokemon';
 
 const DEFER_CUTOFF = 1;
 

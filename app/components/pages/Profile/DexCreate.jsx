@@ -8,9 +8,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useRef, useState } from 'react';
 
-import { Alert } from './alert';
-import { ReactGA } from '../utils/analytics';
-import { createDex } from '../actions/dex';
+import { Alert } from '../../library/Alert';
+import { ReactGA } from '../../../utils/analytics';
+import { createDex } from '../../../actions/dex';
 
 export function DexCreate ({ isOpen, onRequestClose }) {
   const dispatch = useDispatch();

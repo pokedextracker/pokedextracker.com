@@ -4,9 +4,9 @@ import { Link } from 'react-router-dom';
 import { faCaretDown, faCog, faMoon, faSignOutAlt, faSun, faTh, faUser } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { ReactGA } from '../utils/analytics';
-import { setNightMode } from '../actions/utils';
-import { setToken } from '../actions/session';
+import { ReactGA } from '../../utils/analytics';
+import { setNightMode } from '../../actions/utils';
+import { setToken } from '../../actions/session';
 
 export function Nav () {
   const dispatch = useDispatch();

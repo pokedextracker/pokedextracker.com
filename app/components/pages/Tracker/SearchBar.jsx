@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useRef } from 'react';
 
-import { ReactGA } from '../utils/analytics';
+import { ReactGA } from '../../../utils/analytics';
 
 export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }) {
   const inputRef = useRef(null);

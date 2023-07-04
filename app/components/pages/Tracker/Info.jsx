@@ -4,13 +4,13 @@ import { faCaretLeft, faCaretRight, faLongArrowAltRight } from '@fortawesome/fre
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useMemo } from 'react';
 
-import { EvolutionFamily } from './evolution-family';
-import { InfoLocations } from './info-locations';
-import { ReactGA } from '../utils/analytics';
-import { htmlName, iconClass } from '../utils/pokemon';
-import { nationalId, padding, serebiiLink } from '../utils/formatting';
-import { retrievePokemon } from '../actions/pokemon';
-import { setShowInfo } from '../actions/tracker';
+import { EvolutionFamily } from './EvolutionFamily';
+import { InfoLocations } from './InfoLocations';
+import { ReactGA } from '../../../utils/analytics';
+import { htmlName, iconClass } from '../../../utils/pokemon';
+import { nationalId, padding, serebiiLink } from '../../../utils/formatting';
+import { retrievePokemon } from '../../../actions/pokemon';
+import { setShowInfo } from '../../../actions/tracker';
 
 const SEREBII_LINKS = {
   x_y: 'pokedex-xy',

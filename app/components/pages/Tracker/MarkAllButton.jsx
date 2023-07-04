@@ -4,9 +4,9 @@ import { useMemo, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleNotch } from '@fortawesome/free-solid-svg-icons';
 
-import { ReactGA } from '../utils/analytics';
-import { createCaptures, deleteCaptures } from '../actions/capture';
-import { padding } from '../utils/formatting';
+import { ReactGA } from '../../../utils/analytics';
+import { createCaptures, deleteCaptures } from '../../../actions/capture';
+import { padding } from '../../../utils/formatting';
 
 export function MarkAllButton ({ captures }) {
   const dispatch = useDispatch();

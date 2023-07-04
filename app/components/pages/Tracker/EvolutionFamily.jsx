@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Evolutions } from './evolutions';
-import { iconClass } from '../utils/pokemon';
-import { setCurrentPokemon } from '../actions/pokemon';
+import { Evolutions } from './Evolutions';
+import { iconClass } from '../../../utils/pokemon';
+import { setCurrentPokemon } from '../../../actions/pokemon';
 
 export function EvolutionFamily ({ family }) {
   const dispatch = useDispatch();

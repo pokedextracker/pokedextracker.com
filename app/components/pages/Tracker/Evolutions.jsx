@@ -3,7 +3,7 @@ import uniqBy from 'lodash/uniqBy';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLongArrowAltLeft, faLongArrowAltRight, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
-import { capitalize } from '../utils/formatting';
+import { capitalize } from '../../../utils/formatting';
 
 function evolutionKey (evolution) {
   return `${evolution.trigger}:${evolution.level}:${evolution.stone}:${evolution.held_item}:${evolution.notes}`;

@@ -9,16 +9,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 
-import { Alert } from './alert';
-import { Footer } from './footer';
-import { Nav } from './nav';
-import { ReactGA } from '../utils/analytics';
-import { Reload } from './reload';
-import { createUser } from '../actions/user';
-import { friendCode3dsFormatter, friendCodeSwitchFormatter } from '../utils/formatting';
-import { listGames } from '../actions/game';
-import { setNotification } from '../actions/utils';
-import { listDexTypes } from '../actions/dex-type';
+import { Alert } from '../library/Alert';
+import { Footer } from '../library/Footer';
+import { Nav } from '../library/Nav';
+import { ReactGA } from '../../utils/analytics';
+import { Reload } from '../library/Reload';
+import { createUser } from '../../actions/user';
+import { friendCode3dsFormatter, friendCodeSwitchFormatter } from '../../utils/formatting';
+import { listGames } from '../../actions/game';
+import { setNotification } from '../../actions/utils';
+import { listDexTypes } from '../../actions/dex-type';
 
 export function Register () {
   const dispatch = useDispatch();
