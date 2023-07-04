@@ -4,9 +4,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInfo } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { PokemonName } from '../../library/PokemonName';
 import { ReactGA } from '../../../utils/analytics';
 import { createCaptures, deleteCaptures } from '../../../actions/capture';
-import { htmlName, iconClass } from '../../../utils/pokemon';
+import { iconClass } from '../../../utils/pokemon';
 import { nationalId, padding } from '../../../utils/formatting';
 import { setCurrentPokemon } from '../../../actions/pokemon';
 import { setShowInfo } from '../../../actions/tracker';
@@ -68,7 +69,7 @@ export function Pokemon ({ capture, delay }) {
   return (
     <div className={classNames(classes)}>
       <div className="set-captured" onClick={handleSetCapturedClick}>
-        <h4>{htmlName(capture.pokemon.name)}</h4>
+        <h4><PokemonName name={capture.pokemon.name} /></h4>
         <div className="icon-wrapper">
           <i className={iconClass(capture.pokemon, dex)} />
         </div>
@@ -78,7 +79,7 @@ export function Pokemon ({ capture, delay }) {
         <div className="icon-wrapper">
           <i className={iconClass(capture.pokemon, dex)} />
         </div>
-        <h4>{htmlName(capture.pokemon.name)}</h4>
+        <h4><PokemonName name={capture.pokemon.name} /></h4>
         <p>#{padding(idToDisplay, paddingDigits)}</p>
       </div>
       <div className="set-info" onClick={handleSetInfoClick}>

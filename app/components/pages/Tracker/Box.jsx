@@ -1,12 +1,11 @@
 import PropTypes from 'prop-types';
 import { useMemo } from 'react';
 
+import { BOX_SIZE } from '../../../utils/pokemon';
 import { MarkAllButton } from './MarkAllButton';
 import { Pokemon } from './Pokemon';
 import { padding } from '../../../utils/formatting';
 import { useDeferredRender } from '../../../hooks/use-deferred-render';
-
-export const BOX_SIZE = 30;
 
 export function Box ({ captures, deferred, dexTotal }) {
   const render = useDeferredRender(!deferred);

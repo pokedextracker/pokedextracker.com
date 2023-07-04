@@ -6,8 +6,9 @@ import { useEffect, useMemo } from 'react';
 
 import { EvolutionFamily } from './EvolutionFamily';
 import { InfoLocations } from './InfoLocations';
+import { PokemonName } from '../../library/PokemonName';
 import { ReactGA } from '../../../utils/analytics';
-import { htmlName, iconClass } from '../../../utils/pokemon';
+import { iconClass } from '../../../utils/pokemon';
 import { nationalId, padding, serebiiLink } from '../../../utils/formatting';
 import { retrievePokemon } from '../../../actions/pokemon';
 import { setShowInfo } from '../../../actions/tracker';
@@ -96,7 +97,7 @@ export function Info () {
       <div className="info-main">
         <div className="info-header">
           <i className={iconClass(pokemon, dex)} />
-          <h1>{htmlName(pokemon.name)}</h1>
+          <h1><PokemonName name={pokemon.name} /></h1>
           <h2>#{padding(dex.dex_type.tags.includes('regional') ? (pokemon.dex_number === -1 ? '---' : pokemon.dex_number) : nationalId(pokemon.national_id), dex.total >= 1000 ? 4 : 3)}</h2>
         </div>
 
