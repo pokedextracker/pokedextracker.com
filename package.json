@@ -2,7 +2,7 @@
   "name": "pokedextracker.com",
   "version": "2.9.0",
   "description": "A website to track your completion of a Living Pokedex",
-  "main": "./app/index.jsx",
+  "main": "app/index.tsx",
   "directories": {
     "test": "test"
   },
@@ -11,7 +11,9 @@
     "build:bundle": "webpack",
     "build:version": "date > public/version",
     "deploy": "./scripts/deploy.sh",
-    "lint": "eslint -c .eslintrc.js --ext .js,.jsx app config",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx --max-warnings 0 .",
+    "lint:all": "yarn lint && yarn lint:types",
+    "lint:types": "tsc --noEmit",
     "start": "webpack serve"
   },
   "dependencies": {
@@ -26,6 +28,9 @@
     "@fortawesome/free-solid-svg-icons": "^5.12.1",
     "@fortawesome/react-fontawesome": "^0.1.9",
     "@rollbar/react": "^0.11.2",
+    "@types/react-dom": "^18.2.6",
+    "@types/react-modal": "^3.16.0",
+    "@types/react-redux": "^7.1.25",
     "babel-loader": "^9.1.2",
     "classnames": "^2.2.6",
     "core-js": "^3.30.2",
