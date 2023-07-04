@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-export function useDeferredRender (value) {
+export function useDeferredRender (value: boolean): boolean {
   const [render, setRender] = useState(value);
 
   useEffect(() => {
