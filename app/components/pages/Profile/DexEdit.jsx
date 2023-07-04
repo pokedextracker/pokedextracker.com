@@ -11,6 +11,7 @@ import { Alert } from '../../library/Alert';
 import { FormWarning } from './FormWarning';
 import { ReactGA } from '../../../utils/analytics';
 import { deleteDex, updateDex } from '../../../actions/dex';
+import { useNightMode } from '../../../hooks/contexts/use-night-mode';
 
 const GAME_WARNING = 'Any capture info specific to your old game will be lost.';
 const REGIONAL_WARNING = 'Any non-regional capture info will be lost.';
@@ -25,8 +26,9 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
   const gamesById = useSelector(({ gamesById }) => gamesById);
   const dexTypesById = useSelector(({ dexTypesById }) => dexTypesById);
   const dexTypesByGameFamilyId = useSelector(({ dexTypesByGameFamilyId }) => dexTypesByGameFamilyId);
-  const nightMode = useSelector(({ nightMode }) => nightMode);
   const session = useSelector(({ session }) => session);
+
+  const { isNightMode } = useNightMode();
 
   const [error, setError] = useState(null);
   const [title, setTitle] = useState(dex.title);
@@ -160,7 +162,7 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
 
   return (
     <Modal
-      className={`modal ${nightMode ? 'night-mode' : ''}`}
+      className={`modal ${isNightMode ? 'night-mode' : ''}`}
       contentLabel="Edit Dex"
       isOpen={isOpen}
       onRequestClose={() => handleRequestClose(false)}

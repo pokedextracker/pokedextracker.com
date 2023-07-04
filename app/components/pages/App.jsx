@@ -15,6 +15,7 @@ import { Tracker } from './Tracker';
 import { logPageView } from '../../utils/analytics';
 import { retrieveUser } from '../../actions/user';
 import { setSessionUser } from '../../actions/session';
+import { useNightMode } from '../../hooks/contexts/use-night-mode';
 
 const history = createBrowserHistory();
 history.listen(() => logPageView());
@@ -24,8 +25,9 @@ logPageView();
 export function App () {
   const dispatch = useDispatch();
 
-  const nightMode = useSelector(({ nightMode }) => nightMode);
   const session = useSelector(({ session }) => session);
+
+  const { isNightMode } = useNightMode();
 
   useEffect(() => {
     (async () => {
@@ -38,7 +40,7 @@ export function App () {
 
   return (
     <Router history={history}>
-      <div className={`root ${nightMode ? 'night-mode' : ''}`}>
+      <div className={`root ${isNightMode ? 'night-mode' : ''}`}>
         <Switch>
           <Route component={Home} exact path="/" />
           <Route component={Login} exact path="/login" />

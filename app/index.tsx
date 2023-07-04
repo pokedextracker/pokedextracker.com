@@ -6,6 +6,7 @@ import { Provider } from 'react-redux';
 import { render } from 'react-dom';
 
 import { App } from './components/pages/App';
+import { NightModeProvider } from './hooks/contexts/use-night-mode';
 import { Rollbar } from './utils/rollbar';
 import { Store } from './stores';
 
@@ -15,9 +16,11 @@ function run () {
   render(
     <RollbarProvider instance={Rollbar}>
       <ErrorBoundary>
-        <Provider store={Store}>
-          <App />
-        </Provider>
+        <NightModeProvider>
+          <Provider store={Store}>
+            <App />
+          </Provider>
+        </NightModeProvider>
       </ErrorBoundary>
     </RollbarProvider>,
     document.getElementById('root')

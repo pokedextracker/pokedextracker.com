@@ -5,17 +5,18 @@ import { faCaretDown, faCog, faMoon, faSignOutAlt, faSun, faTh, faUser } from '@
 import { useDispatch, useSelector } from 'react-redux';
 
 import { ReactGA } from '../../utils/analytics';
-import { setNightMode } from '../../actions/utils';
 import { setToken } from '../../actions/session';
+import { useNightMode } from '../../hooks/contexts/use-night-mode';
 
 export function Nav () {
   const dispatch = useDispatch();
 
-  const nightMode = useSelector(({ nightMode }) => nightMode);
   const session = useSelector(({ session }) => session);
   const user = useSelector(({ sessionUser }) => sessionUser);
 
-  const handleNightModeClick = () => dispatch(setNightMode(!nightMode));
+  const { isNightMode, setIsNightMode } = useNightMode();
+
+  const handleNightModeClick = () => setIsNightMode(!isNightMode);
 
   const handleSignOutClick = () => {
     ReactGA.event({ action: 'sign out', category: 'Session' });
@@ -34,8 +35,8 @@ export function Nav () {
     <Fragment>
       <Link to="/">Pokédex Tracker</Link>
       <a className="tooltip tooltip-below" onClick={handleNightModeClick}>
-        <FontAwesomeIcon icon={nightMode ? faSun : faMoon} />
-        <span className="tooltip-text">Night Mode {nightMode ? 'Off' : 'On'}</span>
+        <FontAwesomeIcon icon={isNightMode ? faSun : faMoon} />
+        <span className="tooltip-text">Night Mode {isNightMode ? 'Off' : 'On'}</span>
       </a>
       <a href="https://www.patreon.com/pokedextracker" rel="noopener noreferrer" target="_blank">Patreon</a>
     </Fragment>

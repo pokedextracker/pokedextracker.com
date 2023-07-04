@@ -11,6 +11,7 @@ import { useRef, useState } from 'react';
 import { Alert } from '../../library/Alert';
 import { ReactGA } from '../../../utils/analytics';
 import { createDex } from '../../../actions/dex';
+import { useNightMode } from '../../../hooks/contexts/use-night-mode';
 
 export function DexCreate ({ isOpen, onRequestClose }) {
   const dispatch = useDispatch();
@@ -23,8 +24,9 @@ export function DexCreate ({ isOpen, onRequestClose }) {
   const gamesById = useSelector(({ gamesById }) => gamesById);
   const dexTypesById = useSelector(({ dexTypesById }) => dexTypesById);
   const dexTypesByGameFamilyId = useSelector(({ dexTypesByGameFamilyId }) => dexTypesByGameFamilyId);
-  const nightMode = useSelector(({ nightMode }) => nightMode);
   const session = useSelector(({ session }) => session);
+
+  const { isNightMode } = useNightMode();
 
   const [error, setError] = useState(null);
   const [title, setTitle] = useState('');
@@ -92,7 +94,7 @@ export function DexCreate ({ isOpen, onRequestClose }) {
 
   return (
     <Modal
-      className={`modal ${nightMode ? 'night-mode' : ''}`}
+      className={`modal ${isNightMode ? 'night-mode' : ''}`}
       contentLabel="Create a New Dex"
       isOpen={isOpen}
       onRequestClose={handleRequestClose}

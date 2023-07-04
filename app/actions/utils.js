@@ -1,4 +1,3 @@
-export const SET_NIGHT_MODE = 'SET_NIGHT_MODE';
 export const SET_NOTIFICATION = 'SET_NOTIFICATION';
 export const SET_RELOAD = 'SET_RELOAD';
 
@@ -25,8 +24,4 @@ export function setNotification (notification) {
 
 export function setReload (reload) {
   return { type: SET_RELOAD, reload };
-}
-
-export function setNightMode (nightMode) {
-  return { type: SET_NIGHT_MODE, nightMode };
 }
