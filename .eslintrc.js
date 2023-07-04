@@ -19,6 +19,7 @@ module.exports = {
   plugins: [
     'react',
     '@typescript-eslint',
+    '@tanstack/query',
   ],
   globals: {
     find: 'off',
@@ -26,6 +27,7 @@ module.exports = {
   extends: [
     'plugin:react/recommended',
     'plugin:@typescript-eslint/eslint-recommended',
+    'plugin:@tanstack/eslint-plugin-query/recommended',
   ],
   rules: {
     'array-bracket-spacing': ['error', 'never'],

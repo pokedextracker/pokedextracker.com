@@ -28,6 +28,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.12.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@rollbar/react": "^0.11.2",
+    "@tanstack/react-query": "^4.29.19",
     "@types/react-dom": "^18.2.6",
     "@types/react-modal": "^3.16.0",
     "@types/react-redux": "^7.1.25",
@@ -59,6 +60,7 @@
     "whatwg-fetch": "^3.0.0"
   },
   "devDependencies": {
+    "@tanstack/eslint-plugin-query": "^4.29.9",
     "@types/react-router-dom": "^5.3.3",
     "@typescript-eslint/eslint-plugin": "^5.60.1",
     "@typescript-eslint/parser": "^5.60.1",

@@ -32,7 +32,7 @@
   resolved "https://registry.yarnpkg.com/@babel/compat-data/-/compat-data-7.22.6.tgz#15606a20341de59ba02cd2fcc5086fcbe73bf544"
   integrity sha512-29tfsWTq2Ftu7MXmimyC0C5FDZv5DYxOZkh3XD3+QW4V/BYuv/LyEsjj3c0hqedEaDt6DBfDvexMKU8YevdqFg==
 
-"@babel/core@^7.22.1":
+"@babel/core@^7.22.6":
   version "7.22.6"
   resolved "https://registry.yarnpkg.com/@babel/core/-/core-7.22.6.tgz#aafafbe86e9a1679d876b99dc46382964ef72494"
   integrity sha512-HPIyDa6n+HKw5dEuway3vVAhBboYCtREBMp+IWeseZy6TFtzn6MHkCH2KKYUOC/vKKwgSMHQW4htBOrmuRPXfw==
@@ -1114,7 +1114,7 @@
     "@babel/types" "^7.4.4"
     esutils "^2.0.2"
 
-"@babel/preset-react@^7.22.3":
+"@babel/preset-react@^7.22.5":
   version "7.22.5"
   resolved "https://registry.yarnpkg.com/@babel/preset-react/-/preset-react-7.22.5.tgz#c4d6058fbf80bccad02dd8c313a9aaa67e3c3dd6"
   integrity sha512-M+Is3WikOpEJHgR385HbuCITPTaPRaNkibTEa9oiofmJvIsrceb4yp9RL9Kb+TE8LznmeyZqpP+Lopwcx59xPQ==
@@ -1425,6 +1425,24 @@
   integrity sha512-fv/2dzVzjifcQ6w90TcsCLAANN2/ZAK30OTPNkMrJ1m1rSbCzKWEj2wbZFK/6vhuhEb5pAw6kuAR4ry3sIuFYw==
   dependencies:
     tiny-invariant "^1.1.0"
+
+"@tanstack/eslint-plugin-query@^4.29.9":
+  version "4.29.9"
+  resolved "https://registry.yarnpkg.com/@tanstack/eslint-plugin-query/-/eslint-plugin-query-4.29.9.tgz#1635e7d60975bcff8bf10f1015d77ea3ce3db260"
+  integrity sha512-JlIZcs+zhl/ihta49iIbMCf3E8tSvGDqMIH+oItnYLOzWI7oiujXu7FYgna2E1V79KhR0PaxkPX6jHZLpvacgw==
+
+"@tanstack/query-core@4.29.19":
+  version "4.29.19"
+  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-4.29.19.tgz#49ccbd0606633d1e55baf3b91ab7cc7aef411b1d"
+  integrity sha512-uPe1DukeIpIHpQi6UzIgBcXsjjsDaLnc7hF+zLBKnaUlh7jFE/A+P8t4cU4VzKPMFB/C970n/9SxtpO5hmIRgw==
+
+"@tanstack/react-query@^4.29.19":
+  version "4.29.19"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-4.29.19.tgz#6ba187f2d0ea36ae83ff1f67068f53c88ce7b228"
+  integrity sha512-XiTIOHHQ5Cw1WUlHaD4fmVUMhoWjuNJlAeJGq7eM4BraI5z7y8WkZO+NR8PSuRnQGblpuVdjClQbDFtwxTtTUw==
+  dependencies:
+    "@tanstack/query-core" "4.29.19"
+    use-sync-external-store "^1.2.0"
 
 "@types/body-parser@*":
   version "1.19.2"
@@ -5336,6 +5354,11 @@ uri-js@^4.2.2:
   integrity sha512-KY9Frmirql91X2Qgjry0Wd4Y+YTdrdZheS8TFwvkbLWf/G5KNJDCh6pKL5OZctEW4+0Baa5idK2ZQuELRwPznQ==
   dependencies:
     punycode "^2.1.0"
+
+use-sync-external-store@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/use-sync-external-store/-/use-sync-external-store-1.2.0.tgz#7dbefd6ef3fe4e767a0cf5d7287aacfb5846928a"
+  integrity sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==
 
 util-deprecate@^1.0.1, util-deprecate@^1.0.2, util-deprecate@~1.0.1:
   version "1.0.2"
