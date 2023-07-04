@@ -1,5 +1,4 @@
 import { API } from '../utils/api';
-import { Config } from '../../config';
 import { checkVersion } from './utils';
 import { setToken } from './session';
 
@@ -19,7 +18,7 @@ export function createUser (payload) {
 
       Reflect.deleteProperty(payload, 'password_confirm');
 
-      return API.post(`${Config.API_HOST}/users`, payload);
+      return API.post('/users', payload);
     })
     .then(({ token }) => {
       dispatch(setToken(token));
@@ -31,7 +30,7 @@ export function retrieveUser (username) {
   return (dispatch) => {
     dispatch(checkVersion());
 
-    return API.get(`${Config.API_HOST}/users/${username}`);
+    return API.get(`/users/${username}`);
   };
 }
 
@@ -47,7 +46,7 @@ export function updateUser ({ username, payload }) {
 
       Reflect.deleteProperty(payload, 'password_confirm');
 
-      return API.post(`${Config.API_HOST}/users/${username}`, payload);
+      return API.post(`/users/${username}`, payload);
     })
     .then(({ token }) => {
       dispatch(setToken(token));

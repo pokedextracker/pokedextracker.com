@@ -1,5 +1,4 @@
 import { API } from '../utils/api';
-import { Config } from '../../config';
 import { checkVersion } from './utils';
 
 export const CLEAR_POKEMON = 'CLEAR_POKEMON';
@@ -10,7 +9,7 @@ export function retrievePokemon (id, query) {
   return (dispatch) => {
     dispatch(checkVersion());
 
-    return API.get(`${Config.API_HOST}/pokemon/${id}`, query)
+    return API.get(`/pokemon/${id}`, query)
     .then((pokemon) => dispatch(setPokemon(pokemon)));
   };
 }

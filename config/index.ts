@@ -20,4 +20,4 @@ const Configs: Record<Environment, ConfigType> = {
   [Environment.Staging]: Staging,
 };
 
-export const Config = Configs[environment];
+export const Config = Configs[environment] as ConfigType;

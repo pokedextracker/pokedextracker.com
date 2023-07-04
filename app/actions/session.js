@@ -1,12 +1,11 @@
 import { API } from '../utils/api';
-import { Config } from '../../config';
 
 export const SET_SESSION_USER = 'SET_SESSION_USER';
 export const SET_TOKEN = 'SET_TOKEN';
 
 export function login ({ username, password }) {
   return (dispatch) => {
-    return API.post(`${Config.API_HOST}/sessions`, { username, password })
+    return API.post('/sessions', { username, password })
     .then(({ token }) => {
       dispatch(setToken(token));
     });
