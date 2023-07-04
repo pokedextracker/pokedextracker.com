@@ -15,16 +15,16 @@ if (testLocalStorage()) {
 } else {
   storage = {
     _data: {},
-    setItem (id, val) {
-      this._data[id] = String(val);
+    setItem (key: string, val: string): void {
+      this._data[key] = String(val);
     },
-    getItem (id) {
-      return this._data.hasOwnProperty(id) ? this._data[id] : undefined;
+    getItem (key: string): string | null {
+      return this._data.hasOwnProperty(key) ? this._data[key] : undefined;
     },
-    removeItem (id) {
-      Reflect.deleteProperty(this._data, id);
+    removeItem (key: string): void {
+      Reflect.deleteProperty(this._data, key);
     },
-    clear () {
+    clear (): void {
       this._data = {};
     },
   };

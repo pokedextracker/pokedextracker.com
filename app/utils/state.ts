@@ -3,7 +3,7 @@ import { localStorage } from './local-storage';
 
 import type { Session } from '../types';
 
-export function tokenToUser (token: string): Session | null {
+export function tokenToUser (token: string | null): Session | null {
   if (!token) {
     Rollbar.configure({
       payload: { user: null },
