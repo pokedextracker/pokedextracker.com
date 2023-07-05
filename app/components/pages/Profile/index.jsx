@@ -28,7 +28,6 @@ export function Profile () {
     data: user,
     isLoading: userIsLoading,
   } = useUser(username);
-  console.log(user);
 
   const { session } = useSession();
 

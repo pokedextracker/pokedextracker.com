@@ -7,16 +7,17 @@ import { ReactGA } from '../../utils/analytics';
 import { useSession } from '../../hooks/contexts/use-session';
 import { useUser } from '../../hooks/queries/users';
 
-export function FriendCode () {
-  const { username } = useParams();
+import type { ReactNode } from 'react';
 
-  const user = useUser(username).data;
+export function FriendCode () {
+  const { username } = useParams<{ username: string }>();
 
   const { session } = useSession();
+  const user = useUser(username).data!;
 
-  const ownPage = session && session.id === user.id;
+  const ownPage = session?.id === user.id;
 
-  let editAccountBtn = null;
+  let editAccountBtn: ReactNode = null;
 
   if (ownPage) {
     const handleClick = () => ReactGA.event({ action: 'click edit friend code', category: 'User' });
