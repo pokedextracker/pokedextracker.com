@@ -12,6 +12,7 @@ import { Alert } from '../../library/Alert';
 import { ReactGA } from '../../../utils/analytics';
 import { createDex } from '../../../actions/dex';
 import { useNightMode } from '../../../hooks/contexts/use-night-mode';
+import { useSession } from '../../../hooks/contexts/use-session';
 
 export function DexCreate ({ isOpen, onRequestClose }) {
   const dispatch = useDispatch();
@@ -24,9 +25,9 @@ export function DexCreate ({ isOpen, onRequestClose }) {
   const gamesById = useSelector(({ gamesById }) => gamesById);
   const dexTypesById = useSelector(({ dexTypesById }) => dexTypesById);
   const dexTypesByGameFamilyId = useSelector(({ dexTypesByGameFamilyId }) => dexTypesByGameFamilyId);
-  const session = useSelector(({ session }) => session);
 
   const { isNightMode } = useNightMode();
+  const { session } = useSession();
 
   const [error, setError] = useState(null);
   const [title, setTitle] = useState('');

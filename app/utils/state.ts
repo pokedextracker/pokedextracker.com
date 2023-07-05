@@ -12,6 +12,7 @@ export function tokenToUser (token: string | null): Session | null {
   }
 
   const user = JSON.parse(atob(token.split('.')[1])) as Session;
+  user.token = token;
 
   Rollbar.configure({
     payload: { user: { id: user.id, username: user.username } },
@@ -22,27 +23,18 @@ export function tokenToUser (token: string | null): Session | null {
 
 export function loadState () {
   const notif20230608 = localStorage.getItem('notif-2023.06.08') === 'true' || undefined;
-  const token = localStorage.getItem('token');
-  const session = tokenToUser(token);
   const showInfo = localStorage.getItem('showInfo') === 'true' || undefined;
 
-  return { notification: notif20230608, session, showInfo, token };
+  return { notification: notif20230608, showInfo };
 }
 
 // We'll be removing redux and the concept of state soon, so this is just a stopgap.
 interface State {
   notification: string;
   showInfo: string;
-  token: string;
 }
 
-export function saveState ({ notification, showInfo, token }: State) {
-  if (token) {
-    localStorage.setItem('token', token);
-  } else {
-    localStorage.removeItem('token');
-  }
-
+export function saveState ({ notification, showInfo }: State) {
   localStorage.setItem('notif-2023.06.08', notification);
   localStorage.setItem('showInfo', showInfo);
 }

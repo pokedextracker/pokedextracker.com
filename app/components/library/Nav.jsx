@@ -2,28 +2,23 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { faCaretDown, faCog, faMoon, faSignOutAlt, faSun, faTh, faUser } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector } from 'react-redux';
 
 import { ReactGA } from '../../utils/analytics';
-import { setToken } from '../../actions/session';
 import { useNightMode } from '../../hooks/contexts/use-night-mode';
+import { useSession } from '../../hooks/contexts/use-session';
 
 export function Nav () {
-  const dispatch = useDispatch();
-
-  const session = useSelector(({ session }) => session);
-  const user = useSelector(({ sessionUser }) => sessionUser);
-
   const { isNightMode, setIsNightMode } = useNightMode();
+  const { session, sessionUser, setToken } = useSession();
 
   const handleNightModeClick = () => setIsNightMode(!isNightMode);
 
   const handleSignOutClick = () => {
     ReactGA.event({ action: 'sign out', category: 'Session' });
-    dispatch(setToken(null));
+    setToken(null);
   };
 
-  if (session && !user) {
+  if (session && !sessionUser) {
     return (
       <nav>
         <Link to="/">Pokédex Tracker</Link>
@@ -42,7 +37,7 @@ export function Nav () {
     </Fragment>
   );
 
-  if (session && user) {
+  if (session && sessionUser) {
     return (
       <nav>
         {links}
@@ -50,7 +45,7 @@ export function Nav () {
           <a href="#">{session.username} <FontAwesomeIcon icon={faCaretDown} /></a>
           <ul>
             <div className="dropdown-scroll">
-              {user.dexes.map((dex) => <li key={dex.id}><Link to={`/u/${session.username}/${dex.slug}`}><FontAwesomeIcon icon={faTh} /> {dex.title}</Link></li>)}
+              {sessionUser.dexes.map((dex) => <li key={dex.id}><Link to={`/u/${session.username}/${dex.slug}`}><FontAwesomeIcon icon={faTh} /> {dex.title}</Link></li>)}
             </div>
             <li><Link to={`/u/${session.username}`}><FontAwesomeIcon icon={faUser} /> Profile</Link></li>
             <li><Link to="/account"><FontAwesomeIcon icon={faCog} /> Account Settings</Link></li>

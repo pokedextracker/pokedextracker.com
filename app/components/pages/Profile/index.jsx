@@ -16,16 +16,17 @@ import { Reload } from '../../library/Reload';
 import { checkVersion } from '../../../actions/utils';
 import { listGames } from '../../../actions/game';
 import { retrieveUser, setCurrentUser, setUser } from '../../../actions/user';
-import { setShowShare } from '../../../actions/tracker';
 import { listDexTypes } from '../../../actions/dex-type';
+import { useSession } from '../../../hooks/contexts/use-session';
 
 export function Profile () {
   const dispatch = useDispatch();
 
   const { username } = useParams();
 
-  const session = useSelector(({ session }) => session);
   const user = useSelector(({ currentUser, users }) => users[currentUser]);
+
+  const { session } = useSession();
 
   const [isLoading, setIsLoading] = useState(true);
   const [showDexCreate, setShowDexCreate] = useState(false);
@@ -35,7 +36,6 @@ export function Profile () {
 
     dispatch(checkVersion());
     dispatch(setCurrentUser(username));
-    dispatch(setShowShare(false));
 
     try {
       const [u] = await Promise.all([
@@ -71,7 +71,7 @@ export function Profile () {
     return <NotFound />;
   }
 
-  const ownPage = session && session.id === user.id;
+  const ownPage = session?.id === user.id;
 
   return (
     <div className="profile-container">

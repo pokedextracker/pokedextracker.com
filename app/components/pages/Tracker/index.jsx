@@ -16,7 +16,7 @@ import { clearPokemon, setCurrentPokemon } from '../../../actions/pokemon';
 import { listCaptures } from '../../../actions/capture';
 import { retrieveDex, setCurrentDex } from '../../../actions/dex';
 import { retrieveUser, setUser } from '../../../actions/user';
-import { setShowScroll, setShowShare } from '../../../actions/tracker';
+import { setShowScroll } from '../../../actions/tracker';
 
 export function Tracker () {
   const dispatch = useDispatch();
@@ -49,7 +49,6 @@ export function Tracker () {
       dispatch(checkVersion());
       dispatch(clearPokemon());
       dispatch(setShowScroll(false));
-      dispatch(setShowShare(false));
       dispatch(setCurrentDex(slug, username));
 
       try {

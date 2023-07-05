@@ -4,9 +4,11 @@ import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { useSelector } from 'react-redux';
 
 import { ReactGA } from '../../utils/analytics';
+import { useSession } from '../../hooks/contexts/use-session';
 
 export function FriendCode () {
-  const session = useSelector(({ session }) => session);
+  const { session } = useSession();
+
   const user = useSelector(({ currentUser, users }) => users[currentUser]);
 
   const ownPage = session && session.id === user.id;

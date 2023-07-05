@@ -18,4 +18,5 @@ export interface Session {
   friend_code_switch: string | null;
   date_created: string;
   date_modified: string;
+  token: string;
 }

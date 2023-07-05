@@ -11,13 +11,14 @@ export enum QueryKey {
   RetrieveUser = 'RetrieveUser',
 }
 
-export const useUser = (username: string, options: UseQueryOptions<User, PokedexTrackerError> = {}) => {
+export const useUser = (username?: string, options: UseQueryOptions<User, PokedexTrackerError> = {}) => {
   return useQuery<User, PokedexTrackerError>({
     ...options,
     queryKey: [QueryKey.RetrieveUser, username],
     queryFn: () => {
       return API.get(`/users/${username}`);
     },
+    enabled: options.enabled ?? Boolean(username),
   });
 };
 

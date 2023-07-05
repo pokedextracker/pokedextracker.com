@@ -19,7 +19,7 @@ interface Props {
 }
 
 export const NightModeProvider = ({ children }: Props) => {
-  const [isNightMode, setIsNightMode] = useLocalStorage('nightMode', false);
+  const [isNightMode, setIsNightMode] = useLocalStorage('nightMode', { defaultValue: false, parseAsJson: true });
 
   const contextValue = useMemo<NightModeContextState>(() => ({
     isNightMode,

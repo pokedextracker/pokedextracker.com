@@ -9,11 +9,13 @@ import { DexIndicator } from './DexIndicator';
 import { DonatedFlair } from './DonatedFlair';
 import { ReactGA } from '../../utils/analytics';
 import { Share } from './Share';
+import { useSession } from '../../hooks/contexts/use-session';
 
 export function Header ({ profile }) {
   const dex = useSelector(({ currentDex, currentUser, users }) => users[currentUser].dexesBySlug[currentDex]);
-  const session = useSelector(({ session }) => session);
   const user = useSelector(({ currentUser, users }) => users[currentUser]);
+
+  const { session } = useSession();
 
   const [showShare, setShowShare] = useState(false);
 
@@ -35,7 +37,7 @@ export function Header ({ profile }) {
 
   const handleTweetClick = () => ReactGA.event({ action: 'click tweet', category: 'Share' });
 
-  const ownPage = session && session.id === user.id;
+  const ownPage = session?.id === user.id;
 
   return (
     <div className="header-row">

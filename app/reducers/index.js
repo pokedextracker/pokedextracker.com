@@ -10,12 +10,8 @@ import { gamesById } from './games-by-id';
 import { notification } from './notification';
 import { pokemon } from './pokemon';
 import { reload } from './reload';
-import { sessionUser } from './session-user';
-import { session } from './session';
 import { showInfo } from './show-info';
 import { showScroll } from './show-scroll';
-import { showShare } from './show-share';
-import { token } from './token';
 import { users } from './users';
 
 export const reducer = combineReducers({
@@ -29,11 +25,7 @@ export const reducer = combineReducers({
   notification,
   pokemon,
   reload,
-  sessionUser,
-  session,
   showInfo,
   showScroll,
-  showShare,
-  token,
   users,
 });

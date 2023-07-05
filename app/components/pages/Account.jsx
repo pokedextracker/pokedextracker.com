@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAsterisk, faChevronDown, faCircleNotch, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 
@@ -12,26 +12,22 @@ import { Reload } from '../library/Reload';
 import { checkVersion } from '../../actions/utils';
 import { friendCode3dsFormatter, friendCodeSwitchFormatter } from '../../utils/formatting';
 import { updateUser } from '../../actions/user';
+import { useSession } from '../../hooks/contexts/use-session';
 
 export function Account () {
   const dispatch = useDispatch();
 
   const history = useHistory();
 
-  const session = useSelector(({ session }) => session);
-  // If the session user hasn't been loaded yet, temporarily substitute it with
-  // the normal session. If there are things that are expected to be in the
-  // session user that isn't in the normal session (e.g. dexes), this could
-  // cause some problems and might need to be reworked, but right now, it works.
-  const user = useSelector(({ session, sessionUser }) => sessionUser || session);
+  const { session, sessionUser } = useSession();
 
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [friendCode3ds, setFriendCode3ds] = useState(user && user.friend_code_3ds);
-  const [friendCodeSwitch, setFriendCodeSwitch] = useState(user && user.friend_code_switch);
+  const [friendCode3ds, setFriendCode3ds] = useState(sessionUser?.friend_code_3ds || '');
+  const [friendCodeSwitch, setFriendCodeSwitch] = useState(sessionUser?.friend_code_switch || '');
   const [success, setSuccess] = useState(null);
 
   useEffect(() => {
@@ -43,6 +39,13 @@ export function Account () {
       history.push('/login');
     }
   }, [session]);
+
+  useEffect(() => {
+    if (sessionUser) {
+      setFriendCode3ds(sessionUser.friend_code_3ds);
+      setFriendCodeSwitch(sessionUser.friend_code_switch);
+    }
+  }, [sessionUser]);
 
   useEffect(() => {
     dispatch(checkVersion());
@@ -92,7 +95,7 @@ export function Account () {
       <Nav />
       <Reload />
       <div className="form">
-        <h1>{user.username}&apos;s Account</h1>
+        <h1>{session.username}&apos;s Account</h1>
         <form className="form-column" onSubmit={handleSubmit}>
           <Alert message={error} type="error" />
           <Alert message={success} type="success" />

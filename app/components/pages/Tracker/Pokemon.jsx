@@ -12,6 +12,7 @@ import { nationalId, padding } from '../../../utils/formatting';
 import { setCurrentPokemon } from '../../../actions/pokemon';
 import { setShowInfo } from '../../../actions/tracker';
 import { useDelayedRender } from '../../../hooks/use-delayed-render';
+import { useSession } from '../../../hooks/contexts/use-session';
 
 export function Pokemon ({ capture, delay }) {
   const render = useDelayedRender(delay);
@@ -20,8 +21,9 @@ export function Pokemon ({ capture, delay }) {
 
   const currentDex = useSelector(({ currentDex }) => currentDex);
   const dex = useSelector(({ currentDex, currentUser, users }) => users[currentUser].dexesBySlug[currentDex]);
-  const session = useSelector(({ session }) => session);
   const user = useSelector(({ currentUser, users }) => users[currentUser]);
+
+  const { session } = useSession();
 
   if (!render || !capture) {
     return (

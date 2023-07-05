@@ -8,10 +8,12 @@ import { useState } from 'react';
 import { DexEdit } from './DexEdit';
 import { DexIndicator } from '../../library/DexIndicator';
 import { Progress } from '../../library/Progress';
+import { useSession } from '../../../hooks/contexts/use-session';
 
 export function DexPreview ({ dex, reload }) {
-  const session = useSelector(({ session }) => session);
   const user = useSelector(({ currentUser, users }) => users[currentUser]);
+
+  const { session } = useSession();
 
   const [showEditDex, setShowEditDex] = useState(false);
 
@@ -25,7 +27,7 @@ export function DexPreview ({ dex, reload }) {
 
   const handleEditClick = () => setShowEditDex(true);
 
-  const ownPage = session && session.id === user.id;
+  const ownPage = session?.id === user.id;
 
   return (
     <div className="dex-preview">

@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import { faAsterisk, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 
@@ -11,18 +11,21 @@ import { Nav } from '../library/Nav';
 import { ReactGA } from '../../utils/analytics';
 import { Reload } from '../library/Reload';
 import { checkVersion } from '../../actions/utils';
-import { login } from '../../actions/session';
+import { useLogin } from '../../hooks/queries/sessions';
+import { useSession } from '../../hooks/contexts/use-session';
 
 export function Login () {
   const dispatch = useDispatch();
 
   const history = useHistory();
 
-  const session = useSelector(({ session }) => session);
+  const { session, setToken } = useSession();
 
   const [error, setError] = useState(null);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  const loginMutation = useLogin();
 
   useEffect(() => {
     document.title = 'Login | Pokédex Tracker';
@@ -46,7 +49,8 @@ export function Login () {
     setError(null);
 
     try {
-      await dispatch(login(payload));
+      const { token } = await loginMutation.mutateAsync({ payload });
+      setToken(token);
       ReactGA.event({ action: 'login', category: 'Session' });
       history.push(`/u/${username}`);
     } catch (err) {

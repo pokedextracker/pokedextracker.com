@@ -7,14 +7,16 @@ import { faCircleNotch } from '@fortawesome/free-solid-svg-icons';
 import { ReactGA } from '../../../utils/analytics';
 import { createCaptures, deleteCaptures } from '../../../actions/capture';
 import { padding } from '../../../utils/formatting';
+import { useSession } from '../../../hooks/contexts/use-session';
 
 export function MarkAllButton ({ captures }) {
   const dispatch = useDispatch();
 
   const currentDex = useSelector(({ currentDex }) => currentDex);
   const dex = useSelector(({ currentDex, currentUser, users }) => users[currentUser].dexesBySlug[currentDex]);
-  const session = useSelector(({ session }) => session);
   const user = useSelector(({ currentUser, users }) => users[currentUser]);
+
+  const { session } = useSession();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,7 +24,7 @@ export function MarkAllButton ({ captures }) {
     return captures.reduce((total, capture) => total + (capture.captured ? 0 : 1), 0);
   }, [captures]);
 
-  const ownPage = session && session.id === user.id;
+  const ownPage = session?.id === user.id;
 
   if (!ownPage) {
     return null;

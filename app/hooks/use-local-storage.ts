@@ -3,21 +3,34 @@ import { useState } from 'react';
 
 export type SetLocalStorageFn<T> = (newValue: T) => void;
 
-export function useLocalStorage<T> (key: string, defaultValue?: T): [T, SetLocalStorageFn<T>] {
+interface Options<T> {
+  defaultValue?: T;
+  parseAsJson?: boolean;
+}
+
+export function useLocalStorage<T> (key: string, options: Options<T>): [T, SetLocalStorageFn<T>] {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
       const value = window.localStorage.getItem(key);
       if (value) {
-        return JSON.parse(value);
+        if (options.parseAsJson) {
+          return JSON.parse(value);
+        }
+        return value;
       }
-      return defaultValue;
+      return options.defaultValue;
     } catch (error) {
-      return defaultValue;
+      return options.defaultValue;
     }
   });
 
   const setValue = (newValue: T) => {
-    window.localStorage.setItem(key, JSON.stringify(newValue));
+    if (newValue === null) {
+      window.localStorage.removeItem(key);
+    } else {
+      const serialized = options.parseAsJson || typeof newValue !== 'string' ? JSON.stringify(newValue) : newValue;
+      window.localStorage.setItem(key, serialized);
+    }
     setStoredValue(newValue);
   };
 

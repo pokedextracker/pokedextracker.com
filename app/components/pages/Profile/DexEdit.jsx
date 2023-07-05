@@ -12,6 +12,7 @@ import { FormWarning } from './FormWarning';
 import { ReactGA } from '../../../utils/analytics';
 import { deleteDex, updateDex } from '../../../actions/dex';
 import { useNightMode } from '../../../hooks/contexts/use-night-mode';
+import { useSession } from '../../../hooks/contexts/use-session';
 
 const GAME_WARNING = 'Any capture info specific to your old game will be lost.';
 const REGIONAL_WARNING = 'Any non-regional capture info will be lost.';
@@ -26,9 +27,9 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
   const gamesById = useSelector(({ gamesById }) => gamesById);
   const dexTypesById = useSelector(({ dexTypesById }) => dexTypesById);
   const dexTypesByGameFamilyId = useSelector(({ dexTypesByGameFamilyId }) => dexTypesByGameFamilyId);
-  const session = useSelector(({ session }) => session);
 
   const { isNightMode } = useNightMode();
+  const { session } = useSession();
 
   const [error, setError] = useState(null);
   const [title, setTitle] = useState(dex.title);

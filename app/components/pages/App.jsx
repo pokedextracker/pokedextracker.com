@@ -1,8 +1,6 @@
 import { Route, Router, Switch } from 'react-router-dom';
 import { createBrowserHistory } from 'history';
 import { historyContext } from '@rollbar/react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useEffect } from 'react';
 
 import { Account } from './Account';
 import { Home } from './Home';
@@ -13,8 +11,6 @@ import { Register } from './Register';
 import { Rollbar } from '../../utils/rollbar';
 import { Tracker } from './Tracker';
 import { logPageView } from '../../utils/analytics';
-import { retrieveUser } from '../../actions/user';
-import { setSessionUser } from '../../actions/session';
 import { useNightMode } from '../../hooks/contexts/use-night-mode';
 
 const history = createBrowserHistory();
@@ -23,20 +19,7 @@ history.listen(historyContext(Rollbar));
 logPageView();
 
 export function App () {
-  const dispatch = useDispatch();
-
-  const session = useSelector(({ session }) => session);
-
   const { isNightMode } = useNightMode();
-
-  useEffect(() => {
-    (async () => {
-      if (session) {
-        const user = await dispatch(retrieveUser(session.username));
-        dispatch(setSessionUser(user));
-      }
-    })();
-  }, [session]);
 
   return (
     <Router history={history}>

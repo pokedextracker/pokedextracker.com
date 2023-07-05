@@ -19,6 +19,7 @@ import { friendCode3dsFormatter, friendCodeSwitchFormatter } from '../../utils/f
 import { listGames } from '../../actions/game';
 import { setNotification } from '../../actions/utils';
 import { listDexTypes } from '../../actions/dex-type';
+import { useSession } from '../../hooks/contexts/use-session';
 
 export function Register () {
   const dispatch = useDispatch();
@@ -29,7 +30,8 @@ export function Register () {
   const gamesById = useSelector(({ gamesById }) => gamesById);
   const dexTypesById = useSelector(({ dexTypesById }) => dexTypesById);
   const dexTypesByGameFamilyId = useSelector(({ dexTypesByGameFamilyId }) => dexTypesByGameFamilyId);
-  const session = useSelector(({ session }) => session);
+
+  const { session } = useSession();
 
   const [error, setError] = useState(null);
   const [username, setUsername] = useState('');

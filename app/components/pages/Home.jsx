@@ -2,15 +2,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import { faLongArrowAltRight, faRss } from '@fortawesome/free-solid-svg-icons';
 import { faTwitter } from '@fortawesome/free-brands-svg-icons';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useEffect } from 'react';
 
 import { checkVersion } from '../../actions/utils';
+import { useSession } from '../../hooks/contexts/use-session';
 
 export function Home () {
   const dispatch = useDispatch();
 
-  const session = useSelector(({ session }) => session);
+  const { session } = useSession();
 
   useEffect(() => {
     document.title = 'Pokédex Tracker | Track the Progress of Your Living Dex Completion';
