@@ -9,7 +9,7 @@ interface VersionResponse {
 }
 
 export const useVersion = () => {
-  return useQuery<VersionResponse>({
+  return useQuery<VersionResponse, Error, VersionResponse>({
     queryKey: [QueryKey.RetrieveVersion],
     queryFn: async () => {
       const resp = await fetch('/version', { method: 'GET' });

@@ -13,7 +13,7 @@ export enum QueryKey {
 type ListCapturesData = Capture[];
 
 export const useCaptures = (username: string, slug: string, options: UseQueryOptions<ListCapturesData, PokedexTrackerError> = {}) => {
-  return useQuery<ListCapturesData, PokedexTrackerError>({
+  return useQuery<ListCapturesData, PokedexTrackerError, ListCapturesData>({
     ...options,
     queryKey: [QueryKey.ListCaptures, username, slug],
     queryFn: () => {

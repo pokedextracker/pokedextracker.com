@@ -12,7 +12,7 @@ export enum QueryKey {
 }
 
 export const useUser = (username?: string, options: UseQueryOptions<User, PokedexTrackerError> = {}) => {
-  return useQuery<User, PokedexTrackerError>({
+  return useQuery<User, PokedexTrackerError, User>({
     ...options,
     queryKey: [QueryKey.RetrieveUser, username],
     queryFn: () => {

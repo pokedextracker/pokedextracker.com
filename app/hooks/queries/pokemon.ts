@@ -15,7 +15,7 @@ interface RetrievePokemonQuery {
 }
 
 export const usePokemon = (id: number, query: RetrievePokemonQuery, options: UseQueryOptions<Pokemon, PokedexTrackerError> = {}) => {
-  return useQuery<Pokemon, PokedexTrackerError>({
+  return useQuery<Pokemon, PokedexTrackerError, Pokemon>({
     ...options,
     queryKey: [QueryKey.RetrievePokemon, id, query],
     queryFn: () => {

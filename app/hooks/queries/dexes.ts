@@ -13,7 +13,7 @@ export enum QueryKey {
 }
 
 export const useDex = (username: string, slug: string, options: UseQueryOptions<Dex, PokedexTrackerError> = {}) => {
-  return useQuery<Dex, PokedexTrackerError>({
+  return useQuery<Dex, PokedexTrackerError, Dex>({
     ...options,
     queryKey: [QueryKey.RetrieveDex, username, slug],
     queryFn: () => {

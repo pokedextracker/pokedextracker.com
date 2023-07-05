@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import keyBy from 'lodash/keyBy';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLink } from '@fortawesome/free-solid-svg-icons';
@@ -13,13 +12,19 @@ import { Share } from './Share';
 import { useSession } from '../../hooks/contexts/use-session';
 import { useUser } from '../../hooks/queries/users';
 
-export function Header ({ profile }) {
-  const { username, slug } = useParams();
+import type { Dex } from '../../types';
+import type { MouseEvent } from 'react';
 
-  const user = useUser(username).data;
-  const dex = useMemo(() => !profile ? keyBy(user.dexes, 'slug')[slug] : null, [profile, user, slug]);
+interface Props {
+  profile?: boolean;
+}
+
+export function Header ({ profile = false }: Props) {
+  const { username, slug } = useParams<{ username: string; slug: string }>();
 
   const { session } = useSession();
+  const user = useUser(username).data!;
+  const dex = useMemo<Dex | null>(() => !profile ? keyBy(user.dexes, 'slug')[slug] : null, [profile, user, slug]);
 
   const [showShare, setShowShare] = useState(false);
 
@@ -31,7 +36,7 @@ export function Header ({ profile }) {
     return () => window.removeEventListener('click', closeShare);
   }, []);
 
-  const handleShareClick = (e) => {
+  const handleShareClick = (e: MouseEvent<HTMLAnchorElement>) => {
     e.stopPropagation();
 
     ReactGA.event({ action: showShare ? 'close' : 'open', category: 'Share' });
@@ -46,14 +51,14 @@ export function Header ({ profile }) {
   return (
     <div className="header-row">
       <h1>
-        {profile ? `${user.username}'s Profile` : dex.title}
+        {dex?.title || `${user.username}'s Profile`}
         <div className="share-container">
           <a onClick={handleShareClick}>
             <FontAwesomeIcon icon={faLink} />
             {showShare && <Share profile={profile} />}
           </a>
           <a
-            href={`https://twitter.com/intent/tweet?text=Check out ${ownPage ? 'my' : `${user.username}'s`} ${profile ? 'profile' : 'living dex progress'} on @PokedexTracker! https://pokedextracker.com/u/${user.username}${profile ? '' : `/${dex.slug}`}`}
+            href={`https://twitter.com/intent/tweet?text=Check out ${ownPage ? 'my' : `${user.username}'s`} ${profile ? 'profile' : 'living dex progress'} on @PokedexTracker! https://pokedextracker.com/u/${user.username}${dex ? `/${dex.slug}` : ''}`}
             onClick={handleTweetClick}
             rel="noopener noreferrer"
             target="_blank"
@@ -63,15 +68,7 @@ export function Header ({ profile }) {
         </div>
       </h1>
       {profile && <DonatedFlair user={user} />}
-      {!profile && <DexIndicator dex={dex} />}
+      {dex && <DexIndicator dex={dex} />}
     </div>
   );
 }
-
-Header.defaultProps = {
-  profile: false,
-};
-
-Header.propTypes = {
-  profile: PropTypes.bool,
-};
