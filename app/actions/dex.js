@@ -1,7 +1,6 @@
 import { API } from '../utils/api';
 
 export const SET_DEX = 'SET_DEX';
-export const SET_CURRENT_DEX = 'SET_CURRENT_DEX';
 
 export function createDex ({ payload, username }) {
   return () => {
@@ -23,10 +22,6 @@ export function updateDex ({ payload, slug, username }) {
       return dex;
     });
   };
-}
-
-export function setCurrentDex (slug, username) {
-  return { type: SET_CURRENT_DEX, slug, username };
 }
 
 export function setDex (dex, username) {

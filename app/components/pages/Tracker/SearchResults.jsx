@@ -6,7 +6,7 @@ import { nationalId, padding } from '../../../utils/formatting';
 
 const DEFER_CUTOFF = 120;
 
-export function SearchResults ({ captures, hideCaught, query, setHideCaught, setQuery }) {
+export function SearchResults ({ captures, hideCaught, query, setHideCaught, setQuery, setSelectedPokemon }) {
   const handleClearCaughtFilter = () => setHideCaught(false);
   const handleClearClick = () => setQuery('');
 
@@ -61,6 +61,7 @@ export function SearchResults ({ captures, hideCaught, query, setHideCaught, set
           capture={capture}
           delay={i > DEFER_CUTOFF ? 5 : 0}
           key={capture.pokemon.id}
+          setSelectedPokemon={setSelectedPokemon}
         />
       ))}
     </div>

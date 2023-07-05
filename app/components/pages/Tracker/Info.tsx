@@ -2,8 +2,8 @@ import find from 'lodash/find';
 import keyBy from 'lodash/keyBy';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretLeft, faCaretRight, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { useEffect, useMemo } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
+import { useMemo } from 'react';
 import { useParams } from 'react-router';
 
 import { EvolutionFamily } from './EvolutionFamily';
@@ -12,11 +12,13 @@ import { PokemonName } from '../../library/PokemonName';
 import { ReactGA } from '../../../utils/analytics';
 import { iconClass } from '../../../utils/pokemon';
 import { nationalId, padding, serebiiLink } from '../../../utils/formatting';
-import { retrievePokemon } from '../../../actions/pokemon';
 import { useLocalStorageContext } from '../../../hooks/contexts/use-local-storage-context';
+import { usePokemon } from '../../../hooks/queries/pokemon';
 import { useUser } from '../../../hooks/queries/users';
 
-const SEREBII_LINKS = {
+import type { Dex } from '../../../types';
+
+const SEREBII_LINKS: Record<string, string> = {
   x_y: 'pokedex-xy',
   omega_ruby_alpha_sapphire: 'pokedex-xy',
   sun_moon: 'pokedex-sm',
@@ -30,30 +32,25 @@ const SEREBII_LINKS = {
   home: 'pokedex-sv',
 };
 
-export function Info () {
-  const dispatch = useDispatch();
+interface Props {
+  selectedPokemon: number;
+  setSelectedPokemon: Dispatch<SetStateAction<number>>;
+}
 
-  const { username, slug } = useParams();
+export function Info ({ selectedPokemon, setSelectedPokemon }: Props) {
+  const { username, slug } = useParams<{ username: string; slug: string }>();
 
-  const user = useUser(username).data;
-  const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
+  const user = useUser(username).data!;
+  const dex = useMemo<Dex>(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
+  const { data: pokemon } = usePokemon(selectedPokemon, {
+    dex_type: dex.dex_type.id,
+  });
 
   const { showInfo, setShowInfo } = useLocalStorageContext();
 
-  const currentPokemon = useSelector(({ currentPokemon }) => currentPokemon);
-  const pokemon = useSelector(({ currentPokemon, pokemon }) => pokemon[currentPokemon]);
-
-  useEffect(() => {
-    if (!pokemon && currentPokemon) {
-      dispatch(retrievePokemon(currentPokemon, {
-        dex_type: dex.dex_type.id,
-      }));
-    }
-  }, [currentPokemon, dex, pokemon]);
-
   const serebiiPath = useMemo(() => {
     if (!pokemon) {
-      return null;
+      return '';
     }
 
     const swshLocation = find(pokemon.locations, (loc) => loc.game.game_family.id === 'sword_shield');
@@ -111,7 +108,7 @@ export function Info () {
 
         <InfoLocations locations={pokemon.locations} />
 
-        <EvolutionFamily family={pokemon.evolution_family} />
+        <EvolutionFamily family={pokemon.evolution_family} setSelectedPokemon={setSelectedPokemon} />
 
         <div className="info-footer">
           <a

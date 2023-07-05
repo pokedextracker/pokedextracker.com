@@ -7,7 +7,7 @@ import { Pokemon } from './Pokemon';
 import { padding } from '../../../utils/formatting';
 import { useDeferredRender } from '../../../hooks/use-deferred-render';
 
-export function Box ({ captures, deferred, dexTotal }) {
+export function Box ({ captures, deferred, dexTotal, setSelectedPokemon }) {
   const render = useDeferredRender(!deferred);
 
   const empties = useMemo(() => Array.from({ length: BOX_SIZE - captures.length }).map((_, i) => i), [captures]);
@@ -58,8 +58,8 @@ export function Box ({ captures, deferred, dexTotal }) {
         <MarkAllButton captures={captures} />
       </div>
       <div className="box-container">
-        {captures.map((capture) => <Pokemon capture={capture} key={capture.pokemon.id} />)}
-        {empties.map((index) => <Pokemon capture={null} key={index} />)}
+        {captures.map((capture) => <Pokemon capture={capture} key={capture.pokemon.id} setSelectedPokemon={setSelectedPokemon} />)}
+        {empties.map((index) => <Pokemon capture={null} key={index} setSelectedPokemon={setSelectedPokemon} />)}
       </div>
     </div>
   );

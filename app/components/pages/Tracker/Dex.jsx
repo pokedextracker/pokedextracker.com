@@ -19,7 +19,7 @@ import { useUser } from '../../../hooks/queries/users';
 
 const DEFER_CUTOFF = 1;
 
-export function Dex ({ hideCaught, showScrollButton, onScrollButtonClick, query, setHideCaught, setQuery }) {
+export function Dex ({ hideCaught, showScrollButton, setSelectedPokemon, onScrollButtonClick, query, setHideCaught, setQuery }) {
   const { username, slug } = useParams();
 
   const user = useUser(username).data;
@@ -37,6 +37,7 @@ export function Dex ({ hideCaught, showScrollButton, onScrollButtonClick, query,
         deferred={i > DEFER_CUTOFF}
         dexTotal={dex.total}
         key={box[0].pokemon.id}
+        setSelectedPokemon={setSelectedPokemon}
       />
     ));
   }, [boxes]);
@@ -64,6 +65,7 @@ export function Dex ({ hideCaught, showScrollButton, onScrollButtonClick, query,
             query={query}
             setHideCaught={setHideCaught}
             setQuery={setQuery}
+            setSelectedPokemon={setSelectedPokemon}
           /> :
           boxs
         }

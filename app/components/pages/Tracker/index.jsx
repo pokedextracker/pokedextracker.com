@@ -1,7 +1,6 @@
 import keyBy from 'lodash/keyBy';
 import throttle from 'lodash/throttle';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router';
 
 import { Dex } from './Dex';
@@ -12,13 +11,10 @@ import { NotFound } from '../NotFound';
 import { Reload } from '../../library/Reload';
 import { SCROLL_DEBOUNCE, SHOW_SCROLL_THRESHOLD } from './Scroll';
 import { SearchBar } from './SearchBar';
-import { setCurrentPokemon } from '../../../actions/pokemon';
 import { useCaptures } from '../../../hooks/queries/captures';
 import { useUser } from '../../../hooks/queries/users';
 
 export function Tracker () {
-  const dispatch = useDispatch();
-
   const { username, slug } = useParams();
 
   const trackerRef = useRef(null);
@@ -31,6 +27,7 @@ export function Tracker () {
   const [query, setQuery] = useState('');
   const [hideCaught, setHideCaught] = useState(false);
   const [showScroll, setShowScroll] = useState(false);
+  const [selectedPokemon, setSelectedPokemon] = useState(0);
 
   useEffect(() => {
     document.title = `${username}'s Living Dex | Pokédex Tracker`;
@@ -44,7 +41,7 @@ export function Tracker () {
 
   useEffect(() => {
     if (captures) {
-      dispatch(setCurrentPokemon(captures[0].pokemon.id));
+      setSelectedPokemon(captures[0].pokemon.id);
     }
   }, [captures]);
 
@@ -62,7 +59,7 @@ export function Tracker () {
     }
   }, [trackerRef.current]);
 
-  if (userIsLoading || capturesIsLoading) {
+  if (userIsLoading || capturesIsLoading || !selectedPokemon) {
     return <div className="loading">Loading...</div>;
   }
 
@@ -87,14 +84,16 @@ export function Tracker () {
               hideCaught={hideCaught}
               onScrollButtonClick={handleScrollButtonClick}
               query={query}
+              selectedPokemon={selectedPokemon}
               setHideCaught={setHideCaught}
               setQuery={setQuery}
+              setSelectedPokemon={setSelectedPokemon}
               showScrollButton={showScroll}
             />
             <Footer />
           </div>
         </div>
-        <Info />
+        <Info selectedPokemon={selectedPokemon} setSelectedPokemon={setSelectedPokemon} />
       </div>
     </div>
   );

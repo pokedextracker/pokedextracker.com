@@ -1,7 +1,7 @@
 import { stringify } from 'qs';
 
 import { Config } from '../../config';
-import { Store } from '../stores';
+import { localStorage } from './local-storage';
 
 export class PokedexTrackerError extends Error {
   public response: Response;
@@ -22,8 +22,9 @@ async function handleResponse (response: Response) {
 }
 
 function getHeaders () {
+  const token = localStorage.getItem('token');
   return {
-    Authorization: `Bearer ${Store.getState().token}`,
+    Authorization: token ? `Bearer ${token}` : '',
     'Content-Type': 'application/json',
     'X-Version': Config.VERSION,
   };

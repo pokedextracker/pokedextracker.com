@@ -22,10 +22,6 @@ export function deleteCaptures ({ payload, slug, username }) {
   };
 }
 
-export function setCaptures (captures, slug, username) {
-  return { type: SET_CAPTURES, captures, slug, username };
-}
-
 export function markPending (pokemon, slug, username) {
   return { type: MARK_PENDING, pokemon, slug, username };
 }

@@ -1,17 +1,13 @@
 import PropTypes from 'prop-types';
 import keyBy from 'lodash/keyBy';
-import { useDispatch } from 'react-redux';
 import { useMemo } from 'react';
 import { useParams } from 'react-router';
 
 import { Evolutions } from './Evolutions';
 import { iconClass } from '../../../utils/pokemon';
-import { setCurrentPokemon } from '../../../actions/pokemon';
 import { useUser } from '../../../hooks/queries/users';
 
-export function EvolutionFamily ({ family }) {
-  const dispatch = useDispatch();
-
+export function EvolutionFamily ({ family, setSelectedPokemon }) {
   const { username, slug } = useParams();
 
   const user = useUser(username).data;
@@ -23,7 +19,7 @@ export function EvolutionFamily ({ family }) {
   if (family.pokemon.length > 1) {
     column1 = (
       <div className="evolution-pokemon-column">
-        {family.pokemon[1].map((pokemon) => (<a key={pokemon.id} onClick={() => dispatch(setCurrentPokemon(pokemon.id))} title={pokemon.name}>
+        {family.pokemon[1].map((pokemon) => (<a key={pokemon.id} onClick={() => setSelectedPokemon(pokemon.id)} title={pokemon.name}>
           <i className={iconClass(pokemon, dex)} />
         </a>))}
       </div>
@@ -34,7 +30,7 @@ export function EvolutionFamily ({ family }) {
     column2 = (
       // styling hack for mr.rime
       <div className={`evolution-pokemon-column ${family.pokemon[2][0].national_id === 866 ? 'push' : ''}`}>
-        {family.pokemon[2].map((pokemon) => (<a key={pokemon.id} onClick={() => dispatch(setCurrentPokemon(pokemon.id))} title={pokemon.name}>
+        {family.pokemon[2].map((pokemon) => (<a key={pokemon.id} onClick={() => setSelectedPokemon(pokemon.id)} title={pokemon.name}>
           <i className={iconClass(pokemon, dex)} />
         </a>))}
       </div>
@@ -44,7 +40,7 @@ export function EvolutionFamily ({ family }) {
   return (
     <div className="info-evolutions">
       <div className="evolution-pokemon-column">
-        <a onClick={() => dispatch(setCurrentPokemon(family.pokemon[0][0].id))} title={family.pokemon[0][0].name}>
+        <a onClick={() => setSelectedPokemon(family.pokemon[0][0].id)} title={family.pokemon[0][0].name}>
           <i className={iconClass(family.pokemon[0][0], dex)} />
         </a>
         {family.evolutions.length === 0 ? <div>Does not evolve</div> : null}

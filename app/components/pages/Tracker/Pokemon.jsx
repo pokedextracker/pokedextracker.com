@@ -12,13 +12,12 @@ import { ReactGA } from '../../../utils/analytics';
 import { createCaptures, deleteCaptures } from '../../../actions/capture';
 import { iconClass } from '../../../utils/pokemon';
 import { nationalId, padding } from '../../../utils/formatting';
-import { setCurrentPokemon } from '../../../actions/pokemon';
 import { useDelayedRender } from '../../../hooks/use-delayed-render';
 import { useLocalStorageContext } from '../../../hooks/contexts/use-local-storage-context';
 import { useSession } from '../../../hooks/contexts/use-session';
 import { useUser } from '../../../hooks/queries/users';
 
-export function Pokemon ({ capture, delay }) {
+export function Pokemon ({ capture, delay, setSelectedPokemon }) {
   const render = useDelayedRender(delay);
 
   const { username, slug } = useParams();
@@ -60,7 +59,7 @@ export function Pokemon ({ capture, delay }) {
   const handleSetInfoClick = () => {
     ReactGA.event({ action: 'show info', category: 'Pokemon', label: capture.pokemon.name });
 
-    dispatch(setCurrentPokemon(capture.pokemon.id));
+    setSelectedPokemon(capture.pokemon.id);
     setShowInfo(true);
   };
 

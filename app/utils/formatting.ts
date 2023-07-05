@@ -33,7 +33,7 @@ export function friendCodeSwitchFormatter (code: string | undefined): string | u
   return upperCode.replace(FRIEND_CODE_SWITCH_REGEX, '$1-');
 }
 
-export function padding (number: number, digits: number, value = '0'): string {
+export function padding (number: number | '---', digits: number, value = '0'): string {
   if (parseInt(`${number}`, 10) >= 10 ** digits) {
     return `${number}`;
   }

@@ -10,7 +10,7 @@ export function PokemonName ({ name }: Props) {
   const female = name.indexOf('♀') > -1;
 
   if (!male && !female) {
-    return name;
+    return <>{name}</>;
   }
 
   return (
