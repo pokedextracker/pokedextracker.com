@@ -49,5 +49,4 @@ export function DexPreview ({ dex }) {
 
 DexPreview.propTypes = {
   dex: PropTypes.object.isRequired,
-  reload: PropTypes.func.isRequired,
 };

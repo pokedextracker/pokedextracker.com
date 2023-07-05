@@ -1,6 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAsterisk, faChevronDown, faCircleNotch, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 
@@ -10,15 +9,13 @@ import { Nav } from '../library/Nav';
 import { ReactGA } from '../../utils/analytics';
 import { Reload } from '../library/Reload';
 import { friendCode3dsFormatter, friendCodeSwitchFormatter } from '../../utils/formatting';
-import { updateUser } from '../../actions/user';
 import { useSession } from '../../hooks/contexts/use-session';
+import { useUpdateUser } from '../../hooks/queries/users';
 
 export function Account () {
-  const dispatch = useDispatch();
-
   const history = useHistory();
 
-  const { session, sessionUser } = useSession();
+  const { session, sessionUser, setToken } = useSession();
 
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,6 +25,8 @@ export function Account () {
   const [friendCode3ds, setFriendCode3ds] = useState(sessionUser?.friend_code_3ds || '');
   const [friendCodeSwitch, setFriendCodeSwitch] = useState(sessionUser?.friend_code_switch || '');
   const [success, setSuccess] = useState(null);
+
+  const updateUserMutation = useUpdateUser();
 
   useEffect(() => {
     document.title = 'Account | Pokédex Tracker';
@@ -46,29 +45,32 @@ export function Account () {
     }
   }, [sessionUser]);
 
-  if (!session) {
+  if (!sessionUser) {
     return null;
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const payload = {
-      username: session.username,
-      payload: {
-        password: isEditingPassword ? password : undefined,
-        password_confirm: isEditingPassword ? passwordConfirm : undefined,
-        friend_code_3ds: friendCode3ds,
-        friend_code_switch: friendCodeSwitch,
-      },
-    };
-
     setError(null);
     setIsLoading(true);
     setSuccess(null);
 
+    if (isEditingPassword && password !== passwordConfirm) {
+      setError('passwords need to match');
+      return;
+    }
+
     try {
-      await dispatch(updateUser(payload));
+      const { token } = await updateUserMutation.mutateAsync({
+        username: session.username,
+        payload: {
+          password: isEditingPassword ? password : undefined,
+          friend_code_3ds: friendCode3ds,
+          friend_code_switch: friendCodeSwitch,
+        },
+      });
+      setToken(token);
       ReactGA.event({ action: 'update', category: 'User' });
       setSuccess('Account settings saved!');
     } catch (err) {
