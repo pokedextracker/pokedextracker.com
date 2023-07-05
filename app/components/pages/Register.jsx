@@ -17,14 +17,16 @@ import { Reload } from '../library/Reload';
 import { createUser } from '../../actions/user';
 import { friendCode3dsFormatter, friendCodeSwitchFormatter } from '../../utils/formatting';
 import { listGames } from '../../actions/game';
-import { setNotification } from '../../actions/utils';
 import { listDexTypes } from '../../actions/dex-type';
+import { useLocalStorageContext } from '../../hooks/contexts/use-local-storage-context';
 import { useSession } from '../../hooks/contexts/use-session';
 
 export function Register () {
   const dispatch = useDispatch();
 
   const history = useHistory();
+
+  const { setHideNotification } = useLocalStorageContext();
 
   const games = useSelector(({ games }) => games);
   const gamesById = useSelector(({ gamesById }) => gamesById);
@@ -86,7 +88,7 @@ export function Register () {
     try {
       await dispatch(createUser(payload));
       ReactGA.event({ action: 'register', category: 'Session' });
-      dispatch(setNotification(true));
+      setHideNotification(true);
       history.push(`/u/${username}/${payload.slug}`);
     } catch (err) {
       setError(err.message);

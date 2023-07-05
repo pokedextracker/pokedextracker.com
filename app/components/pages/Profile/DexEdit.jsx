@@ -11,7 +11,7 @@ import { Alert } from '../../library/Alert';
 import { FormWarning } from './FormWarning';
 import { ReactGA } from '../../../utils/analytics';
 import { deleteDex, updateDex } from '../../../actions/dex';
-import { useNightMode } from '../../../hooks/contexts/use-night-mode';
+import { useLocalStorageContext } from '../../../hooks/contexts/use-local-storage-context';
 import { useSession } from '../../../hooks/contexts/use-session';
 
 const GAME_WARNING = 'Any capture info specific to your old game will be lost.';
@@ -28,7 +28,7 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
   const dexTypesById = useSelector(({ dexTypesById }) => dexTypesById);
   const dexTypesByGameFamilyId = useSelector(({ dexTypesByGameFamilyId }) => dexTypesByGameFamilyId);
 
-  const { isNightMode } = useNightMode();
+  const { isNightMode } = useLocalStorageContext();
   const { session } = useSession();
 
   const [error, setError] = useState(null);

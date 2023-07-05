@@ -11,7 +11,7 @@ import { Register } from './Register';
 import { Rollbar } from '../../utils/rollbar';
 import { Tracker } from './Tracker';
 import { logPageView } from '../../utils/analytics';
-import { useNightMode } from '../../hooks/contexts/use-night-mode';
+import { useLocalStorageContext } from '../../hooks/contexts/use-local-storage-context';
 
 const history = createBrowserHistory();
 history.listen(() => logPageView());
@@ -19,7 +19,7 @@ history.listen(historyContext(Rollbar));
 logPageView();
 
 export function App () {
-  const { isNightMode } = useNightMode();
+  const { isNightMode } = useLocalStorageContext();
 
   return (
     <Router history={history}>

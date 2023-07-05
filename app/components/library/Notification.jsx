@@ -1,19 +1,16 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector } from 'react-redux';
 
-import { setNotification } from '../../actions/utils';
+import { useLocalStorageContext } from '../../hooks/contexts/use-local-storage-context';
 
 export function Notification () {
-  const dispatch = useDispatch();
+  const { hideNotification, setHideNotification } = useLocalStorageContext();
 
-  const notification = useSelector(({ notification }) => notification);
-
-  if (notification) {
+  if (hideNotification) {
     return null;
   }
 
-  const handleClick = () => dispatch(setNotification(true));
+  const handleClick = () => setHideNotification(true);
 
   return (
     <div className="alert alert-muted">

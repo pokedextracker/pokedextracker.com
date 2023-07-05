@@ -11,7 +11,7 @@ import { useRef, useState } from 'react';
 import { Alert } from '../../library/Alert';
 import { ReactGA } from '../../../utils/analytics';
 import { createDex } from '../../../actions/dex';
-import { useNightMode } from '../../../hooks/contexts/use-night-mode';
+import { useLocalStorageContext } from '../../../hooks/contexts/use-local-storage-context';
 import { useSession } from '../../../hooks/contexts/use-session';
 
 export function DexCreate ({ isOpen, onRequestClose }) {
@@ -26,7 +26,7 @@ export function DexCreate ({ isOpen, onRequestClose }) {
   const dexTypesById = useSelector(({ dexTypesById }) => dexTypesById);
   const dexTypesByGameFamilyId = useSelector(({ dexTypesByGameFamilyId }) => dexTypesByGameFamilyId);
 
-  const { isNightMode } = useNightMode();
+  const { isNightMode } = useLocalStorageContext();
   const { session } = useSession();
 
   const [error, setError] = useState(null);

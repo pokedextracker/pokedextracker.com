@@ -22,19 +22,16 @@ export function tokenToUser (token: string | null): Session | null {
 }
 
 export function loadState () {
-  const notif20230608 = localStorage.getItem('notif-2023.06.08') === 'true' || undefined;
   const showInfo = localStorage.getItem('showInfo') === 'true' || undefined;
 
-  return { notification: notif20230608, showInfo };
+  return { showInfo };
 }
 
 // We'll be removing redux and the concept of state soon, so this is just a stopgap.
 interface State {
-  notification: string;
   showInfo: string;
 }
 
-export function saveState ({ notification, showInfo }: State) {
-  localStorage.setItem('notif-2023.06.08', notification);
+export function saveState ({ showInfo }: State) {
   localStorage.setItem('showInfo', showInfo);
 }

@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 import { faCaretDown, faCog, faMoon, faSignOutAlt, faSun, faTh, faUser } from '@fortawesome/free-solid-svg-icons';
 
 import { ReactGA } from '../../utils/analytics';
-import { useNightMode } from '../../hooks/contexts/use-night-mode';
+import { useLocalStorageContext } from '../../hooks/contexts/use-local-storage-context';
 import { useSession } from '../../hooks/contexts/use-session';
 
 export function Nav () {
-  const { isNightMode, setIsNightMode } = useNightMode();
+  const { isNightMode, setIsNightMode } = useLocalStorageContext();
   const { session, sessionUser, setToken } = useSession();
 
   const handleNightModeClick = () => setIsNightMode(!isNightMode);
