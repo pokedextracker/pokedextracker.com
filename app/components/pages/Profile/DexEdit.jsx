@@ -1,16 +1,19 @@
 import Modal from 'react-modal';
 import PropTypes from 'prop-types';
 import find from 'lodash/find';
+import groupBy from 'lodash/groupBy';
+import keyBy from 'lodash/keyBy';
 import slug from 'slug';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAsterisk, faChevronDown, faLongArrowAltRight, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Alert } from '../../library/Alert';
 import { FormWarning } from './FormWarning';
 import { ReactGA } from '../../../utils/analytics';
-import { deleteDex, updateDex } from '../../../actions/dex';
+import { useDeleteDex, useUpdateDex } from '../../../hooks/queries/dexes';
+import { useDexTypes } from '../../../hooks/queries/dex-types';
+import { useGames } from '../../../hooks/queries/games';
 import { useLocalStorageContext } from '../../../hooks/contexts/use-local-storage-context';
 import { useSession } from '../../../hooks/contexts/use-session';
 
@@ -19,17 +22,16 @@ const REGIONAL_WARNING = 'Any non-regional capture info will be lost.';
 const URL_WARNING = 'The old URL to your dex will not function anymore.';
 
 export function DexEdit ({ dex, isOpen, onRequestClose }) {
-  const dispatch = useDispatch();
-
   const formRef = useRef(null);
-
-  const games = useSelector(({ games }) => games);
-  const gamesById = useSelector(({ gamesById }) => gamesById);
-  const dexTypesById = useSelector(({ dexTypesById }) => dexTypesById);
-  const dexTypesByGameFamilyId = useSelector(({ dexTypesByGameFamilyId }) => dexTypesByGameFamilyId);
 
   const { isNightMode } = useLocalStorageContext();
   const { session } = useSession();
+  const { data: games } = useGames();
+  const { data: dexTypes } = useDexTypes();
+
+  const gamesById = useMemo(() => keyBy(games, 'id'), [games]);
+  const dexTypesById = useMemo(() => keyBy(dexTypes, 'id'), [dexTypes]);
+  const dexTypesByGameFamilyId = useMemo(() => groupBy(dexTypes, 'game_family_id'), [dexTypes]);
 
   const [error, setError] = useState(null);
   const [title, setTitle] = useState(dex.title);
@@ -39,7 +41,10 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isConfirmingUpdate, setIsConfirmingUpdate] = useState(false);
 
-  const regional = useMemo(() => dexTypesById[dexType].tags.includes('regional'), [dexTypesById, dexType]);
+  const regional = useMemo(() => dexTypesById[dexType]?.tags.includes('regional'), [dexTypesById, dexType]);
+
+  const updateDexMutation = useUpdateDex();
+  const deleteDexMutation = useDeleteDex();
 
   const reset = () => {
     setError(null);
@@ -53,19 +58,19 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
 
   useEffect(() => {
     reset();
-  }, [dex.id]);
+  }, [dex]);
 
   const showGameWarning = useMemo(() => {
     // If you're moving from the expansion down to the original as a regional
     // dex, we should show the game warning. The reason this needed is because
     // we made the national dex for sword_shield the same as the expansion, so
     // the clause checking for national total isn't evaluating to true.
-    if (dex.game.game_family.id === 'sword_shield_expansion_pass' && gamesById[game].game_family.id === 'sword_shield' && regional) {
+    if (dex.game.game_family.id === 'sword_shield_expansion_pass' && gamesById[game]?.game_family.id === 'sword_shield' && regional) {
       return true;
     }
 
-    const differentFamily = gamesById[game].game_family.id !== dex.game.game_family.id;
-    const lessNationalCount = gamesById[game].game_family.national_total < dex.game.game_family.national_total;
+    const differentFamily = gamesById[game]?.game_family.id !== dex.game.game_family.id;
+    const lessNationalCount = gamesById[game]?.game_family.national_total < dex.game.game_family.national_total;
 
     return differentFamily && lessNationalCount;
   }, [dex.id, game, gamesById, regional]);
@@ -73,9 +78,9 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
   const showRegionalWarning = useMemo(() => regional && !dex.dex_type.tags.includes('regional'), [dex.id, regional]);
   const showUrlWarning = useMemo(() => slug(title || 'Living Dex', { lower: true }) !== dex.slug, [dex.id, title]);
 
-  const handleRequestClose = (shouldReload) => {
+  const handleRequestClose = () => {
     reset();
-    onRequestClose(shouldReload);
+    onRequestClose();
   };
 
   const handleGameChange = (e) => {
@@ -112,9 +117,9 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
     setError(null);
 
     try {
-      await dispatch(deleteDex(dex.slug, session.username));
+      await deleteDexMutation.mutateAsync({ username: session.username, slug: dex.slug });
       ReactGA.event({ action: 'delete', category: 'Dex' });
-      handleRequestClose(true);
+      handleRequestClose();
     } catch (err) {
       setError(err.message);
       if (formRef.current) {
@@ -131,24 +136,22 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
       return;
     }
 
-    const payload = {
-      slug: dex.slug,
-      username: session.username,
-      payload: {
-        title,
-        slug: title !== dex.title ? slug(title, { lower: true }) : undefined,
-        shiny,
-        game,
-        dex_type: dexType,
-      },
-    };
-
     setError(null);
 
     try {
-      await dispatch(updateDex(payload));
+      await updateDexMutation.mutateAsync({
+        username: session.username,
+        slug: dex.slug,
+        payload: {
+          title,
+          slug: title !== dex.title ? slug(title, { lower: true }) : undefined,
+          shiny,
+          game,
+          dex_type: dexType,
+        },
+      });
       ReactGA.event({ action: 'update', category: 'Dex' });
-      handleRequestClose(true);
+      handleRequestClose();
     } catch (err) {
       setError(err.message);
       if (formRef.current) {
@@ -157,7 +160,7 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
     }
   };
 
-  if (!isOpen || !games) {
+  if (!isOpen || !games || Object.keys(gamesById).length === 0 || Object.keys(dexTypesByGameFamilyId).length === 0) {
     return null;
   }
 
@@ -166,16 +169,16 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
       className={`modal ${isNightMode ? 'night-mode' : ''}`}
       contentLabel="Edit Dex"
       isOpen={isOpen}
-      onRequestClose={() => handleRequestClose(false)}
+      onRequestClose={handleRequestClose}
       overlayClassName="modal-overlay"
     >
       <div className="dex-delete-container">
         {isConfirmingDelete ?
-          <Fragment>
+          <>
             Are you sure?&nbsp;
             <a className="link" onClick={handleDeleteClick}>Yes</a>&nbsp;
             <a className="link" onClick={() => setIsConfirmingDelete(false)}>No</a>
-          </Fragment> :
+          </> :
           <a className="link" onClick={handleDeleteClick}>
             <FontAwesomeIcon icon={faTrashAlt} />
           </a>
@@ -256,7 +259,7 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
           <button className="btn btn-blue form-confirm" type="submit">{isConfirmingUpdate ? 'Confirm' : ''} Edit <FontAwesomeIcon icon={faLongArrowAltRight} /></button>
         </form>
       </div>
-      <p><a className="link" onClick={() => handleRequestClose(false)}>Go Back</a></p>
+      <p><a className="link" onClick={handleRequestClose}>Go Back</a></p>
     </Modal>
   );
 }

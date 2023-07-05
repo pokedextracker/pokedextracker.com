@@ -13,14 +13,10 @@ import { Nav } from '../../library/Nav';
 import { NotFound } from '../NotFound';
 import { Notification } from '../../library/Notification';
 import { Reload } from '../../library/Reload';
-import { listGames } from '../../../actions/game';
-import { listDexTypes } from '../../../actions/dex-type';
 import { useSession } from '../../../hooks/contexts/use-session';
 import { useUser } from '../../../hooks/queries/users';
 
 export function Profile () {
-  const dispatch = useDispatch();
-
   const { username } = useParams();
 
   const {
@@ -30,36 +26,16 @@ export function Profile () {
 
   const { session } = useSession();
 
-  const [isLoading, setIsLoading] = useState(true);
   const [showDexCreate, setShowDexCreate] = useState(false);
-
-  const reload = async () => {
-    setIsLoading(true);
-
-    try {
-      await Promise.all([
-        dispatch(listGames()),
-        dispatch(listDexTypes()),
-      ]);
-
-      setIsLoading(false);
-    } catch (err) {
-      setIsLoading(false);
-    }
-  };
 
   useEffect(() => {
     document.title = `${username}'s Profile | Pokédex Tracker`;
   }, []);
 
-  useEffect(() => {
-    reload();
-  }, [username]);
-
   const handleCreateNewDexClick = () => setShowDexCreate(true);
   const handleDexCreateRequestClose = () => setShowDexCreate(false);
 
-  if (isLoading || userIsLoading) {
+  if (userIsLoading) {
     return <div className="loading">Loading...</div>;
   }
 
@@ -81,7 +57,7 @@ export function Profile () {
             <FriendCode />
           </header>
 
-          {user.dexes.map((dex) => <DexPreview dex={dex} key={dex.id} reload={reload} />)}
+          {user.dexes.map((dex) => <DexPreview dex={dex} key={dex.id} />)}
 
           {ownPage &&
             <div className="dex-create">

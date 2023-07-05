@@ -11,7 +11,7 @@ import { Progress } from '../../library/Progress';
 import { useSession } from '../../../hooks/contexts/use-session';
 import { useUser } from '../../../hooks/queries/users';
 
-export function DexPreview ({ dex, reload }) {
+export function DexPreview ({ dex }) {
   const { username } = useParams();
 
   const user = useUser(username).data;
@@ -20,12 +20,8 @@ export function DexPreview ({ dex, reload }) {
 
   const [showEditDex, setShowEditDex] = useState(false);
 
-  const handleRequestClose = (shouldReload) => {
+  const handleRequestClose = () => {
     setShowEditDex(false);
-
-    if (shouldReload) {
-      reload();
-    }
   };
 
   const handleEditClick = () => setShowEditDex(true);

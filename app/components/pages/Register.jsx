@@ -63,7 +63,7 @@ export function Register () {
   }, [games, game]);
 
   useEffect(() => {
-    if (games && dexTypesByGameFamilyId && !dexType) {
+    if (games && Object.keys(dexTypesByGameFamilyId).length > 0 && !dexType) {
       setDexType(dexTypesByGameFamilyId[games[0].game_family.id][0].id);
     }
   }, [games, dexTypesByGameFamilyId, dexType]);

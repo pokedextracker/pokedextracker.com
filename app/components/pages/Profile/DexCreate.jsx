@@ -46,7 +46,7 @@ export function DexCreate ({ isOpen, onRequestClose }) {
   }, [games, game]);
 
   useEffect(() => {
-    if (games && dexTypesByGameFamilyId && !dexType) {
+    if (games && Object.keys(dexTypesByGameFamilyId).length > 0 && !dexType) {
       setDexType(dexTypesByGameFamilyId[games[0].game_family.id][0].id);
     }
   }, [games, dexTypesByGameFamilyId, dexType]);
@@ -109,7 +109,7 @@ export function DexCreate ({ isOpen, onRequestClose }) {
     }
   };
 
-  if (!isOpen || !games) {
+  if (!isOpen || !games || Object.keys(gamesById).length === 0 || Object.keys(dexTypesByGameFamilyId).length === 0) {
     return null;
   }
 
