@@ -1,39 +1,55 @@
 import Modal from 'react-modal';
 import PropTypes from 'prop-types';
 import find from 'lodash/find';
+import groupBy from 'lodash/groupBy';
+import keyBy from 'lodash/keyBy';
 import slug from 'slug';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAsterisk, faChevronDown, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory } from 'react-router';
-import { useRef, useState } from 'react';
 
 import { Alert } from '../../library/Alert';
 import { ReactGA } from '../../../utils/analytics';
-import { createDex } from '../../../actions/dex';
+import { useCreateDex } from '../../../hooks/queries/dexes';
+import { useDexTypes } from '../../../hooks/queries/dex-types';
+import { useGames } from '../../../hooks/queries/games';
 import { useLocalStorageContext } from '../../../hooks/contexts/use-local-storage-context';
 import { useSession } from '../../../hooks/contexts/use-session';
 
 export function DexCreate ({ isOpen, onRequestClose }) {
-  const dispatch = useDispatch();
-
   const history = useHistory();
 
   const formRef = useRef(null);
 
-  const games = useSelector(({ games }) => games);
-  const gamesById = useSelector(({ gamesById }) => gamesById);
-  const dexTypesById = useSelector(({ dexTypesById }) => dexTypesById);
-  const dexTypesByGameFamilyId = useSelector(({ dexTypesByGameFamilyId }) => dexTypesByGameFamilyId);
-
   const { isNightMode } = useLocalStorageContext();
   const { session } = useSession();
+  const { data: games } = useGames();
+  const { data: dexTypes } = useDexTypes();
+
+  const gamesById = useMemo(() => keyBy(games, 'id'), [games]);
+  const dexTypesById = useMemo(() => keyBy(dexTypes, 'id'), [dexTypes]);
+  const dexTypesByGameFamilyId = useMemo(() => groupBy(dexTypes, 'game_family_id'), [dexTypes]);
 
   const [error, setError] = useState(null);
   const [title, setTitle] = useState('');
-  const [game, setGame] = useState(games[0].id);
-  const [dexType, setDexType] = useState(dexTypesByGameFamilyId[games[0].game_family.id][0].id);
+  const [game, setGame] = useState(games?.[0].id);
+  const [dexType, setDexType] = useState(dexTypesByGameFamilyId[games?.[0].game_family.id]?.[0].id);
   const [shiny, setShiny] = useState(false);
+
+  const createDexMutation = useCreateDex();
+
+  useEffect(() => {
+    if (games && !game) {
+      setGame(games[0].id);
+    }
+  }, [games, game]);
+
+  useEffect(() => {
+    if (games && dexTypesByGameFamilyId && !dexType) {
+      setDexType(dexTypesByGameFamilyId[games[0].game_family.id][0].id);
+    }
+  }, [games, dexTypesByGameFamilyId, dexType]);
 
   const handleRequestClose = () => {
     setError(null);
@@ -70,15 +86,19 @@ export function DexCreate ({ isOpen, onRequestClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const payload = {
-      username: session.username,
-      payload: { title, slug: slug(title, { lower: true }), shiny, game, dex_type: dexType },
-    };
-
     setError(null);
 
     try {
-      const dex = await dispatch(createDex(payload));
+      const dex = await createDexMutation.mutateAsync({
+        username: session.username,
+        payload: {
+          title,
+          slug: slug(title, { lower: true }),
+          shiny,
+          game,
+          dex_type: dexType,
+        },
+      });
       ReactGA.event({ action: 'create', category: 'Dex' });
       history.push(`/u/${session.username}/${dex.slug}`);
     } catch (err) {

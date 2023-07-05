@@ -1,6 +1,5 @@
 import find from 'lodash/find';
 import groupBy from 'lodash/groupBy';
-import isEmpty from 'lodash/isEmpty';
 import keyBy from 'lodash/keyBy';
 import slug from 'slug';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -41,8 +40,8 @@ export function Register () {
   const [friendCode3ds, setFriendCode3ds] = useState('');
   const [friendCodeSwitch, setFriendCodeSwitch] = useState('');
   const [title, setTitle] = useState('');
-  const [game, setGame] = useState(!isEmpty(games) && games[0].id);
-  const [dexType, setDexType] = useState(!isEmpty(games) && !isEmpty(dexTypesByGameFamilyId) && dexTypesByGameFamilyId[games[0].game_family.id][0].id);
+  const [game, setGame] = useState(games?.[0].id);
+  const [dexType, setDexType] = useState(dexTypesByGameFamilyId[games?.[0].game_family.id]?.[0].id);
   const [shiny, setShiny] = useState(false);
 
   const createUserMutation = useCreateUser();
