@@ -1,8 +1,13 @@
-import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 
-export function FormWarning ({ message }) {
+import type { ReactNode } from 'react';
+
+interface Props {
+  message: ReactNode;
+}
+
+export function FormWarning ({ message }: Props) {
   if (!message) {
     return null;
   }
@@ -16,7 +21,3 @@ export function FormWarning ({ message }) {
     </div>
   );
 }
-
-FormWarning.propTypes = {
-  message: PropTypes.any,
-};
