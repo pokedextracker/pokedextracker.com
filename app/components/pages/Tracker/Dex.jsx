@@ -14,20 +14,22 @@ import { ReactGA } from '../../../utils/analytics';
 import { Scroll } from './Scroll';
 import { SearchResults } from './SearchResults';
 import { groupBoxes } from '../../../utils/pokemon';
+import { useCaptures } from '../../../hooks/queries/captures';
 import { useUser } from '../../../hooks/queries/users';
 
 const DEFER_CUTOFF = 1;
 
-export function Dex ({ hideCaught, onScrollButtonClick, query, setHideCaught, setQuery }) {
+export function Dex ({ hideCaught, showScrollButton, onScrollButtonClick, query, setHideCaught, setQuery }) {
   const { username, slug } = useParams();
 
   const user = useUser(username).data;
   const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
+  const captures = useCaptures(username, slug).data;
 
-  const caught = useMemo(() => dex.captures.filter(({ captured }) => captured).length, [dex.captures]);
-  const total = dex.captures.length;
+  const caught = useMemo(() => captures.filter(({ captured }) => captured).length, [captures]);
+  const total = captures.length;
 
-  const boxes = useMemo(() => groupBoxes(dex.captures), [dex.captures]);
+  const boxes = useMemo(() => groupBoxes(captures), [captures]);
   const boxs = useMemo(() => {
     return boxes.map((box, i) => (
       <Box
@@ -42,7 +44,7 @@ export function Dex ({ hideCaught, onScrollButtonClick, query, setHideCaught, se
   return (
     <div className="dex">
       <div className="wrapper">
-        <Scroll onClick={onScrollButtonClick} />
+        <Scroll onClick={onScrollButtonClick} showScroll={showScrollButton} />
         <Notification />
         <header>
           <Header />
@@ -57,7 +59,7 @@ export function Dex ({ hideCaught, onScrollButtonClick, query, setHideCaught, se
         </div>
         {query.length > 0 || hideCaught ?
           <SearchResults
-            captures={dex.captures}
+            captures={captures}
             hideCaught={hideCaught}
             query={query}
             setHideCaught={setHideCaught}

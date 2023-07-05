@@ -1,7 +1,7 @@
 import keyBy from 'lodash/keyBy';
 import throttle from 'lodash/throttle';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useParams } from 'react-router';
 
 import { Dex } from './Dex';
@@ -12,11 +12,8 @@ import { NotFound } from '../NotFound';
 import { Reload } from '../../library/Reload';
 import { SCROLL_DEBOUNCE, SHOW_SCROLL_THRESHOLD } from './Scroll';
 import { SearchBar } from './SearchBar';
-import { checkVersion } from '../../../actions/utils';
-import { clearPokemon, setCurrentPokemon } from '../../../actions/pokemon';
-import { listCaptures } from '../../../actions/capture';
-import { retrieveDex, setCurrentDex } from '../../../actions/dex';
-import { setShowScroll } from '../../../actions/tracker';
+import { setCurrentPokemon } from '../../../actions/pokemon';
+import { useCaptures } from '../../../hooks/queries/captures';
 import { useUser } from '../../../hooks/queries/users';
 
 export function Tracker () {
@@ -26,18 +23,14 @@ export function Tracker () {
 
   const trackerRef = useRef(null);
 
-  const {
-    data: user,
-    isLoading: userIsLoading,
-  } = useUser(username);
+  const { data: user, isLoading: userIsLoading } = useUser(username);
+  const { data: captures, isLoading: capturesIsLoading } = useCaptures(username, slug);
 
-  const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
+  const dex = useMemo(() => keyBy(user?.dexes, 'slug')[slug], [user, slug]);
 
-  const showScroll = useSelector(({ showScroll }) => showScroll);
-
-  const [isLoading, setIsLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [hideCaught, setHideCaught] = useState(false);
+  const [showScroll, setShowScroll] = useState(false);
 
   useEffect(() => {
     document.title = `${username}'s Living Dex | Pokédex Tracker`;
@@ -50,31 +43,16 @@ export function Tracker () {
   }, [query]);
 
   useEffect(() => {
-    (async () => {
-      setIsLoading(true);
-
-      dispatch(checkVersion());
-      dispatch(clearPokemon());
-      dispatch(setShowScroll(false));
-      dispatch(setCurrentDex(slug, username));
-
-      try {
-        const d = await dispatch(retrieveDex(slug, username));
-        const captures = await dispatch(listCaptures(d, username));
-        dispatch(setCurrentPokemon(captures[0].pokemon.id));
-
-        setIsLoading(false);
-      } catch (err) {
-        setIsLoading(false);
-      }
-    })();
-  }, [slug, username]);
+    if (captures) {
+      dispatch(setCurrentPokemon(captures[0].pokemon.id));
+    }
+  }, [captures]);
 
   const handleScroll = throttle(() => {
     if (!showScroll && trackerRef.current && trackerRef.current.scrollTop >= SHOW_SCROLL_THRESHOLD) {
-      dispatch(setShowScroll(true));
+      setShowScroll(true);
     } else if (showScroll && trackerRef.current && trackerRef.current.scrollTop < SHOW_SCROLL_THRESHOLD) {
-      dispatch(setShowScroll(false));
+      setShowScroll(false);
     }
   }, SCROLL_DEBOUNCE);
 
@@ -84,7 +62,7 @@ export function Tracker () {
     }
   }, [trackerRef.current]);
 
-  if (isLoading || userIsLoading) {
+  if (userIsLoading || capturesIsLoading) {
     return <div className="loading">Loading...</div>;
   }
 
@@ -111,6 +89,7 @@ export function Tracker () {
               query={query}
               setHideCaught={setHideCaught}
               setQuery={setQuery}
+              showScrollButton={showScroll}
             />
             <Footer />
           </div>

@@ -1,6 +1,5 @@
 import { combineReducers } from 'redux';
 
-import { currentDex } from './current-dex';
 import { currentPokemon } from './current-pokemon';
 import { dexTypesByGameFamilyId } from './dex-types-by-game-family-id';
 import { dexTypesById } from './dex-types-by-id';
@@ -10,11 +9,9 @@ import { notification } from './notification';
 import { pokemon } from './pokemon';
 import { reload } from './reload';
 import { showInfo } from './show-info';
-import { showScroll } from './show-scroll';
 import { users } from './users';
 
 export const reducer = combineReducers({
-  currentDex,
   currentPokemon,
   dexTypesByGameFamilyId,
   dexTypesById,
@@ -24,6 +21,5 @@ export const reducer = combineReducers({
   pokemon,
   reload,
   showInfo,
-  showScroll,
   users,
 });

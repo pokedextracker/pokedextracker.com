@@ -43,7 +43,7 @@ export function Info () {
   const showInfo = useSelector(({ showInfo }) => showInfo);
 
   useEffect(() => {
-    if (!pokemon) {
+    if (!pokemon && currentPokemon) {
       dispatch(retrievePokemon(currentPokemon, {
         dex_type: dex.dex_type.id,
       }));
