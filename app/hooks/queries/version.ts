@@ -4,17 +4,13 @@ export enum QueryKey {
   RetrieveVersion = 'RetrieveVersion',
 }
 
-interface VersionResponse {
-  version: string;
-}
-
 export const useVersion = () => {
-  return useQuery<VersionResponse, Error, VersionResponse>({
+  return useQuery<string, Error, string>({
     queryKey: [QueryKey.RetrieveVersion],
     queryFn: async () => {
       const resp = await fetch('/version', { method: 'GET' });
       const text = await resp.text();
-      return { version: text.trim() };
+      return text.trim();
     },
     refetchInterval: 30_000,
     refetchOnReconnect: 'always',

@@ -9,7 +9,6 @@ import { Footer } from '../library/Footer';
 import { Nav } from '../library/Nav';
 import { ReactGA } from '../../utils/analytics';
 import { Reload } from '../library/Reload';
-import { checkVersion } from '../../actions/utils';
 import { friendCode3dsFormatter, friendCodeSwitchFormatter } from '../../utils/formatting';
 import { updateUser } from '../../actions/user';
 import { useSession } from '../../hooks/contexts/use-session';
@@ -46,10 +45,6 @@ export function Account () {
       setFriendCodeSwitch(sessionUser.friend_code_switch);
     }
   }, [sessionUser]);
-
-  useEffect(() => {
-    dispatch(checkVersion());
-  }, []);
 
   if (!session) {
     return null;

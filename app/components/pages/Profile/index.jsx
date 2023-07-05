@@ -13,7 +13,6 @@ import { Nav } from '../../library/Nav';
 import { NotFound } from '../NotFound';
 import { Notification } from '../../library/Notification';
 import { Reload } from '../../library/Reload';
-import { checkVersion } from '../../../actions/utils';
 import { listGames } from '../../../actions/game';
 import { listDexTypes } from '../../../actions/dex-type';
 import { useSession } from '../../../hooks/contexts/use-session';
@@ -36,8 +35,6 @@ export function Profile () {
 
   const reload = async () => {
     setIsLoading(true);
-
-    dispatch(checkVersion());
 
     try {
       await Promise.all([

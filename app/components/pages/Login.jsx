@@ -1,7 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import { faAsterisk, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 
@@ -10,13 +9,10 @@ import { Footer } from '../library/Footer';
 import { Nav } from '../library/Nav';
 import { ReactGA } from '../../utils/analytics';
 import { Reload } from '../library/Reload';
-import { checkVersion } from '../../actions/utils';
 import { useLogin } from '../../hooks/queries/sessions';
 import { useSession } from '../../hooks/contexts/use-session';
 
 export function Login () {
-  const dispatch = useDispatch();
-
   const history = useHistory();
 
   const { session, setToken } = useSession();
@@ -35,10 +31,6 @@ export function Login () {
     if (session) {
       history.push(`/u/${session.username}`);
     }
-  }, []);
-
-  useEffect(() => {
-    dispatch(checkVersion());
   }, []);
 
   const handleSubmit = async (e) => {

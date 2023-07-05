@@ -1,5 +1,4 @@
 import { API } from '../utils/api';
-import { checkVersion } from './utils';
 
 export const MARK_PENDING = 'MARK_PENDING';
 export const MARK_CAPTURED = 'MARK_CAPTURED';
@@ -7,7 +6,6 @@ export const SET_CAPTURES = 'SET_CAPTURES';
 
 export function createCaptures ({ payload, slug, username }) {
   return (dispatch) => {
-    dispatch(checkVersion());
     dispatch(markPending(payload.pokemon, slug, username));
 
     return API.post('/captures', payload)
@@ -17,23 +15,10 @@ export function createCaptures ({ payload, slug, username }) {
 
 export function deleteCaptures ({ payload, slug, username }) {
   return (dispatch) => {
-    dispatch(checkVersion());
     dispatch(markPending(payload.pokemon, slug, username));
 
     return API.delete('/captures', payload)
     .then(() => dispatch(markCaptured(false, payload.pokemon, slug, username)));
-  };
-}
-
-export function listCaptures ({ slug }, username) {
-  return (dispatch) => {
-    dispatch(checkVersion());
-
-    return API.get(`/users/${username}/dexes/${slug}/captures`)
-    .then((captures) => {
-      dispatch(setCaptures(captures, slug, username));
-      return captures;
-    });
   };
 }
 
