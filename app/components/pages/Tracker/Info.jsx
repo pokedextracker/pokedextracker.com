@@ -1,8 +1,10 @@
 import find from 'lodash/find';
+import keyBy from 'lodash/keyBy';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretLeft, faCaretRight, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useMemo } from 'react';
+import { useParams } from 'react-router';
 
 import { EvolutionFamily } from './EvolutionFamily';
 import { InfoLocations } from './InfoLocations';
@@ -12,6 +14,7 @@ import { iconClass } from '../../../utils/pokemon';
 import { nationalId, padding, serebiiLink } from '../../../utils/formatting';
 import { retrievePokemon } from '../../../actions/pokemon';
 import { setShowInfo } from '../../../actions/tracker';
+import { useUser } from '../../../hooks/queries/users';
 
 const SEREBII_LINKS = {
   x_y: 'pokedex-xy',
@@ -30,8 +33,12 @@ const SEREBII_LINKS = {
 export function Info () {
   const dispatch = useDispatch();
 
+  const { username, slug } = useParams();
+
+  const user = useUser(username).data;
+  const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
+
   const currentPokemon = useSelector(({ currentPokemon }) => currentPokemon);
-  const dex = useSelector(({ currentDex, currentUser, users }) => users[currentUser].dexesBySlug[currentDex]);
   const pokemon = useSelector(({ currentPokemon, pokemon }) => pokemon[currentPokemon]);
   const showInfo = useSelector(({ showInfo }) => showInfo);
 

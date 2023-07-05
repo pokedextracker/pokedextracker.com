@@ -1,8 +1,11 @@
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import keyBy from 'lodash/keyBy';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInfo } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { useMemo } from 'react';
+import { useParams } from 'react-router';
 
 import { PokemonName } from '../../library/PokemonName';
 import { ReactGA } from '../../../utils/analytics';
@@ -13,15 +16,17 @@ import { setCurrentPokemon } from '../../../actions/pokemon';
 import { setShowInfo } from '../../../actions/tracker';
 import { useDelayedRender } from '../../../hooks/use-delayed-render';
 import { useSession } from '../../../hooks/contexts/use-session';
+import { useUser } from '../../../hooks/queries/users';
 
 export function Pokemon ({ capture, delay }) {
   const render = useDelayedRender(delay);
 
-  const dispatch = useDispatch();
+  const { username, slug } = useParams();
 
-  const currentDex = useSelector(({ currentDex }) => currentDex);
-  const dex = useSelector(({ currentDex, currentUser, users }) => users[currentUser].dexesBySlug[currentDex]);
-  const user = useSelector(({ currentUser, users }) => users[currentUser]);
+  const user = useUser(username).data;
+  const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
+
+  const dispatch = useDispatch();
 
   const { session } = useSession();
 
@@ -42,10 +47,10 @@ export function Pokemon ({ capture, delay }) {
     const payload = { dex: dex.id, pokemon: [capture.pokemon.id] };
 
     if (capture.captured) {
-      await dispatch(deleteCaptures({ payload, slug: currentDex, username: user.username }));
+      await dispatch(deleteCaptures({ payload, slug, username: user.username }));
       ReactGA.event({ category: 'Pokemon', label: capture.pokemon.name, action: 'unmark' });
     } else {
-      await dispatch(createCaptures({ payload, slug: currentDex, username: user.username }));
+      await dispatch(createCaptures({ payload, slug, username: user.username }));
       ReactGA.event({ category: 'Pokemon', label: capture.pokemon.name, action: 'mark' });
     }
   };

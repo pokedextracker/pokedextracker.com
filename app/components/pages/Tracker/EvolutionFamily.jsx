@@ -1,14 +1,21 @@
 import PropTypes from 'prop-types';
-import { useDispatch, useSelector } from 'react-redux';
+import keyBy from 'lodash/keyBy';
+import { useDispatch } from 'react-redux';
+import { useMemo } from 'react';
+import { useParams } from 'react-router';
 
 import { Evolutions } from './Evolutions';
 import { iconClass } from '../../../utils/pokemon';
 import { setCurrentPokemon } from '../../../actions/pokemon';
+import { useUser } from '../../../hooks/queries/users';
 
 export function EvolutionFamily ({ family }) {
   const dispatch = useDispatch();
 
-  const dex = useSelector(({ currentDex, currentUser, users }) => users[currentUser].dexesBySlug[currentDex]);
+  const { username, slug } = useParams();
+
+  const user = useUser(username).data;
+  const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
 
   let column1 = null;
   let column2 = null;

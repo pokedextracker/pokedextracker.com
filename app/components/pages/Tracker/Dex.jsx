@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types';
+import keyBy from 'lodash/keyBy';
 import { Link } from 'react-router-dom';
 import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { useParams } from 'react-router';
 
 import { Box } from './Box';
 import { DonatedFlair } from '../../library/DonatedFlair';
@@ -13,13 +14,15 @@ import { ReactGA } from '../../../utils/analytics';
 import { Scroll } from './Scroll';
 import { SearchResults } from './SearchResults';
 import { groupBoxes } from '../../../utils/pokemon';
+import { useUser } from '../../../hooks/queries/users';
 
 const DEFER_CUTOFF = 1;
 
 export function Dex ({ hideCaught, onScrollButtonClick, query, setHideCaught, setQuery }) {
-  const dex = useSelector(({ currentDex, currentUser, users }) => users[currentUser].dexesBySlug[currentDex]);
-  const username = useSelector(({ currentUser }) => currentUser);
-  const user = useSelector(({ currentUser, users }) => users[currentUser]);
+  const { username, slug } = useParams();
+
+  const user = useUser(username).data;
+  const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
 
   const caught = useMemo(() => dex.captures.filter(({ captured }) => captured).length, [dex.captures]);
   const total = dex.captures.length;

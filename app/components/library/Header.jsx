@@ -1,19 +1,23 @@
 import PropTypes from 'prop-types';
+import keyBy from 'lodash/keyBy';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLink } from '@fortawesome/free-solid-svg-icons';
 import { faTwitter } from '@fortawesome/free-brands-svg-icons';
-import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router';
 
 import { DexIndicator } from './DexIndicator';
 import { DonatedFlair } from './DonatedFlair';
 import { ReactGA } from '../../utils/analytics';
 import { Share } from './Share';
 import { useSession } from '../../hooks/contexts/use-session';
+import { useUser } from '../../hooks/queries/users';
 
 export function Header ({ profile }) {
-  const dex = useSelector(({ currentDex, currentUser, users }) => users[currentUser].dexesBySlug[currentDex]);
-  const user = useSelector(({ currentUser, users }) => users[currentUser]);
+  const { username, slug } = useParams();
+
+  const user = useUser(username).data;
+  const dex = useMemo(() => !profile ? keyBy(user.dexes, 'slug')[slug] : null, [profile, user, slug]);
 
   const { session } = useSession();
 

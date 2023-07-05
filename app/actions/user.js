@@ -1,9 +1,7 @@
 import { API } from '../utils/api';
-import { checkVersion } from './utils';
 import { setToken } from './session';
 
 export const SET_USER = 'SET_USER';
-export const SET_CURRENT_USER = 'SET_CURRENT_USER';
 
 export function createUser (payload) {
   const { password, password_confirm } = payload;
@@ -26,14 +24,6 @@ export function createUser (payload) {
   };
 }
 
-export function retrieveUser (username) {
-  return (dispatch) => {
-    dispatch(checkVersion());
-
-    return API.get(`/users/${username}`);
-  };
-}
-
 export function updateUser ({ username, payload }) {
   return (dispatch) => {
     return Promise.resolve()
@@ -52,12 +42,4 @@ export function updateUser ({ username, payload }) {
       dispatch(setToken(token));
     });
   };
-}
-
-export function setCurrentUser (username) {
-  return { type: SET_CURRENT_USER, username };
-}
-
-export function setUser (user) {
-  return { type: SET_USER, user };
 }

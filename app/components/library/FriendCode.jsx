@@ -1,15 +1,18 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
-import { useSelector } from 'react-redux';
+import { useParams } from 'react-router';
 
 import { ReactGA } from '../../utils/analytics';
 import { useSession } from '../../hooks/contexts/use-session';
+import { useUser } from '../../hooks/queries/users';
 
 export function FriendCode () {
-  const { session } = useSession();
+  const { username } = useParams();
 
-  const user = useSelector(({ currentUser, users }) => users[currentUser]);
+  const user = useUser(username).data;
+
+  const { session } = useSession();
 
   const ownPage = session && session.id === user.id;
 

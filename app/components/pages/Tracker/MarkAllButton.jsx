@@ -1,20 +1,24 @@
 import PropTypes from 'prop-types';
-import { useDispatch, useSelector } from 'react-redux';
-import { useMemo, useState } from 'react';
+import keyBy from 'lodash/keyBy';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleNotch } from '@fortawesome/free-solid-svg-icons';
+import { useDispatch } from 'react-redux';
+import { useMemo, useState } from 'react';
+import { useParams } from 'react-router';
 
 import { ReactGA } from '../../../utils/analytics';
 import { createCaptures, deleteCaptures } from '../../../actions/capture';
 import { padding } from '../../../utils/formatting';
 import { useSession } from '../../../hooks/contexts/use-session';
+import { useUser } from '../../../hooks/queries/users';
 
 export function MarkAllButton ({ captures }) {
   const dispatch = useDispatch();
 
-  const currentDex = useSelector(({ currentDex }) => currentDex);
-  const dex = useSelector(({ currentDex, currentUser, users }) => users[currentUser].dexesBySlug[currentDex]);
-  const user = useSelector(({ currentUser, users }) => users[currentUser]);
+  const { username, slug } = useParams();
+
+  const user = useUser(username).data;
+  const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
 
   const { session } = useSession();
 
@@ -40,9 +44,9 @@ export function MarkAllButton ({ captures }) {
     setIsLoading(true);
 
     if (deleting) {
-      await dispatch(deleteCaptures({ payload, slug: currentDex, username: user.username }));
+      await dispatch(deleteCaptures({ payload, slug, username: user.username }));
     } else {
-      await dispatch(createCaptures({ payload, slug: currentDex, username: user.username }));
+      await dispatch(createCaptures({ payload, slug, username: user.username }));
     }
 
     ReactGA.event({

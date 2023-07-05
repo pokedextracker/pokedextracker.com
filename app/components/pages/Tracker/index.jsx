@@ -1,5 +1,6 @@
+import keyBy from 'lodash/keyBy';
 import throttle from 'lodash/throttle';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router';
 
@@ -15,17 +16,23 @@ import { checkVersion } from '../../../actions/utils';
 import { clearPokemon, setCurrentPokemon } from '../../../actions/pokemon';
 import { listCaptures } from '../../../actions/capture';
 import { retrieveDex, setCurrentDex } from '../../../actions/dex';
-import { retrieveUser, setUser } from '../../../actions/user';
 import { setShowScroll } from '../../../actions/tracker';
+import { useUser } from '../../../hooks/queries/users';
 
 export function Tracker () {
   const dispatch = useDispatch();
 
-  const { slug, username } = useParams();
+  const { username, slug } = useParams();
 
   const trackerRef = useRef(null);
 
-  const dex = useSelector(({ currentDex, currentUser, users }) => users[currentUser] && users[currentUser].dexesBySlug[currentDex]);
+  const {
+    data: user,
+    isLoading: userIsLoading,
+  } = useUser(username);
+
+  const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
+
   const showScroll = useSelector(({ showScroll }) => showScroll);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -52,8 +59,6 @@ export function Tracker () {
       dispatch(setCurrentDex(slug, username));
 
       try {
-        const u = await dispatch(retrieveUser(username));
-        dispatch(setUser(u));
         const d = await dispatch(retrieveDex(slug, username));
         const captures = await dispatch(listCaptures(d, username));
         dispatch(setCurrentPokemon(captures[0].pokemon.id));
@@ -79,7 +84,7 @@ export function Tracker () {
     }
   }, [trackerRef.current]);
 
-  if (isLoading) {
+  if (isLoading || userIsLoading) {
     return <div className="loading">Loading...</div>;
   }
 

@@ -2,7 +2,6 @@ import { combineReducers } from 'redux';
 
 import { currentDex } from './current-dex';
 import { currentPokemon } from './current-pokemon';
-import { currentUser } from './current-user';
 import { dexTypesByGameFamilyId } from './dex-types-by-game-family-id';
 import { dexTypesById } from './dex-types-by-id';
 import { games } from './games';
@@ -17,7 +16,6 @@ import { users } from './users';
 export const reducer = combineReducers({
   currentDex,
   currentPokemon,
-  currentUser,
   dexTypesByGameFamilyId,
   dexTypesById,
   games,

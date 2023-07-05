@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 
@@ -15,16 +15,20 @@ import { Notification } from '../../library/Notification';
 import { Reload } from '../../library/Reload';
 import { checkVersion } from '../../../actions/utils';
 import { listGames } from '../../../actions/game';
-import { retrieveUser, setCurrentUser, setUser } from '../../../actions/user';
 import { listDexTypes } from '../../../actions/dex-type';
 import { useSession } from '../../../hooks/contexts/use-session';
+import { useUser } from '../../../hooks/queries/users';
 
 export function Profile () {
   const dispatch = useDispatch();
 
   const { username } = useParams();
 
-  const user = useSelector(({ currentUser, users }) => users[currentUser]);
+  const {
+    data: user,
+    isLoading: userIsLoading,
+  } = useUser(username);
+  console.log(user);
 
   const { session } = useSession();
 
@@ -35,16 +39,12 @@ export function Profile () {
     setIsLoading(true);
 
     dispatch(checkVersion());
-    dispatch(setCurrentUser(username));
 
     try {
-      const [u] = await Promise.all([
-        dispatch(retrieveUser(username)),
+      await Promise.all([
         dispatch(listGames()),
         dispatch(listDexTypes()),
       ]);
-
-      dispatch(setUser(u));
 
       setIsLoading(false);
     } catch (err) {
@@ -63,7 +63,7 @@ export function Profile () {
   const handleCreateNewDexClick = () => setShowDexCreate(true);
   const handleDexCreateRequestClose = () => setShowDexCreate(false);
 
-  if (isLoading) {
+  if (isLoading || userIsLoading) {
     return <div className="loading">Loading...</div>;
   }
 

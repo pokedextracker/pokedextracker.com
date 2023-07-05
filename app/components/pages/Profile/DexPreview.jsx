@@ -2,16 +2,19 @@ import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
-import { useSelector } from 'react-redux';
+import { useParams } from 'react-router';
 import { useState } from 'react';
 
 import { DexEdit } from './DexEdit';
 import { DexIndicator } from '../../library/DexIndicator';
 import { Progress } from '../../library/Progress';
 import { useSession } from '../../../hooks/contexts/use-session';
+import { useUser } from '../../../hooks/queries/users';
 
 export function DexPreview ({ dex, reload }) {
-  const user = useSelector(({ currentUser, users }) => users[currentUser]);
+  const { username } = useParams();
+
+  const user = useUser(username).data;
 
   const { session } = useSession();
 
