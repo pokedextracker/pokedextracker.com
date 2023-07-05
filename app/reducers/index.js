@@ -6,7 +6,6 @@ import { dexTypesById } from './dex-types-by-id';
 import { games } from './games';
 import { gamesById } from './games-by-id';
 import { pokemon } from './pokemon';
-import { showInfo } from './show-info';
 import { users } from './users';
 
 export const reducer = combineReducers({
@@ -16,6 +15,5 @@ export const reducer = combineReducers({
   games,
   gamesById,
   pokemon,
-  showInfo,
   users,
 });

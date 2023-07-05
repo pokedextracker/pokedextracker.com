@@ -13,8 +13,8 @@ import { createCaptures, deleteCaptures } from '../../../actions/capture';
 import { iconClass } from '../../../utils/pokemon';
 import { nationalId, padding } from '../../../utils/formatting';
 import { setCurrentPokemon } from '../../../actions/pokemon';
-import { setShowInfo } from '../../../actions/tracker';
 import { useDelayedRender } from '../../../hooks/use-delayed-render';
+import { useLocalStorageContext } from '../../../hooks/contexts/use-local-storage-context';
 import { useSession } from '../../../hooks/contexts/use-session';
 import { useUser } from '../../../hooks/queries/users';
 
@@ -25,6 +25,8 @@ export function Pokemon ({ capture, delay }) {
 
   const user = useUser(username).data;
   const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
+
+  const { setShowInfo } = useLocalStorageContext();
 
   const dispatch = useDispatch();
 
@@ -59,7 +61,7 @@ export function Pokemon ({ capture, delay }) {
     ReactGA.event({ action: 'show info', category: 'Pokemon', label: capture.pokemon.name });
 
     dispatch(setCurrentPokemon(capture.pokemon.id));
-    dispatch(setShowInfo(true));
+    setShowInfo(true);
   };
 
   const classes = {

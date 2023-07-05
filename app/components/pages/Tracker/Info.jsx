@@ -13,7 +13,7 @@ import { ReactGA } from '../../../utils/analytics';
 import { iconClass } from '../../../utils/pokemon';
 import { nationalId, padding, serebiiLink } from '../../../utils/formatting';
 import { retrievePokemon } from '../../../actions/pokemon';
-import { setShowInfo } from '../../../actions/tracker';
+import { useLocalStorageContext } from '../../../hooks/contexts/use-local-storage-context';
 import { useUser } from '../../../hooks/queries/users';
 
 const SEREBII_LINKS = {
@@ -38,9 +38,10 @@ export function Info () {
   const user = useUser(username).data;
   const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
 
+  const { showInfo, setShowInfo } = useLocalStorageContext();
+
   const currentPokemon = useSelector(({ currentPokemon }) => currentPokemon);
   const pokemon = useSelector(({ currentPokemon, pokemon }) => pokemon[currentPokemon]);
-  const showInfo = useSelector(({ showInfo }) => showInfo);
 
   useEffect(() => {
     if (!pokemon && currentPokemon) {
@@ -80,7 +81,7 @@ export function Info () {
 
   const handleInfoClick = () => {
     ReactGA.event({ action: showInfo ? 'collapse' : 'uncollapse', category: 'Info' });
-    dispatch(setShowInfo(!showInfo));
+    setShowInfo(!showInfo);
   };
 
   if (!pokemon) {
