@@ -1,5 +1,4 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { faCaretDown, faCog, faMoon, faSignOutAlt, faSun, faTh, faUser } from '@fortawesome/free-solid-svg-icons';
 
@@ -27,14 +26,14 @@ export function Nav () {
   }
 
   const links = (
-    <Fragment>
+    <>
       <Link to="/">Pokédex Tracker</Link>
       <a className="tooltip tooltip-below" onClick={handleNightModeClick}>
         <FontAwesomeIcon icon={isNightMode ? faSun : faMoon} />
         <span className="tooltip-text">Night Mode {isNightMode ? 'Off' : 'On'}</span>
       </a>
       <a href="https://www.patreon.com/pokedextracker" rel="noopener noreferrer" target="_blank">Patreon</a>
-    </Fragment>
+    </>
   );
 
   if (session && sessionUser) {

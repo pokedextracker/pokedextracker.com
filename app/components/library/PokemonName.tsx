@@ -1,5 +1,4 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Fragment } from 'react';
 import { faVenus, faMars } from '@fortawesome/free-solid-svg-icons';
 
 interface Props {
@@ -15,10 +14,10 @@ export function PokemonName ({ name }: Props) {
   }
 
   return (
-    <Fragment>
+    <>
       {name.replace(/[♂♀]/g, '')}
       {male && <FontAwesomeIcon icon={faMars} />}
       {female && <FontAwesomeIcon icon={faVenus} />}
-    </Fragment>
+    </>
   );
 }
