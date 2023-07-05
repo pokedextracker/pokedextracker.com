@@ -34,6 +34,7 @@
     "@types/react-modal": "^3.16.0",
     "@types/react-redux": "^7.1.25",
     "@types/react-router-dom": "^5.3.3",
+    "@types/slug": "^5.0.3",
     "babel-loader": "^9.1.2",
     "classnames": "^2.3.2",
     "core-js": "^3.30.2",

@@ -1673,6 +1673,11 @@
     "@types/mime" "*"
     "@types/node" "*"
 
+"@types/slug@^5.0.3":
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/@types/slug/-/slug-5.0.3.tgz#6186849366580a99cdd6f1b50e2b863a62105c95"
+  integrity sha512-yPX0bb1SvrpaGlHuSiz6EicgRI4VBE+LO7IANlZagQwtaoKjLLcZc8y6s13vKp41mYvMCSzjtObxvU7/0JRPaA==
+
 "@types/sockjs@^0.3.33":
   version "0.3.33"
   resolved "https://registry.yarnpkg.com/@types/sockjs/-/sockjs-0.3.33.tgz#570d3a0b99ac995360e3136fd6045113b1bd236f"

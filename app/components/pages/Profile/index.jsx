@@ -1,6 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 
