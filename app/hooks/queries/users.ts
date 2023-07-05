@@ -40,9 +40,10 @@ interface CreateUserMutationVariables {
 }
 
 export const useCreateUser = () => {
-  return useMutation<User, PokedexTrackerError, CreateUserMutationVariables>({
-    mutationFn: ({ payload }) => {
-      return API.post('/users', payload);
+  return useMutation<Session, PokedexTrackerError, CreateUserMutationVariables>({
+    mutationFn: async ({ payload }) => {
+      const { token } = await API.post<{ token: string }>('/users', payload);
+      return tokenToUser(token) as Session;
     },
   });
 };

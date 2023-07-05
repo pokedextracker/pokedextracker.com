@@ -1,12 +1,12 @@
 import find from 'lodash/find';
 import groupBy from 'lodash/groupBy';
 import isEmpty from 'lodash/isEmpty';
+import keyBy from 'lodash/keyBy';
 import slug from 'slug';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import { faAsterisk, faChevronDown, faLongArrowAltRight, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useHistory } from 'react-router';
 
 import { Alert } from '../library/Alert';
@@ -14,26 +14,25 @@ import { Footer } from '../library/Footer';
 import { Nav } from '../library/Nav';
 import { ReactGA } from '../../utils/analytics';
 import { Reload } from '../library/Reload';
-import { createUser } from '../../actions/user';
 import { friendCode3dsFormatter, friendCodeSwitchFormatter } from '../../utils/formatting';
-import { listGames } from '../../actions/game';
-import { listDexTypes } from '../../actions/dex-type';
+import { useCreateUser } from '../../hooks/queries/users';
+import { useDexTypes } from '../../hooks/queries/dex-types';
+import { useGames } from '../../hooks/queries/games';
 import { useLocalStorageContext } from '../../hooks/contexts/use-local-storage-context';
 import { useSession } from '../../hooks/contexts/use-session';
 
 export function Register () {
-  const dispatch = useDispatch();
-
   const history = useHistory();
 
   const { setHideNotification } = useLocalStorageContext();
 
-  const games = useSelector(({ games }) => games);
-  const gamesById = useSelector(({ gamesById }) => gamesById);
-  const dexTypesById = useSelector(({ dexTypesById }) => dexTypesById);
-  const dexTypesByGameFamilyId = useSelector(({ dexTypesByGameFamilyId }) => dexTypesByGameFamilyId);
+  const { session, setToken } = useSession();
+  const { data: games } = useGames();
+  const { data: dexTypes } = useDexTypes();
 
-  const { session } = useSession();
+  const gamesById = useMemo(() => keyBy(games, 'id'), [games]);
+  const dexTypesById = useMemo(() => keyBy(dexTypes, 'id'), [dexTypes]);
+  const dexTypesByGameFamilyId = useMemo(() => groupBy(dexTypes, 'game_family_id'), [dexTypes]);
 
   const [error, setError] = useState(null);
   const [username, setUsername] = useState('');
@@ -46,6 +45,8 @@ export function Register () {
   const [dexType, setDexType] = useState(!isEmpty(games) && !isEmpty(dexTypesByGameFamilyId) && dexTypesByGameFamilyId[games[0].game_family.id][0].id);
   const [shiny, setShiny] = useState(false);
 
+  const createUserMutation = useCreateUser();
+
   useEffect(() => {
     document.title = 'Register | Pokédex Tracker';
   }, []);
@@ -57,23 +58,28 @@ export function Register () {
   }, []);
 
   useEffect(() => {
-    (async () => {
-      if (!session) {
-        const g = await dispatch(listGames());
-        const dexTypes = await dispatch(listDexTypes());
-        setGame(g[0].id);
-        setDexType(groupBy(dexTypes, 'game_family_id')[g[0].game_family.id][0].id);
-      }
-    })();
-  }, []);
+    if (games && !game) {
+      setGame(games[0].id);
+    }
+  }, [games, game]);
+
+  useEffect(() => {
+    if (games && dexTypesByGameFamilyId && !dexType) {
+      setDexType(dexTypesByGameFamilyId[games[0].game_family.id][0].id);
+    }
+  }, [games, dexTypesByGameFamilyId, dexType]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (password !== passwordConfirm) {
+      setError('passwords need to match');
+      return;
+    }
+
     const payload = {
       username,
       password,
-      password_confirm: passwordConfirm,
       friend_code_3ds: friendCode3ds,
       friend_code_switch: friendCodeSwitch,
       title,
@@ -86,7 +92,8 @@ export function Register () {
     setError(null);
 
     try {
-      await dispatch(createUser(payload));
+      const { token } = await createUserMutation.mutateAsync({ payload });
+      setToken(token);
       ReactGA.event({ action: 'register', category: 'Session' });
       setHideNotification(true);
       history.push(`/u/${username}/${payload.slug}`);
@@ -124,7 +131,7 @@ export function Register () {
     setGame(newGameId);
   };
 
-  if (!game) {
+  if (!game || !dexType) {
     return null;
   }
 
