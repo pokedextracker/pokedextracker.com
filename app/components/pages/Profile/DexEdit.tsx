@@ -1,5 +1,4 @@
 import Modal from 'react-modal';
-import PropTypes from 'prop-types';
 import find from 'lodash/find';
 import groupBy from 'lodash/groupBy';
 import keyBy from 'lodash/keyBy';
@@ -17,23 +16,32 @@ import { useGames } from '../../../hooks/queries/games';
 import { useLocalStorageContext } from '../../../hooks/contexts/use-local-storage-context';
 import { useSession } from '../../../hooks/contexts/use-session';
 
+import type { ChangeEvent, MouseEvent, FormEvent } from 'react';
+import type { Dex, DexType, Game } from '../../../types';
+
 const GAME_WARNING = 'Any capture info specific to your old game will be lost.';
 const REGIONAL_WARNING = 'Any non-regional capture info will be lost.';
 const URL_WARNING = 'The old URL to your dex will not function anymore.';
 
-export function DexEdit ({ dex, isOpen, onRequestClose }) {
-  const formRef = useRef(null);
+interface Props {
+  dex: Dex;
+  isOpen: boolean;
+  onRequestClose: () => void;
+}
+
+export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
+  const formRef = useRef<HTMLDivElement>(null);
 
   const { isNightMode } = useLocalStorageContext();
   const { session } = useSession();
   const { data: games } = useGames();
   const { data: dexTypes } = useDexTypes();
 
-  const gamesById = useMemo(() => keyBy(games, 'id'), [games]);
-  const dexTypesById = useMemo(() => keyBy(dexTypes, 'id'), [dexTypes]);
-  const dexTypesByGameFamilyId = useMemo(() => groupBy(dexTypes, 'game_family_id'), [dexTypes]);
+  const gamesById = useMemo<Record<string, Game>>(() => keyBy(games, 'id'), [games]);
+  const dexTypesById = useMemo<Record<string, DexType>>(() => keyBy(dexTypes, 'id'), [dexTypes]);
+  const dexTypesByGameFamilyId = useMemo<Record<string, DexType[]>>(() => groupBy(dexTypes, 'game_family_id'), [dexTypes]);
 
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
   const [title, setTitle] = useState(dex.title);
   const [game, setGame] = useState(dex.game.id);
   const [dexType, setDexType] = useState(dex.dex_type.id);
@@ -47,7 +55,7 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
   const deleteDexMutation = useDeleteDex();
 
   const reset = () => {
-    setError(null);
+    setError('');
     setTitle(dex.title);
     setGame(dex.game.id);
     setDexType(dex.dex_type.id);
@@ -83,7 +91,7 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
     onRequestClose();
   };
 
-  const handleGameChange = (e) => {
+  const handleGameChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const newGameId = e.target.value;
 
     // Update the dex type appropriately since every game family has a different
@@ -104,9 +112,9 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
     setGame(newGameId);
   };
 
-  const handleTitleChange = (e) => setTitle(e.target.value);
+  const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value);
 
-  const handleDeleteClick = async (e) => {
+  const handleDeleteClick = async (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
 
     if (!isConfirmingDelete) {
@@ -114,21 +122,23 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
       return;
     }
 
-    setError(null);
+    setError('');
 
     try {
-      await deleteDexMutation.mutateAsync({ username: session.username, slug: dex.slug });
+      await deleteDexMutation.mutateAsync({ username: session!.username, slug: dex.slug });
       ReactGA.event({ action: 'delete', category: 'Dex' });
       handleRequestClose();
     } catch (err) {
-      setError(err.message);
+      if (err instanceof Error) {
+        setError(err.message);
+      }
       if (formRef.current) {
         formRef.current.scrollTop = 0;
       }
     }
   };
 
-  const handleUpdateSubmit = async (e) => {
+  const handleUpdateSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!isConfirmingUpdate && (showGameWarning || showRegionalWarning || showUrlWarning)) {
@@ -136,11 +146,11 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
       return;
     }
 
-    setError(null);
+    setError('');
 
     try {
       await updateDexMutation.mutateAsync({
-        username: session.username,
+        username: session!.username,
         slug: dex.slug,
         payload: {
           title,
@@ -153,7 +163,9 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
       ReactGA.event({ action: 'update', category: 'Dex' });
       handleRequestClose();
     } catch (err) {
-      setError(err.message);
+      if (err instanceof Error) {
+        setError(err.message);
+      }
       if (formRef.current) {
         formRef.current.scrollTop = 0;
       }
@@ -189,13 +201,13 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
         <form className="form-column" onSubmit={handleUpdateSubmit}>
           <Alert message={error} type="error" />
           <div className="form-group">
-            <div className="form-note">/u/{session.username}/{slug(title || 'Living Dex', { lower: true })}</div>
+            <div className="form-note">/u/{session!.username}/{slug(title || 'Living Dex', { lower: true })}</div>
             <label htmlFor="dex_title">Title</label>
             <FormWarning message={showUrlWarning && URL_WARNING} />
             <input
               className="form-control"
               id="dex_title"
-              maxLength="300"
+              maxLength={300}
               name="dex_title"
               onChange={handleTitleChange}
               placeholder="Living Dex"
@@ -263,9 +275,3 @@ export function DexEdit ({ dex, isOpen, onRequestClose }) {
     </Modal>
   );
 }
-
-DexEdit.propTypes = {
-  dex: PropTypes.object.isRequired,
-  isOpen: PropTypes.bool.isRequired,
-  onRequestClose: PropTypes.func.isRequired,
-};
