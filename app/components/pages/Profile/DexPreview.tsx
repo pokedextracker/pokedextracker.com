@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
@@ -11,10 +10,16 @@ import { Progress } from '../../library/Progress';
 import { useSession } from '../../../hooks/contexts/use-session';
 import { useUser } from '../../../hooks/queries/users';
 
-export function DexPreview ({ dex }) {
-  const { username } = useParams();
+import type { Dex } from '../../../types';
 
-  const user = useUser(username).data;
+interface Props {
+  dex: Dex;
+}
+
+export function DexPreview ({ dex }: Props) {
+  const { username } = useParams<{ username: string }>();
+
+  const user = useUser(username).data!;
 
   const { session } = useSession();
 
@@ -46,7 +51,3 @@ export function DexPreview ({ dex }) {
     </div>
   );
 }
-
-DexPreview.propTypes = {
-  dex: PropTypes.object.isRequired,
-};
