@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import keyBy from 'lodash/keyBy';
 import { Link } from 'react-router-dom';
 import { useMemo } from 'react';
@@ -17,14 +16,34 @@ import { groupBoxes } from '../../../utils/pokemon';
 import { useCaptures } from '../../../hooks/queries/captures';
 import { useUser } from '../../../hooks/queries/users';
 
+import type { Dispatch, MouseEventHandler, SetStateAction } from 'react';
+
 const DEFER_CUTOFF = 1;
 
-export function Dex ({ hideCaught, showScrollButton, setSelectedPokemon, onScrollButtonClick, query, setHideCaught, setQuery }) {
-  const { username, slug } = useParams();
+interface Props {
+  hideCaught: boolean;
+  onScrollButtonClick: MouseEventHandler<HTMLDivElement>;
+  query: string;
+  setHideCaught: Dispatch<SetStateAction<boolean>>;
+  setQuery: Dispatch<SetStateAction<string>>;
+  setSelectedPokemon: Dispatch<SetStateAction<number>>;
+  showScrollButton: boolean;
+}
 
-  const user = useUser(username).data;
+export function Dex ({
+  hideCaught,
+  onScrollButtonClick,
+  query,
+  setHideCaught,
+  setQuery,
+  setSelectedPokemon,
+  showScrollButton,
+}: Props) {
+  const { username, slug } = useParams<{ username: string; slug: string }>();
+
+  const user = useUser(username).data!;
   const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
-  const captures = useCaptures(username, slug).data;
+  const captures = useCaptures(username, slug).data!;
 
   const caught = useMemo(() => captures.filter(({ captured }) => captured).length, [captures]);
   const total = captures.length;
@@ -73,11 +92,3 @@ export function Dex ({ hideCaught, showScrollButton, setSelectedPokemon, onScrol
     </div>
   );
 }
-
-Dex.propTypes = {
-  hideCaught: PropTypes.bool.isRequired,
-  onScrollButtonClick: PropTypes.func.isRequired,
-  query: PropTypes.string.isRequired,
-  setHideCaught: PropTypes.func.isRequired,
-  setQuery: PropTypes.func.isRequired,
-};
