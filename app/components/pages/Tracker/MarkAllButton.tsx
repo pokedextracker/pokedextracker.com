@@ -1,28 +1,33 @@
-import PropTypes from 'prop-types';
 import keyBy from 'lodash/keyBy';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleNotch } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch } from 'react-redux';
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router';
 
 import { ReactGA } from '../../../utils/analytics';
-import { createCaptures, deleteCaptures } from '../../../actions/capture';
 import { padding } from '../../../utils/formatting';
+import { useCreateCapture, useDeleteCapture } from '../../../hooks/queries/captures';
 import { useSession } from '../../../hooks/contexts/use-session';
 import { useUser } from '../../../hooks/queries/users';
 
-export function MarkAllButton ({ captures }) {
-  const dispatch = useDispatch();
+import type { Capture } from '../../../types';
 
-  const { username, slug } = useParams();
+interface Props {
+  captures: Capture[];
+}
 
-  const user = useUser(username).data;
+export function MarkAllButton ({ captures }: Props) {
+  const { username, slug } = useParams<{ username: string; slug: string }>();
+
+  const user = useUser(username).data!;
   const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
 
   const { session } = useSession();
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const createCapturesMutation = useCreateCapture();
+  const deleteCapturesMutation = useDeleteCapture();
 
   const uncaught = useMemo(() => {
     return captures.reduce((total, capture) => total + (capture.captured ? 0 : 1), 0);
@@ -44,9 +49,9 @@ export function MarkAllButton ({ captures }) {
     setIsLoading(true);
 
     if (deleting) {
-      await dispatch(deleteCaptures({ payload, slug, username: user.username }));
+      await deleteCapturesMutation.mutateAsync({ username: user.username, slug, payload });
     } else {
-      await dispatch(createCaptures({ payload, slug, username: user.username }));
+      await createCapturesMutation.mutateAsync({ username: user.username, slug, payload });
     }
 
     ReactGA.event({
@@ -70,7 +75,3 @@ export function MarkAllButton ({ captures }) {
     </button>
   );
 }
-
-MarkAllButton.propTypes = {
-  captures: PropTypes.arrayOf(PropTypes.object).isRequired,
-};
