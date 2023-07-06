@@ -16,7 +16,7 @@ import { useSession } from '../../../hooks/contexts/use-session';
 import { useUser } from '../../../hooks/queries/users';
 
 export function Profile () {
-  const { username } = useParams();
+  const { username } = useParams<{ username: string }>();
 
   const {
     data: user,
