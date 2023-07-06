@@ -15,9 +15,9 @@ import { useCaptures } from '../../../hooks/queries/captures';
 import { useUser } from '../../../hooks/queries/users';
 
 export function Tracker () {
-  const { username, slug } = useParams();
+  const { username, slug } = useParams<{ username: string; slug: string }>();
 
-  const trackerRef = useRef(null);
+  const trackerRef = useRef<HTMLDivElement>(null);
 
   const { data: user, isLoading: userIsLoading } = useUser(username);
   const { data: captures, isLoading: capturesIsLoading } = useCaptures(username, slug);
@@ -84,7 +84,6 @@ export function Tracker () {
               hideCaught={hideCaught}
               onScrollButtonClick={handleScrollButtonClick}
               query={query}
-              selectedPokemon={selectedPokemon}
               setHideCaught={setHideCaught}
               setQuery={setQuery}
               setSelectedPokemon={setSelectedPokemon}
