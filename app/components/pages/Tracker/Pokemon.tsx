@@ -19,7 +19,7 @@ import type { Capture } from '../../../types';
 import type { Dispatch, SetStateAction } from 'react';
 
 interface Props {
-  capture?: Capture;
+  capture: Capture | null;
   delay?: number;
   setSelectedPokemon: Dispatch<SetStateAction<number>>;
 }

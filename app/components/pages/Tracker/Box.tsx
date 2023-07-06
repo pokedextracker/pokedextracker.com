@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import { useMemo } from 'react';
 
 import { BOX_SIZE } from '../../../utils/pokemon';
@@ -7,7 +6,17 @@ import { Pokemon } from './Pokemon';
 import { padding } from '../../../utils/formatting';
 import { useDeferredRender } from '../../../hooks/use-deferred-render';
 
-export function Box ({ captures, deferred, dexTotal, setSelectedPokemon }) {
+import type { Capture } from '../../../types';
+import type { Dispatch, SetStateAction } from 'react';
+
+interface Props {
+  captures: Capture[];
+  deferred?: boolean;
+  dexTotal: number;
+  setSelectedPokemon: Dispatch<SetStateAction<number>>;
+}
+
+export function Box ({ captures, deferred = false, dexTotal, setSelectedPokemon }: Props) {
   const render = useDeferredRender(!deferred);
 
   const empties = useMemo(() => Array.from({ length: BOX_SIZE - captures.length }).map((_, i) => i), [captures]);
@@ -64,13 +73,3 @@ export function Box ({ captures, deferred, dexTotal, setSelectedPokemon }) {
     </div>
   );
 }
-
-Box.defaultProps = {
-  deferred: false,
-};
-
-Box.propTypes = {
-  captures: PropTypes.arrayOf(PropTypes.object).isRequired,
-  deferred: PropTypes.bool,
-  dexTotal: PropTypes.number.isRequired,
-};
