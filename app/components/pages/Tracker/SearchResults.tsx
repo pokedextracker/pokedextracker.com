@@ -1,12 +1,23 @@
-import PropTypes from 'prop-types';
 import { useMemo } from 'react';
 
 import { Pokemon } from './Pokemon';
 import { nationalId, padding } from '../../../utils/formatting';
 
+import type { Capture } from '../../../types';
+import type { Dispatch, SetStateAction } from 'react';
+
 const DEFER_CUTOFF = 120;
 
-export function SearchResults ({ captures, hideCaught, query, setHideCaught, setQuery, setSelectedPokemon }) {
+interface Props {
+  captures: Capture[];
+  hideCaught: boolean;
+  query: string;
+  setHideCaught: Dispatch<SetStateAction<boolean>>;
+  setQuery: Dispatch<SetStateAction<string>>;
+  setSelectedPokemon: Dispatch<SetStateAction<number>>;
+}
+
+export function SearchResults ({ captures, hideCaught, query, setHideCaught, setQuery, setSelectedPokemon }: Props) {
   const handleClearCaughtFilter = () => setHideCaught(false);
   const handleClearClick = () => setQuery('');
 
@@ -67,11 +78,3 @@ export function SearchResults ({ captures, hideCaught, query, setHideCaught, set
     </div>
   );
 }
-
-SearchResults.propTypes = {
-  captures: PropTypes.arrayOf(PropTypes.object).isRequired,
-  hideCaught: PropTypes.bool.isRequired,
-  query: PropTypes.string.isRequired,
-  setHideCaught: PropTypes.func.isRequired,
-  setQuery: PropTypes.func.isRequired,
-};
