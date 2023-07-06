@@ -1,6 +1,10 @@
-import PropTypes from 'prop-types';
+import type { Location } from '../../../types';
 
-export function InfoLocations ({ locations }) {
+interface Props {
+  locations: Location[];
+}
+
+export function InfoLocations ({ locations }: Props) {
   return (
     <div className="info-locations">
       {locations.map((location) => {
@@ -16,7 +20,3 @@ export function InfoLocations ({ locations }) {
     </div>
   );
 }
-
-InfoLocations.propTypes = {
-  locations: PropTypes.arrayOf(PropTypes.object).isRequired,
-};
