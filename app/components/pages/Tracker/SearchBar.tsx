@@ -1,18 +1,26 @@
-import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useRef } from 'react';
 
 import { ReactGA } from '../../../utils/analytics';
 
-export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }) {
-  const inputRef = useRef(null);
+import type { ChangeEvent, Dispatch, SetStateAction } from 'react';
+
+interface Props {
+  hideCaught: boolean;
+  query: string;
+  setHideCaught: Dispatch<SetStateAction<boolean>>;
+  setQuery: Dispatch<SetStateAction<string>>;
+}
+
+export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }: Props) {
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const handleKeyup = (e) => {
-      if (e.target.tagName.toLowerCase() !== 'input' && e.key === '/') {
+    const handleKeyup = (e: KeyboardEvent) => {
+      if (e.target instanceof Element && e.target.tagName.toLowerCase() !== 'input' && e.key === '/') {
         ReactGA.event({ action: 'used shortcut', category: 'Search' });
-        inputRef.current && inputRef.current.focus();
+        inputRef.current?.focus();
       }
     };
 
@@ -21,8 +29,8 @@ export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }) {
     return () => document.removeEventListener('keyup', handleKeyup);
   }, [inputRef.current]);
 
-  const handleInputChange = (e) => setQuery(e.target.value);
-  const handleHideCaughtChange = (e) => setHideCaught(e.target.checked);
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value);
+  const handleHideCaughtChange = (e: ChangeEvent<HTMLInputElement>) => setHideCaught(e.target.checked);
 
   const handleClearClick = () => {
     setQuery('');
@@ -75,10 +83,3 @@ export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }) {
     </div>
   );
 }
-
-SearchBar.propTypes = {
-  hideCaught: PropTypes.bool.isRequired,
-  query: PropTypes.string.isRequired,
-  setHideCaught: PropTypes.func.isRequired,
-  setQuery: PropTypes.func.isRequired,
-};
