@@ -12,12 +12,14 @@ import { Reload } from '../library/Reload';
 import { useLogin } from '../../hooks/queries/sessions';
 import { useSession } from '../../hooks/contexts/use-session';
 
+import type { ChangeEvent, FormEvent } from 'react';
+
 export function Login () {
   const history = useHistory();
 
   const { session, setToken } = useSession();
 
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -33,12 +35,12 @@ export function Login () {
     }
   }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const payload = { username, password };
 
-    setError(null);
+    setError('');
 
     try {
       const { token } = await loginMutation.mutateAsync({ payload });
@@ -46,13 +48,15 @@ export function Login () {
       ReactGA.event({ action: 'login', category: 'Session' });
       history.push(`/u/${username}`);
     } catch (err) {
-      setError(err.message);
+      if (err instanceof Error) {
+        setError(err.message);
+      }
       window.scrollTo({ top: 0 });
     }
   };
 
-  const handleUsernameChange = (e) => setUsername(e.target.value);
-  const handlePasswordChange = (e) => setPassword(e.target.value);
+  const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value);
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value);
 
   return (
     <div className="login-container">
@@ -70,7 +74,7 @@ export function Login () {
               autoCorrect="off"
               className="form-control"
               id="username"
-              maxLength="20"
+              maxLength={20}
               name="username"
               onChange={handleUsernameChange}
               placeholder="ashketchum10"
@@ -86,7 +90,7 @@ export function Login () {
             <input
               className="form-control"
               id="password"
-              maxLength="72"
+              maxLength={72}
               name="password"
               onChange={handlePasswordChange}
               placeholder="••••••••••••"
