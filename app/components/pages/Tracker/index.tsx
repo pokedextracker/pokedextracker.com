@@ -11,16 +11,29 @@ import { NotFound } from '../NotFound';
 import { Reload } from '../../library/Reload';
 import { SCROLL_DEBOUNCE, SHOW_SCROLL_THRESHOLD } from './Scroll';
 import { SearchBar } from './SearchBar';
+import { TrackerContextProvider, useTrackerContext } from './use-tracker';
 import { useCaptures } from '../../../hooks/queries/captures';
 import { useUser } from '../../../hooks/queries/users';
 
+// To enable the inner component to access the context value, it needs to be nested under the provider, so we need this
+// wrapper component to add that nesting.
 export function Tracker () {
+  return (
+    <TrackerContextProvider>
+      <TrackerInner />
+    </TrackerContextProvider>
+  );
+}
+
+export function TrackerInner () {
   const { username, slug } = useParams<{ username: string; slug: string }>();
 
   const trackerRef = useRef<HTMLDivElement>(null);
 
+  const { setCaptures } = useTrackerContext();
+
   const { data: user, isLoading: userIsLoading } = useUser(username);
-  const { data: captures, isLoading: capturesIsLoading } = useCaptures(username, slug);
+  const { data: capturesFromServer, isLoading: capturesIsLoading } = useCaptures(username, slug);
 
   const dex = useMemo(() => keyBy(user?.dexes, 'slug')[slug], [user, slug]);
 
@@ -40,10 +53,11 @@ export function Tracker () {
   }, [query]);
 
   useEffect(() => {
-    if (captures) {
-      setSelectedPokemon(captures[0].pokemon.id);
+    if (capturesFromServer) {
+      setCaptures(capturesFromServer);
+      setSelectedPokemon(capturesFromServer[0].pokemon.id);
     }
-  }, [captures]);
+  }, [capturesFromServer]);
 
   const handleScroll = throttle(() => {
     if (!showScroll && trackerRef.current && trackerRef.current.scrollTop >= SHOW_SCROLL_THRESHOLD) {

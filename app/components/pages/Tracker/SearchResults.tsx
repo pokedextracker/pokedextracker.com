@@ -3,13 +3,13 @@ import { useMemo } from 'react';
 import { Pokemon } from './Pokemon';
 import { nationalId, padding } from '../../../utils/formatting';
 
-import type { Capture } from '../../../types';
 import type { Dispatch, SetStateAction } from 'react';
+import type { UICapture } from './use-tracker';
 
 const DEFER_CUTOFF = 120;
 
 interface Props {
-  captures: Capture[];
+  captures: UICapture[];
   hideCaught: boolean;
   query: string;
   setHideCaught: Dispatch<SetStateAction<boolean>>;

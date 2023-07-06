@@ -6,11 +6,11 @@ import { Pokemon } from './Pokemon';
 import { padding } from '../../../utils/formatting';
 import { useDeferredRender } from '../../../hooks/use-deferred-render';
 
-import type { Capture } from '../../../types';
 import type { Dispatch, SetStateAction } from 'react';
+import type { UICapture } from './use-tracker';
 
 interface Props {
-  captures: Capture[];
+  captures: UICapture[];
   deferred?: boolean;
   dexTotal: number;
   setSelectedPokemon: Dispatch<SetStateAction<number>>;

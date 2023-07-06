@@ -13,7 +13,7 @@ import { ReactGA } from '../../../utils/analytics';
 import { Scroll } from './Scroll';
 import { SearchResults } from './SearchResults';
 import { groupBoxes } from '../../../utils/pokemon';
-import { useCaptures } from '../../../hooks/queries/captures';
+import { useTrackerContext } from './use-tracker';
 import { useUser } from '../../../hooks/queries/users';
 
 import type { Dispatch, MouseEventHandler, SetStateAction } from 'react';
@@ -43,14 +43,15 @@ export function Dex ({
 
   const user = useUser(username).data!;
   const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
-  const captures = useCaptures(username, slug).data!;
+
+  const { captures } = useTrackerContext();
 
   const caught = useMemo(() => captures.filter(({ captured }) => captured).length, [captures]);
   const total = captures.length;
 
-  const boxes = useMemo(() => groupBoxes(captures), [captures]);
-  const boxs = useMemo(() => {
-    return boxes.map((box, i) => (
+  const groupedCaptures = useMemo(() => groupBoxes(captures), [captures]);
+  const boxes = useMemo(() => {
+    return groupedCaptures.map((box, i) => (
       <Box
         captures={box}
         deferred={i > DEFER_CUTOFF}
@@ -59,7 +60,7 @@ export function Dex ({
         setSelectedPokemon={setSelectedPokemon}
       />
     ));
-  }, [boxes]);
+  }, [groupedCaptures]);
 
   return (
     <div className="dex">
@@ -86,7 +87,7 @@ export function Dex ({
             setQuery={setQuery}
             setSelectedPokemon={setSelectedPokemon}
           /> :
-          boxs
+          boxes
         }
       </div>
     </div>
