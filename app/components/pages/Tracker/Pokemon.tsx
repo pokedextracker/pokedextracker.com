@@ -1,35 +1,44 @@
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import keyBy from 'lodash/keyBy';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInfo } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch } from 'react-redux';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams } from 'react-router';
 
 import { PokemonName } from '../../library/PokemonName';
 import { ReactGA } from '../../../utils/analytics';
-import { createCaptures, deleteCaptures } from '../../../actions/capture';
 import { iconClass } from '../../../utils/pokemon';
 import { nationalId, padding } from '../../../utils/formatting';
+import { useCreateCapture, useDeleteCapture } from '../../../hooks/queries/captures';
 import { useDelayedRender } from '../../../hooks/use-delayed-render';
 import { useLocalStorageContext } from '../../../hooks/contexts/use-local-storage-context';
 import { useSession } from '../../../hooks/contexts/use-session';
 import { useUser } from '../../../hooks/queries/users';
 
-export function Pokemon ({ capture, delay, setSelectedPokemon }) {
+import type { Capture } from '../../../types';
+import type { Dispatch, SetStateAction } from 'react';
+
+interface Props {
+  capture?: Capture;
+  delay?: number;
+  setSelectedPokemon: Dispatch<SetStateAction<number>>;
+}
+
+export function Pokemon ({ capture, delay = 0, setSelectedPokemon }: Props) {
   const render = useDelayedRender(delay);
 
-  const { username, slug } = useParams();
-
-  const user = useUser(username).data;
-  const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
+  const { username, slug } = useParams<{ username: string; slug: string }>();
 
   const { setShowInfo } = useLocalStorageContext();
 
-  const dispatch = useDispatch();
-
   const { session } = useSession();
+  const user = useUser(username).data!;
+  const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
+
+  const [captured, setCaptured] = useState(capture?.captured || false);
+
+  const createCapturesMutation = useCreateCapture();
+  const deleteCapturesMutation = useDeleteCapture();
 
   if (!render || !capture) {
     return (
@@ -47,13 +56,14 @@ export function Pokemon ({ capture, delay, setSelectedPokemon }) {
 
     const payload = { dex: dex.id, pokemon: [capture.pokemon.id] };
 
-    if (capture.captured) {
-      await dispatch(deleteCaptures({ payload, slug, username: user.username }));
+    if (captured) {
+      await deleteCapturesMutation.mutateAsync({ username: user.username, slug, payload });
       ReactGA.event({ category: 'Pokemon', label: capture.pokemon.name, action: 'unmark' });
     } else {
-      await dispatch(createCaptures({ payload, slug, username: user.username }));
+      await createCapturesMutation.mutateAsync({ username: user.username, slug, payload });
       ReactGA.event({ category: 'Pokemon', label: capture.pokemon.name, action: 'mark' });
     }
+    setCaptured((prev) => !prev);
   };
 
   const handleSetInfoClick = () => {
@@ -66,8 +76,8 @@ export function Pokemon ({ capture, delay, setSelectedPokemon }) {
   const classes = {
     pokemon: true,
     viewing: !session || session.id !== user.id,
-    captured: capture.captured,
-    pending: capture.pending,
+    captured,
+    pending: createCapturesMutation.isLoading || deleteCapturesMutation.isLoading,
   };
 
   const regional = dex.dex_type.tags.includes('regional');
@@ -96,12 +106,3 @@ export function Pokemon ({ capture, delay, setSelectedPokemon }) {
     </div>
   );
 }
-
-Pokemon.defaultProps = {
-  delay: 0,
-};
-
-Pokemon.propTypes = {
-  capture: PropTypes.object,
-  delay: PropTypes.number,
-};
