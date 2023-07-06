@@ -1,15 +1,21 @@
-import PropTypes from 'prop-types';
 import uniqBy from 'lodash/uniqBy';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLongArrowAltLeft, faLongArrowAltRight, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
 import { capitalize } from '../../../utils/formatting';
 
-function evolutionKey (evolution) {
+import type { Evolution } from '../../../types';
+
+function evolutionKey (evolution: Evolution) {
   return `${evolution.trigger}:${evolution.level}:${evolution.stone}:${evolution.held_item}:${evolution.notes}`;
 }
 
-export function Evolutions ({ evolutions, pokemonId }) {
+interface Props {
+  evolutions: Evolution[];
+  pokemonId: number;
+}
+
+export function Evolutions ({ evolutions, pokemonId }: Props) {
   const elements = uniqBy(evolutions, evolutionKey).map((evolution) => {
     const key = evolutionKey(evolution);
     let trigger = null;
@@ -20,7 +26,7 @@ export function Evolutions ({ evolutions, pokemonId }) {
         trigger = <span>Level Up {evolution.level ? `to ${evolution.level} ` : ''}</span>;
         break;
       case 'stone':
-        trigger = <span>{capitalize(evolution.stone)} Stone </span>;
+        trigger = <span>{capitalize(evolution.stone!)} Stone </span>;
         break;
       case 'candy':
         trigger = <span>{evolution.candy_count} Candies </span>;
@@ -61,8 +67,3 @@ export function Evolutions ({ evolutions, pokemonId }) {
     <div className={`evolution-trigger-column ${pokemonId === 866 ? 'push' : ''}`}>{elements}</div>
   );
 }
-
-Evolutions.propTypes = {
-  evolutions: PropTypes.arrayOf(PropTypes.object).isRequired,
-  pokemonId: PropTypes.number,
-};
