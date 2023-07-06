@@ -12,19 +12,21 @@ import { friendCode3dsFormatter, friendCodeSwitchFormatter } from '../../utils/f
 import { useSession } from '../../hooks/contexts/use-session';
 import { useUpdateUser } from '../../hooks/queries/users';
 
+import type { ChangeEvent, FormEvent } from 'react';
+
 export function Account () {
   const history = useHistory();
 
   const { session, sessionUser, setToken } = useSession();
 
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [friendCode3ds, setFriendCode3ds] = useState(sessionUser?.friend_code_3ds || '');
   const [friendCodeSwitch, setFriendCodeSwitch] = useState(sessionUser?.friend_code_switch || '');
-  const [success, setSuccess] = useState(null);
+  const [success, setSuccess] = useState('');
 
   const updateUserMutation = useUpdateUser();
 
@@ -40,8 +42,8 @@ export function Account () {
 
   useEffect(() => {
     if (sessionUser) {
-      setFriendCode3ds(sessionUser.friend_code_3ds);
-      setFriendCodeSwitch(sessionUser.friend_code_switch);
+      setFriendCode3ds(sessionUser.friend_code_3ds || '');
+      setFriendCodeSwitch(sessionUser.friend_code_switch || '');
     }
   }, [sessionUser]);
 
@@ -49,12 +51,12 @@ export function Account () {
     return null;
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    setError(null);
+    setError('');
     setIsLoading(true);
-    setSuccess(null);
+    setSuccess('');
 
     if (isEditingPassword && password !== passwordConfirm) {
       setError('passwords need to match');
@@ -63,7 +65,7 @@ export function Account () {
 
     try {
       const { token } = await updateUserMutation.mutateAsync({
-        username: session.username,
+        username: sessionUser.username,
         payload: {
           password: isEditingPassword ? password : undefined,
           friend_code_3ds: friendCode3ds,
@@ -74,25 +76,27 @@ export function Account () {
       ReactGA.event({ action: 'update', category: 'User' });
       setSuccess('Account settings saved!');
     } catch (err) {
-      setError(err.message);
+      if (err instanceof Error) {
+        setError(err.message);
+      }
     }
 
     setIsLoading(false);
     window.scrollTo({ top: 0 });
   };
 
-  const handleChangePasswordClick = () => setIsEditingPassword(!isEditingPassword);
-  const handlePasswordChange = (e) => setPassword(e.target.value);
-  const handlePasswordConfirmChange = (e) => setPasswordConfirm(e.target.value);
-  const handleFriendCode3dsChange = (e) => setFriendCode3ds(friendCode3dsFormatter(e.target.value));
-  const handleFriendCodeSwitchChange = (e) => setFriendCodeSwitch(friendCodeSwitchFormatter(e.target.value));
+  const handleChangePasswordClick = () => setIsEditingPassword((prev) => !prev);
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value);
+  const handlePasswordConfirmChange = (e: ChangeEvent<HTMLInputElement>) => setPasswordConfirm(e.target.value);
+  const handleFriendCode3dsChange = (e: ChangeEvent<HTMLInputElement>) => setFriendCode3ds(friendCode3dsFormatter(e.target.value));
+  const handleFriendCodeSwitchChange = (e: ChangeEvent<HTMLInputElement>) => setFriendCodeSwitch(friendCodeSwitchFormatter(e.target.value));
 
   return (
     <div className="account-container">
       <Nav />
       <Reload />
       <div className="form">
-        <h1>{session.username}&apos;s Account</h1>
+        <h1>{sessionUser.username}&apos;s Account</h1>
         <form className="form-column" onSubmit={handleSubmit}>
           <Alert message={error} type="error" />
           <Alert message={success} type="success" />
