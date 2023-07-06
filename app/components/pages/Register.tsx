@@ -20,6 +20,9 @@ import { useGames } from '../../hooks/queries/games';
 import { useLocalStorageContext } from '../../hooks/contexts/use-local-storage-context';
 import { useSession } from '../../hooks/contexts/use-session';
 
+import type { ChangeEvent, FormEvent } from 'react';
+import type { DexType, Game } from '../../types';
+
 export function Register () {
   const history = useHistory();
 
@@ -29,19 +32,19 @@ export function Register () {
   const { data: games } = useGames();
   const { data: dexTypes } = useDexTypes();
 
-  const gamesById = useMemo(() => keyBy(games, 'id'), [games]);
-  const dexTypesById = useMemo(() => keyBy(dexTypes, 'id'), [dexTypes]);
-  const dexTypesByGameFamilyId = useMemo(() => groupBy(dexTypes, 'game_family_id'), [dexTypes]);
+  const gamesById = useMemo<Record<string, Game>>(() => keyBy(games, 'id'), [games]);
+  const dexTypesById = useMemo<Record<string, DexType>>(() => keyBy(dexTypes, 'id'), [dexTypes]);
+  const dexTypesByGameFamilyId = useMemo<Record<string, DexType[]>>(() => groupBy(dexTypes, 'game_family_id'), [dexTypes]);
 
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [friendCode3ds, setFriendCode3ds] = useState('');
   const [friendCodeSwitch, setFriendCodeSwitch] = useState('');
   const [title, setTitle] = useState('');
-  const [game, setGame] = useState(games?.[0].id);
-  const [dexType, setDexType] = useState(dexTypesByGameFamilyId[games?.[0].game_family.id]?.[0].id);
+  const [game, setGame] = useState(games?.[0].id || '');
+  const [dexType, setDexType] = useState(dexTypesByGameFamilyId[games?.[0].game_family.id || '']?.[0].id || -1);
   const [shiny, setShiny] = useState(false);
 
   const createUserMutation = useCreateUser();
@@ -68,7 +71,7 @@ export function Register () {
     }
   }, [games, dexTypesByGameFamilyId, dexType]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (password !== passwordConfirm) {
@@ -88,7 +91,7 @@ export function Register () {
       dex_type: dexType,
     };
 
-    setError(null);
+    setError('');
 
     try {
       const { token } = await createUserMutation.mutateAsync({ payload });
@@ -97,19 +100,21 @@ export function Register () {
       setHideNotification(true);
       history.push(`/u/${username}/${payload.slug}`);
     } catch (err) {
-      setError(err.message);
+      if (err instanceof Error) {
+        setError(err.message);
+      }
       window.scrollTo({ top: 0 });
     }
   };
 
-  const handleUsernameChange = (e) => setUsername(e.target.value);
-  const handlePasswordChange = (e) => setPassword(e.target.value);
-  const handlePasswordConfirmChange = (e) => setPasswordConfirm(e.target.value);
-  const handleFriendCode3dsChange = (e) => setFriendCode3ds(friendCode3dsFormatter(e.target.value));
-  const handleFriendCodeSwitchChange = (e) => setFriendCodeSwitch(friendCodeSwitchFormatter(e.target.value));
-  const handleTitleChange = (e) => setTitle(e.target.value);
+  const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value);
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value);
+  const handlePasswordConfirmChange = (e: ChangeEvent<HTMLInputElement>) => setPasswordConfirm(e.target.value);
+  const handleFriendCode3dsChange = (e: ChangeEvent<HTMLInputElement>) => setFriendCode3ds(friendCode3dsFormatter(e.target.value));
+  const handleFriendCodeSwitchChange = (e: ChangeEvent<HTMLInputElement>) => setFriendCodeSwitch(friendCodeSwitchFormatter(e.target.value));
+  const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value);
 
-  const handleGameChange = (e) => {
+  const handleGameChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const newGameId = e.target.value;
 
     // Update the dex type appropriately since every game family has a different
@@ -130,7 +135,7 @@ export function Register () {
     setGame(newGameId);
   };
 
-  if (!game || !dexType) {
+  if (!games || !game || !dexType) {
     return null;
   }
 
@@ -233,7 +238,7 @@ export function Register () {
                 <input
                   className="form-control"
                   id="dex_title"
-                  maxLength="300"
+                  maxLength={300}
                   name="dex_title"
                   onChange={handleTitleChange}
                   placeholder="Living Dex"
