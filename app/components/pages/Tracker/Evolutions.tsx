@@ -12,7 +12,7 @@ function evolutionKey (evolution: Evolution) {
 
 interface Props {
   evolutions: Evolution[];
-  pokemonId: number;
+  pokemonId?: number;
 }
 
 export function Evolutions ({ evolutions, pokemonId }: Props) {

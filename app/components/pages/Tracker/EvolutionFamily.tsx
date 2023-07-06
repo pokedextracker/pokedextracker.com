@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import keyBy from 'lodash/keyBy';
 import { useMemo } from 'react';
 import { useParams } from 'react-router';
@@ -7,10 +6,18 @@ import { Evolutions } from './Evolutions';
 import { iconClass } from '../../../utils/pokemon';
 import { useUser } from '../../../hooks/queries/users';
 
-export function EvolutionFamily ({ family, setSelectedPokemon }) {
-  const { username, slug } = useParams();
+import type { Dispatch, SetStateAction } from 'react';
+import type { EvolutionFamily as EvolutionFamilyType } from '../../../types';
 
-  const user = useUser(username).data;
+interface Props {
+  family: EvolutionFamilyType;
+  setSelectedPokemon: Dispatch<SetStateAction<number>>;
+}
+
+export function EvolutionFamily ({ family, setSelectedPokemon }: Props) {
+  const { username, slug } = useParams<{ username: string; slug: string }>();
+
+  const user = useUser(username).data!;
   const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
 
   let column1 = null;
@@ -52,7 +59,3 @@ export function EvolutionFamily ({ family, setSelectedPokemon }) {
     </div>
   );
 }
-
-EvolutionFamily.propTypes = {
-  family: PropTypes.object.isRequired,
-};
