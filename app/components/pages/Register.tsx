@@ -135,7 +135,7 @@ export function Register () {
     setGame(newGameId);
   };
 
-  if (!games || !game || dexType === -1) {
+  if (!games || !game || dexType === -1 || Object.keys(gamesById).length === 0 || Object.keys(dexTypesByGameFamilyId).length === 0) {
     return null;
   }
 

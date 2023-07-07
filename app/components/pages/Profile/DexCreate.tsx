@@ -116,7 +116,7 @@ export function DexCreate ({ isOpen, onRequestClose }: Props) {
     }
   };
 
-  if (!isOpen || !games || Object.keys(gamesById).length === 0 || Object.keys(dexTypesByGameFamilyId).length === 0) {
+  if (!isOpen || !games || !game || dexType === -1 || Object.keys(gamesById).length === 0 || Object.keys(dexTypesByGameFamilyId).length === 0) {
     return null;
   }
 
