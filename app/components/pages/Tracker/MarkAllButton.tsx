@@ -1,7 +1,7 @@
 import keyBy from 'lodash/keyBy';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleNotch } from '@fortawesome/free-solid-svg-icons';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useParams } from 'react-router';
 
 import { ReactGA } from '../../../utils/analytics';
@@ -26,8 +26,6 @@ export function MarkAllButton ({ captures }: Props) {
 
   const { setCaptures } = useTrackerContext();
 
-  const [isLoading, setIsLoading] = useState(false);
-
   const createCapturesMutation = useCreateCapture();
   const deleteCapturesMutation = useDeleteCapture();
 
@@ -42,13 +40,14 @@ export function MarkAllButton ({ captures }: Props) {
   }
 
   const handleButtonClick = async () => {
+    createCapturesMutation.reset();
+    deleteCapturesMutation.reset();
+
     const deleting = uncaught === 0;
     const pokemon = captures
     .filter((capture) => capture.captured === deleting)
     .map((capture) => capture.pokemon.id);
     const payload = { dex: dex.id, pokemon };
-
-    setIsLoading(true);
 
     setCaptures((prev) => prev.map((cap) => {
       if (!pokemon.includes(cap.pokemon.id)) {
@@ -86,9 +85,9 @@ export function MarkAllButton ({ captures }: Props) {
       label: `${padding(captures[0].pokemon.national_id, 3)} - ${padding(captures[captures.length - 1].pokemon.national_id, 3)}`,
       action: deleting ? 'unmark all' : 'mark all',
     });
-
-    setIsLoading(false);
   };
+
+  const isLoading = createCapturesMutation.isLoading || deleteCapturesMutation.isLoading;
 
   return (
     <button className="btn btn-blue" disabled={isLoading} onClick={handleButtonClick}>

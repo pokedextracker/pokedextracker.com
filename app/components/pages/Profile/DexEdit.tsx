@@ -41,7 +41,6 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
   const dexTypesById = useMemo<Record<string, DexType>>(() => keyBy(dexTypes, 'id'), [dexTypes]);
   const dexTypesByGameFamilyId = useMemo<Record<string, DexType[]>>(() => groupBy(dexTypes, 'game_family_id'), [dexTypes]);
 
-  const [error, setError] = useState('');
   const [title, setTitle] = useState(dex.title);
   const [game, setGame] = useState(dex.game.id);
   const [dexType, setDexType] = useState(dex.dex_type.id);
@@ -55,7 +54,8 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
   const deleteDexMutation = useDeleteDex();
 
   const reset = () => {
-    setError('');
+    updateDexMutation.reset();
+    deleteDexMutation.reset();
     setTitle(dex.title);
     setGame(dex.game.id);
     setDexType(dex.dex_type.id);
@@ -117,21 +117,26 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
   const handleDeleteClick = async (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
 
+    if (updateDexMutation.isLoading || deleteDexMutation.isLoading) {
+      // We're already making a change, so exit early.
+      return;
+    }
+
     if (!isConfirmingDelete) {
       setIsConfirmingDelete(true);
       return;
     }
 
-    setError('');
+    updateDexMutation.reset();
+    deleteDexMutation.reset();
 
     try {
       await deleteDexMutation.mutateAsync({ username: session!.username, slug: dex.slug });
       ReactGA.event({ action: 'delete', category: 'Dex' });
       handleRequestClose();
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      }
+    } catch (_) {
+      // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
+      // error besides prevent it from bubbling up.
       if (formRef.current) {
         formRef.current.scrollTop = 0;
       }
@@ -146,7 +151,8 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
       return;
     }
 
-    setError('');
+    updateDexMutation.reset();
+    deleteDexMutation.reset();
 
     try {
       await updateDexMutation.mutateAsync({
@@ -162,10 +168,9 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
       });
       ReactGA.event({ action: 'update', category: 'Dex' });
       handleRequestClose();
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      }
+    } catch (_) {
+      // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
+      // error besides prevent it from bubbling up.
       if (formRef.current) {
         formRef.current.scrollTop = 0;
       }
@@ -199,7 +204,7 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
       <div className="form" ref={formRef}>
         <h1>Edit a Dex</h1>
         <form className="form-column" onSubmit={handleUpdateSubmit}>
-          <Alert message={error} type="error" />
+          <Alert message={updateDexMutation.error?.message || deleteDexMutation.error?.message} type="error" />
           <div className="form-group">
             <div className="form-note">/u/{session!.username}/{slug(title || 'Living Dex', { lower: true })}</div>
             <label htmlFor="dex_title">Title</label>
@@ -268,7 +273,13 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
             </div>
           </div>
           <Alert className="form-confirm" message={isConfirmingUpdate && 'Please review the warnings above and confirm your edit!'} type="error" />
-          <button className="btn btn-blue form-confirm" type="submit">{isConfirmingUpdate ? 'Confirm' : ''} Edit <FontAwesomeIcon icon={faLongArrowAltRight} /></button>
+          <button
+            className="btn btn-blue form-confirm"
+            disabled={updateDexMutation.isLoading || deleteDexMutation.isLoading}
+            type="submit"
+          >
+            {isConfirmingUpdate ? 'Confirm' : ''} Edit <FontAwesomeIcon icon={faLongArrowAltRight} />
+          </button>
         </form>
       </div>
       <p><a className="link" onClick={handleRequestClose}>Go Back</a></p>

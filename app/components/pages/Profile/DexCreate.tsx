@@ -38,7 +38,6 @@ export function DexCreate ({ isOpen, onRequestClose }: Props) {
   const dexTypesById = useMemo<Record<string, DexType>>(() => keyBy(dexTypes, 'id'), [dexTypes]);
   const dexTypesByGameFamilyId = useMemo<Record<string, DexType[]>>(() => groupBy(dexTypes, 'game_family_id'), [dexTypes]);
 
-  const [error, setError] = useState('');
   const [title, setTitle] = useState('');
   const [game, setGame] = useState(games?.[0].id || '');
   const [dexType, setDexType] = useState(dexTypesByGameFamilyId[games?.[0].game_family.id || '']?.[0].id || -1);
@@ -53,13 +52,13 @@ export function DexCreate ({ isOpen, onRequestClose }: Props) {
   }, [games, game]);
 
   useEffect(() => {
-    if (games && Object.keys(dexTypesByGameFamilyId).length > 0 && !dexType) {
+    if (games && Object.keys(dexTypesByGameFamilyId).length > 0 && dexType === -1) {
       setDexType(dexTypesByGameFamilyId[games[0].game_family.id][0].id);
     }
   }, [games, dexTypesByGameFamilyId, dexType]);
 
   const handleRequestClose = () => {
-    setError('');
+    createDexMutation.reset();
     setTitle('');
     setGame(games![0].id || '');
     setDexType(dexTypesByGameFamilyId[games![0].game_family.id][0].id);
@@ -93,7 +92,7 @@ export function DexCreate ({ isOpen, onRequestClose }: Props) {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    setError('');
+    createDexMutation.reset();
 
     try {
       const dex = await createDexMutation.mutateAsync({
@@ -108,10 +107,9 @@ export function DexCreate ({ isOpen, onRequestClose }: Props) {
       });
       ReactGA.event({ action: 'create', category: 'Dex' });
       history.push(`/u/${session!.username}/${dex.slug}`);
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      }
+    } catch (_) {
+      // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
+      // error besides prevent it from bubbling up.
       if (formRef.current) {
         formRef.current.scrollTop = 0;
       }
@@ -133,7 +131,7 @@ export function DexCreate ({ isOpen, onRequestClose }: Props) {
       <div className="form" ref={formRef}>
         <h1>Create New Dex</h1>
         <form className="form-column" onSubmit={handleSubmit}>
-          <Alert message={error} type="error" />
+          <Alert message={createDexMutation.error?.message} type="error" />
           <div className="form-group">
             <div className="form-note">/u/{session!.username}/{slug(title || 'Living Dex', { lower: true })}</div>
             <label htmlFor="dex_title">Title</label>
@@ -202,7 +200,13 @@ export function DexCreate ({ isOpen, onRequestClose }: Props) {
               </label>
             </div>
           </div>
-          <button className="btn btn-blue" type="submit">Create <FontAwesomeIcon icon={faLongArrowAltRight} /></button>
+          <button
+            className="btn btn-blue"
+            disabled={createDexMutation.isLoading}
+            type="submit"
+          >
+            Create <FontAwesomeIcon icon={faLongArrowAltRight} />
+          </button>
         </form>
       </div>
       <p><a className="link" onClick={handleRequestClose}>Go Back</a></p>

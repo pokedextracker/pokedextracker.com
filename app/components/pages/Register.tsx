@@ -66,13 +66,16 @@ export function Register () {
   }, [games, game]);
 
   useEffect(() => {
-    if (games && Object.keys(dexTypesByGameFamilyId).length > 0 && !dexType) {
+    if (games && Object.keys(dexTypesByGameFamilyId).length > 0 && dexType === -1) {
       setDexType(dexTypesByGameFamilyId[games[0].game_family.id][0].id);
     }
   }, [games, dexTypesByGameFamilyId, dexType]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    createUserMutation.reset();
+    setError('');
 
     if (password !== passwordConfirm) {
       setError('passwords need to match');
@@ -91,18 +94,15 @@ export function Register () {
       dex_type: dexType,
     };
 
-    setError('');
-
     try {
       const { token } = await createUserMutation.mutateAsync({ payload });
       setToken(token);
       ReactGA.event({ action: 'register', category: 'Session' });
       setHideNotification(true);
       history.push(`/u/${username}/${payload.slug}`);
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      }
+    } catch (_) {
+      // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
+      // error besides prevent it from bubbling up.
       window.scrollTo({ top: 0 });
     }
   };
@@ -147,7 +147,7 @@ export function Register () {
         <h1>Register</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-column">
-            <Alert message={error} type="error" />
+            <Alert message={error || createUserMutation.error?.message} type="error" />
           </div>
 
           <div className="form-row">
@@ -304,7 +304,7 @@ export function Register () {
           </div>
 
           <div className="form-column">
-            <button className="btn btn-blue" type="submit">Let&apos;s go! <FontAwesomeIcon icon={faLongArrowAltRight} /></button>
+            <button className="btn btn-blue" disabled={createUserMutation.isLoading} type="submit">Let&apos;s go! <FontAwesomeIcon icon={faLongArrowAltRight} /></button>
             <p>Already have an account? <Link className="link" to="/login">Login here</Link>!</p>
           </div>
         </form>

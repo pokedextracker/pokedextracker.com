@@ -20,13 +20,11 @@ export function Account () {
   const { session, sessionUser, setToken } = useSession();
 
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [friendCode3ds, setFriendCode3ds] = useState(sessionUser?.friend_code_3ds || '');
   const [friendCodeSwitch, setFriendCodeSwitch] = useState(sessionUser?.friend_code_switch || '');
-  const [success, setSuccess] = useState('');
 
   const updateUserMutation = useUpdateUser();
 
@@ -54,9 +52,8 @@ export function Account () {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    updateUserMutation.reset();
     setError('');
-    setIsLoading(true);
-    setSuccess('');
 
     if (isEditingPassword && password !== passwordConfirm) {
       setError('passwords need to match');
@@ -74,14 +71,11 @@ export function Account () {
       });
       setToken(token);
       ReactGA.event({ action: 'update', category: 'User' });
-      setSuccess('Account settings saved!');
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      }
+    } catch (_) {
+      // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
+      // error besides prevent it from bubbling up.
     }
 
-    setIsLoading(false);
     window.scrollTo({ top: 0 });
   };
 
@@ -98,8 +92,8 @@ export function Account () {
       <div className="form">
         <h1>{sessionUser.username}&apos;s Account</h1>
         <form className="form-column" onSubmit={handleSubmit}>
-          <Alert message={error} type="error" />
-          <Alert message={success} type="success" />
+          <Alert message={error || updateUserMutation.error?.message} type="error" />
+          <Alert message={updateUserMutation.isSuccess && 'Account settings saved!'} type="success" />
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <button
@@ -173,8 +167,8 @@ export function Account () {
           </div>
           <button className="btn btn-blue" type="submit">
             {/* The double check for isLoading is necessary because there is a slight delay when applying visibility: hidden onto the icon. */}
-            <span className={isLoading ? 'hidden' : ''}>Save {!isLoading && <FontAwesomeIcon icon={faLongArrowAltRight} />}</span>
-            {isLoading ? <span className="spinner"><FontAwesomeIcon icon={faCircleNotch} spin /></span> : null}
+            <span className={updateUserMutation.isLoading ? 'hidden' : ''}>Save {!updateUserMutation.isLoading && <FontAwesomeIcon icon={faLongArrowAltRight} />}</span>
+            {updateUserMutation.isLoading ? <span className="spinner"><FontAwesomeIcon icon={faCircleNotch} spin /></span> : null}
           </button>
         </form>
       </div>

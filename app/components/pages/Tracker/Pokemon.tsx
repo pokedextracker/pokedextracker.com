@@ -54,6 +54,14 @@ export function Pokemon ({ capture, delay = 0, setSelectedPokemon }: Props) {
       return;
     }
 
+    if (createCapturesMutation.isLoading || deleteCapturesMutation.isLoading) {
+      // We're already making a request, so exit early.
+      return;
+    }
+
+    createCapturesMutation.reset();
+    deleteCapturesMutation.reset();
+
     const payload = { dex: dex.id, pokemon: [capture.pokemon.id] };
 
     setCaptures((prev) => prev.map((cap) => {
