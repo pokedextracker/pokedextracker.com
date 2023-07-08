@@ -7,6 +7,7 @@ const Rollbar = new Constructor({
   codeVersion: Config.VERSION,
   enabled: Config.ENVIRONMENT !== 'development',
   environment: Config.ENVIRONMENT,
+  hostSafeList: ['pokedextracker.com', 'staging.pokedextracker.com'],
   captureUncaught: true,
   captureUnhandledRejections: true,
   autoInstrument: {

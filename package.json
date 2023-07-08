@@ -46,7 +46,7 @@
     "react-ga": "^3.3.1",
     "react-modal": "^3.16.1",
     "react-router-dom": "^5.3.4",
-    "rollbar": "^2.26.1",
+    "rollbar": "^2.26.2",
     "sass": "^1.62.1",
     "sass-loader": "^13.3.1",
     "slug": "^2.1.1",

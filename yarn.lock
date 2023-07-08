@@ -3697,11 +3697,6 @@ is-wsl@^2.2.0:
   dependencies:
     is-docker "^2.0.0"
 
-is_js@^0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/is_js/-/is_js-0.9.0.tgz#0ab94540502ba7afa24c856aa985561669e9c52d"
-  integrity sha512-8Y5EHSH+TonfUHX2g3pMJljdbGavg55q4jmHzghJCdqYDbdNROC8uw/YFQwIRCRqRJT1EY3pJefz+kglw+o7sg==
-
 isarray@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/isarray/-/isarray-0.0.1.tgz#8a18acfca9a8f4177e09abfc6038939b05d1eedf"
@@ -4630,12 +4625,10 @@ renderkid@^3.0.0:
     lodash "^4.17.21"
     strip-ansi "^6.0.1"
 
-request-ip@~2.0.1:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/request-ip/-/request-ip-2.0.2.tgz#deeae6d4af21768497db8cd05fa37143f8f1257e"
-  integrity sha512-Y6LxqTmxLKKDk2I5tU2sxoCSKAnWJ42jmGqixNrH+oYoAyncpal7fFF5gqJ2bbgkRmb9qYNxdD6KFHfLS4dKBA==
-  dependencies:
-    is_js "^0.9.0"
+request-ip@~3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/request-ip/-/request-ip-3.3.0.tgz#863451e8fec03847d44f223e30a5d63e369fa611"
+  integrity sha512-cA6Xh6e0fDBBBwH77SLJaJPBmD3nWVAcF9/XAcsrIHdjhFzFiB5aNQFytdjCGPezU3ROwrR11IddKAM08vohxA==
 
 require-from-string@^2.0.2:
   version "2.0.2"
@@ -4711,17 +4704,17 @@ rimraf@^3.0.2:
   dependencies:
     glob "^7.1.3"
 
-rollbar@^2.26.1:
-  version "2.26.1"
-  resolved "https://registry.yarnpkg.com/rollbar/-/rollbar-2.26.1.tgz#45a69d9a1e95fee6501dd13ee40feb75d242be78"
-  integrity sha512-zphIb11bYUXP+9LJGfehukizyxINK8llwYxAeGjZTDdblyqT1Wmh1Fka3ucHjHSqeR/vZyIjTFGLj/PajUK5Gg==
+rollbar@^2.26.2:
+  version "2.26.2"
+  resolved "https://registry.yarnpkg.com/rollbar/-/rollbar-2.26.2.tgz#58627dce65233e7433facb6366fd6e8817f396d3"
+  integrity sha512-7ASvrlal87ek2vhTmpu2LPvkdlcnala1qeMT2Ra76s0KjWkQ8d1fTl6dk7AqHx1Qa/puahg3tYw7EPB7wYx9RQ==
   dependencies:
     async "~3.2.3"
     console-polyfill "0.3.0"
     error-stack-parser "^2.0.4"
     json-stringify-safe "~5.0.0"
     lru-cache "~2.2.1"
-    request-ip "~2.0.1"
+    request-ip "~3.3.0"
     source-map "^0.5.7"
   optionalDependencies:
     decache "^3.0.5"
