@@ -34,7 +34,14 @@ body {
     @include flex(1 1 auto);
     @include flexbox();
     @include flex-direction(column);
+  }
 
+  // All but the home container.
+  .tracker-container,
+  .register-container,
+  .login-container,
+  .account-container,
+  .profile-container {
     min-height: 0;
   }
 }
@@ -67,7 +74,9 @@ nav {
 
   a {
     @include transition(all .1s ease-out);
+    @include flexbox();
 
+    align-items: center;
     padding: 14px;
     font-size: 11px;
     font-weight: 700;
@@ -81,21 +90,25 @@ nav {
       margin-right: auto;
     }
 
-    &.tooltip.tooltip-below {
-      .svg-inline--fa {
-         font-size: 10px;
-       }
+    &.tooltip {
+      @include flexbox();
 
-      .tooltip-text {
-        font-size: 10px;
-        text-transform: none;
-        letter-spacing: 0;
-        z-index: 10;
-        background-color: $brand-primary-light;
-        color: $brand-secondary;
+      .tooltip-below {
+        .svg-inline--fa {
+          font-size: 10px;
+        }
 
-        &::after {
-          border-color: transparent transparent $brand-primary-light transparent;
+        .tooltip-text {
+          font-size: 10px;
+          text-transform: none;
+          letter-spacing: 0;
+          z-index: 10;
+          background-color: $brand-primary-light;
+          color: $brand-secondary;
+
+          &::after {
+            border-color: transparent transparent $brand-primary-light transparent;
+          }
         }
       }
     }

@@ -17,6 +17,20 @@ module.exports = {
   },
   devtool: PRODUCTION ? 'source-map' : 'inline-source-map',
   devServer: {
+    setupMiddlewares: (middlewares, devServer) => {
+      if (!devServer) {
+        throw new Error('webpack-dev-server is not defined');
+      }
+
+      // This adds a fake route during development that returns the string
+      // "development" for the /version endpoint. This will make it so that the
+      // new version banner doesn't show up all the time.
+      devServer.app.get('/version', (req, res) => {
+        res.send('development');
+      });
+
+      return middlewares;
+    },
     historyApiFallback: true,
     host: '0.0.0.0',
     hot: true,
