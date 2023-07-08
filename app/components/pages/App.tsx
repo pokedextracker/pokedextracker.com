@@ -7,6 +7,7 @@ import { Home } from './Home';
 import { Login } from './Login';
 import { NotFound } from './NotFound';
 import { Profile } from './Profile';
+import { ProfileRedirect } from './ProfileRedirect';
 import { Register } from './Register';
 import { Rollbar } from '../../utils/rollbar';
 import { Tracker } from './Tracker';
@@ -30,6 +31,7 @@ export function App () {
           <Route component={Login} exact path="/login" />
           <Route component={Register} exact path="/register" />
           <Route component={Account} exact path="/account" />
+          <Route component={ProfileRedirect} exact path="/profile" />
           <Route component={Profile} exact path="/u/:username" />
           <Route component={Tracker} exact path="/u/:username/:slug" />
           <Route component={NotFound} path="/" />
