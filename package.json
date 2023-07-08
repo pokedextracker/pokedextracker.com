@@ -7,9 +7,10 @@
     "test": "test"
   },
   "scripts": {
-    "build": "npm run build:bundle && npm run build:version",
-    "build:bundle": "webpack",
-    "build:version": "date > public/version",
+    "build": "npm run build:bundle && npm run build:public && npm run build:version",
+    "build:bundle": "rm -rf build && webpack",
+    "build:public": "mkdir -p build && cp -R public/* build/",
+    "build:version": "mkdir -p build && date > build/version",
     "deploy": "./scripts/deploy.sh",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx --max-warnings 0 .",
     "lint:all": "yarn lint && yarn lint:types",

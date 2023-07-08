@@ -8,7 +8,7 @@ const PRODUCTION = process.env.NODE_ENV === 'staging' || process.env.NODE_ENV ==
 module.exports = {
   entry: ['whatwg-fetch', './app/index.tsx'],
   output: {
-    path: `${__dirname}/public`,
+    path: `${__dirname}/build`,
     filename: PRODUCTION ? '[name].[contenthash].js' : '[name].[fullhash].js',
     publicPath: '/',
   },
