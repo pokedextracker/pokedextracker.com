@@ -16,6 +16,7 @@ import { useSession } from '../../../hooks/contexts/use-session';
 import { useTrackerContext } from './use-tracker';
 import { useUser } from '../../../hooks/queries/users';
 
+import type { Dex } from '../../../types';
 import type { Dispatch, SetStateAction } from 'react';
 import type { UICapture } from './use-tracker';
 
@@ -35,7 +36,7 @@ export function Pokemon ({ capture, delay = 0, setSelectedPokemon }: Props) {
 
   const { session } = useSession();
   const user = useUser(username).data!;
-  const dex = useMemo(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
+  const dex = useMemo<Dex | undefined>(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
 
   const createCapturesMutation = useCreateCapture();
   const deleteCapturesMutation = useDeleteCapture();
@@ -51,6 +52,11 @@ export function Pokemon ({ capture, delay = 0, setSelectedPokemon }: Props) {
 
   const handleSetCapturedClick = async () => {
     if (!session || session.id !== user.id) {
+      return;
+    }
+
+    if (!dex) {
+      // This shouldn't really happen, but just in case the dex wasn't loaded in, we don't want a hard crash.
       return;
     }
 
@@ -104,6 +110,11 @@ export function Pokemon ({ capture, delay = 0, setSelectedPokemon }: Props) {
     setSelectedPokemon(capture.pokemon.id);
     setShowInfo(true);
   };
+
+  if (!dex) {
+    // The dex wasn't fully loaded, so we don't show anything until it loads.
+    return null;
+  }
 
   const classes = {
     pokemon: true,
