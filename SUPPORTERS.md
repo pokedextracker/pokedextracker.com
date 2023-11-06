@@ -90,3 +90,4 @@ This will be where we add the names for all of the users who've donated any amou
 - [EN1GMA](https://pokedextracker.com/u/EN1GMA)
 - [Bernard](https://pokedextracker.com/u/Bernard)
 - [Rubiks](https://pokedextracker.com/u/Rubiks)
+- [sugarsukka](https://pokedextracker.com/u/sugarsukka)
