@@ -36,19 +36,12 @@ export function Box ({ captures, deferred = false, dexTotal, setSelectedPokemon 
     }
   } else if (title.indexOf('reset') === 0) {
     const parts = title.split(':');
-    const offset = parseInt(parts[1], 10);
     const prefix = parts[2];
 
-    let firstNumber = firstPokemon.dex_number;
-    let lastNumber = lastPokemon.dex_number;
-
-    firstNumber -= offset;
-    lastNumber -= offset;
-
-    if (firstNumber === lastNumber) {
-      title = padding(firstNumber, paddingDigits);
+    if (firstPokemon.dex_number === lastPokemon.dex_number) {
+      title = padding(firstPokemon.dex_number, paddingDigits);
     } else {
-      title = `${padding(firstNumber, paddingDigits)} - ${padding(lastNumber, paddingDigits)}`;
+      title = `${padding(firstPokemon.dex_number, paddingDigits)} - ${padding(lastPokemon.dex_number, paddingDigits)}`;
     }
 
     if (prefix) {

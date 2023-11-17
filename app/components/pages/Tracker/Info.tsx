@@ -29,6 +29,7 @@ const SEREBII_LINKS: Record<string, string> = {
   brilliant_diamond_shining_pearl: 'pokedex-swsh',
   legends_arceus: 'pokedex-swsh',
   scarlet_violet: 'pokedex-sv',
+  scarlet_violet_expansion_pass: 'pokedex-sv',
   home: 'pokedex-sv',
 };
 
