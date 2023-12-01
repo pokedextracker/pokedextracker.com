@@ -74,7 +74,7 @@ export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }: Props
                   onChange={handleHideCaughtChange}
                   type="checkbox"
                 />
-                <span className="checkbox-custom"><span /></span>Hide Caught Pokémon
+                <span className="checkbox-custom" /><span>Hide Caught Pokémon</span>
               </label>
             </div>
           </div>
