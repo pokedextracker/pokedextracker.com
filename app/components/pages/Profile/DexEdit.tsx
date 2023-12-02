@@ -3,8 +3,10 @@ import find from 'lodash/find';
 import groupBy from 'lodash/groupBy';
 import keyBy from 'lodash/keyBy';
 import slug from 'slug';
+import startCase from 'lodash/startCase';
+import uniqBy from 'lodash/uniqBy';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAsterisk, faChevronDown, faLongArrowAltRight, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import { faAsterisk, faChevronDown, faLongArrowAltRight, faQuestionCircle, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Alert } from '../../library/Alert';
@@ -17,7 +19,7 @@ import { useLocalStorageContext } from '../../../hooks/contexts/use-local-storag
 import { useSession } from '../../../hooks/contexts/use-session';
 
 import type { ChangeEvent, MouseEvent, FormEvent } from 'react';
-import type { Dex, DexType, Game } from '../../../types';
+import type { Customization, Dex, DexType, Game } from '../../../types';
 
 const GAME_WARNING = 'Any capture info specific to your old game will be lost.';
 const REGIONAL_WARNING = 'Any non-regional capture info will be lost.';
@@ -40,15 +42,58 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
   const gamesById = useMemo<Record<string, Game>>(() => keyBy(games, 'id'), [games]);
   const dexTypesById = useMemo<Record<string, DexType>>(() => keyBy(dexTypes, 'id'), [dexTypes]);
   const dexTypesByGameFamilyId = useMemo<Record<string, DexType[]>>(() => groupBy(dexTypes, 'game_family_id'), [dexTypes]);
+  const customizationDexTypesByBaseDexTypeId = useMemo<Record<string, DexType[]>>(() => groupBy(dexTypes?.filter((dt) => dt.base_dex_type_id), 'base_dex_type_id'), [dexTypes]);
+  const customizationsByBaseDexTypeId = useMemo<Record<string, Customization[]>>(() => {
+    const customizations = dexTypes?.filter((dt) => dt.base_dex_type_id).flatMap<Customization>((dt) => dt.tags.filter((tag) => tag.startsWith('customization-')).map((tag) => ({
+      label: startCase(tag.replace(/^customization-/, '')),
+      value: tag,
+      base_dex_type_id: dt.base_dex_type_id!,
+    })));
+    const uniqueByValueAndBase = uniqBy(customizations, (customization) => `${customization.value}:${customization.base_dex_type_id}`);
+    return groupBy(uniqueByValueAndBase, 'base_dex_type_id');
+  }, [dexTypes]);
 
   const [title, setTitle] = useState(dex.title);
   const [game, setGame] = useState(dex.game.id);
-  const [dexType, setDexType] = useState(dex.dex_type.id);
+  const [dexType, setDexType] = useState(dex.dex_type.base_dex_type_id || dex.dex_type.id);
   const [shiny, setShiny] = useState(dex.shiny);
+  const [selectedCustomizations, setSelectedCustomizations] = useState<Record<string, boolean>>(dex.dex_type.tags.filter((tag) => tag.startsWith('customization-')).reduce((acc, tag) => ({
+    ...acc,
+    [tag]: true,
+  }), {}));
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isConfirmingUpdate, setIsConfirmingUpdate] = useState(false);
 
   const regional = useMemo(() => dexTypesById[dexType]?.tags.includes('regional'), [dexTypesById, dexType]);
+  const resolvedDexType = useMemo<number>(() => {
+    if (!customizationDexTypesByBaseDexTypeId[dexType]) {
+      // The selected dex type doesn't have any customizations, so just use the base.
+      return dexType;
+    }
+
+    // Go through all possible customizations and find the dex type that has all the selected customizations while not
+    // having any of the non-selected ones. There should only be one.
+    const allCustomizations = customizationsByBaseDexTypeId[dexType];
+    const matchedDexType = customizationDexTypesByBaseDexTypeId[dexType].find((dt) => {
+      return allCustomizations.every((customization) => {
+        if (selectedCustomizations[customization.value]) {
+          // This customization is selected, so we need to make sure this dex type has this tag.
+          return dt.tags.find((tag) => tag === customization.value) !== undefined;
+        } else {
+          // This customization is not selected, so we need to make sure this dex type explicitly does not have this
+          // tag.
+          return dt.tags.find((tag) => tag === customization.value) === undefined;
+        }
+      });
+    });
+
+    if (!matchedDexType) {
+      // This shouldn't really happen if we have everything set up properly, but in case it does, use the base instead.
+      return dexType;
+    }
+
+    return matchedDexType.id;
+  }, [customizationsByBaseDexTypeId, customizationDexTypesByBaseDexTypeId, dexType, selectedCustomizations]);
 
   const updateDexMutation = useUpdateDex();
   const deleteDexMutation = useDeleteDex();
@@ -58,8 +103,12 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
     deleteDexMutation.reset();
     setTitle(dex.title);
     setGame(dex.game.id);
-    setDexType(dex.dex_type.id);
+    setDexType(dex.dex_type.base_dex_type_id || dex.dex_type.id);
     setShiny(dex.shiny);
+    setSelectedCustomizations(dex.dex_type.tags.filter((tag) => tag.startsWith('customization-')).reduce((acc, tag) => ({
+      ...acc,
+      [tag]: true,
+    }), {}));
     setIsConfirmingDelete(false);
     setIsConfirmingUpdate(false);
   };
@@ -69,11 +118,10 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
   }, [dex]);
 
   const showGameWarning = useMemo(() => {
-    // If you're moving from the expansion down to the original as a regional
-    // dex, we should show the game warning. The reason this needed is because
-    // we made the national dex for sword_shield the same as the expansion, so
-    // the clause checking for national total isn't evaluating to true.
-    if (dex.game.game_family.id === 'sword_shield_expansion_pass' && gamesById[game]?.game_family.id === 'sword_shield' && regional) {
+    // If you're moving from an expansion down to the original as a regional dex, we should show the game warning. The
+    // reason this needed is that we made the national dex for sword_shield the same as the expansion, so the clause
+    // checking for national total isn't evaluating to true.
+    if (dex.game.game_family.id.endsWith('_expansion_pass') && dex.game.game_family.id === `${gamesById[game]?.game_family.id}_expansion_pass` && regional) {
       return true;
     }
 
@@ -107,12 +155,14 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
       const matchingNewDexType = find(dexTypesByGameFamilyId[newGameFamilyId], ['name', oldDexType.name]);
       const newDexTypeId = matchingNewDexType?.id || dexTypesByGameFamilyId[gamesById[newGameId].game_family.id][0].id;
       setDexType(newDexTypeId);
+      setSelectedCustomizations({});
     }
 
     setGame(newGameId);
   };
 
   const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value);
+  const handleShinyChange = (e: ChangeEvent<HTMLInputElement>) => setShiny(e.target.checked);
 
   const handleDeleteClick = async (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -163,7 +213,7 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
           slug: title !== dex.title ? slug(title, { lower: true }) : undefined,
           shiny,
           game,
-          dex_type: dexType,
+          dex_type: resolvedDexType,
         },
       });
       ReactGA.event({ action: 'update', category: 'Dex' });
@@ -220,7 +270,7 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
               type="text"
               value={title}
             />
-            <FontAwesomeIcon icon={faAsterisk} />
+            <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
           </div>
           <div className="form-group">
             <FormWarning message={showGameWarning && GAME_WARNING} />
@@ -228,49 +278,72 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
             <select className="form-control" onChange={handleGameChange} value={game}>
               {games.map((game) => <option key={game.id} value={game.id}>{game.name}</option>)}
             </select>
-            <FontAwesomeIcon icon={faChevronDown} />
+            <FontAwesomeIcon className="input-icon" icon={faChevronDown} />
           </div>
           <div className="form-group">
             <FormWarning message={showRegionalWarning && REGIONAL_WARNING} />
             <label htmlFor="dex-type">Dex Type</label>
-            {dexTypesByGameFamilyId[gamesById[game].game_family.id].map((dt) => (
-              <div className="radio" key={dt.id}>
-                <label>
-                  <input
-                    checked={dexType === dt.id}
-                    name="dex-type"
-                    onChange={() => setDexType(dt.id)}
-                    type="radio"
-                  />
-                  <span className="radio-custom"><span /></span>{dt.name}
-                </label>
+            {dexTypesByGameFamilyId[gamesById[game].game_family.id].filter((dt) => !dt.base_dex_type_id).map((dt) => (
+              <div className="form-option" key={dt.id}>
+                <div className="radio">
+                  <label>
+                    <input
+                      checked={dexType === dt.id}
+                      name="dex-type"
+                      onChange={() => {
+                        setDexType(dt.id);
+                        setSelectedCustomizations({});
+                      }}
+                      type="radio"
+                    />
+                    <span className="radio-custom"><span /></span>{dt.name}{dt.description ? (
+                      <div className="tooltip">
+                        <FontAwesomeIcon className="tooltip-icon" icon={faQuestionCircle} />
+                        <span className="tooltip-text">{dt.description}</span>
+                      </div>
+                    ) : null}
+                  </label>
+                </div>
               </div>
             ))}
           </div>
           <div className="form-group">
-            <label htmlFor="type">Type</label>
-            <div className="radio">
-              <label>
-                <input
-                  checked={!shiny}
-                  name="type"
-                  onChange={() => setShiny(false)}
-                  type="radio"
-                />
-                <span className="radio-custom"><span /></span>Normal
-              </label>
+            <label>Customizations</label>
+            <div className="form-option">
+              <div className="checkbox">
+                <label>
+                  <input
+                    checked={shiny}
+                    id="customization-shiny"
+                    name="customization-shiny"
+                    onChange={handleShinyChange}
+                    type="checkbox"
+                  />
+                  <span className="checkbox-custom"><span /></span>Shiny
+                </label>
+              </div>
             </div>
-            <div className="radio">
-              <label>
-                <input
-                  checked={shiny}
-                  name="type"
-                  onChange={() => setShiny(true)}
-                  type="radio"
-                />
-                <span className="radio-custom"><span /></span>Shiny
-              </label>
-            </div>
+            {customizationsByBaseDexTypeId[dexType]?.map((customization) => (
+              <div className="form-option" key={customization.value}>
+                <div className="checkbox">
+                  <label>
+                    <input
+                      checked={selectedCustomizations[customization.value] || false}
+                      id={customization.value.replace(/ /g, '-')}
+                      name={customization.value.replace(/ /g, '-')}
+                      onChange={(e) => {
+                        setSelectedCustomizations((prev) => ({
+                          ...prev,
+                          [customization.value]: e.target.checked,
+                        }));
+                      }}
+                      type="checkbox"
+                    />
+                    <span className="checkbox-custom"><span /></span>{customization.label}
+                  </label>
+                </div>
+              </div>
+            ))}
           </div>
           <Alert className="form-confirm" message={isConfirmingUpdate && 'Please review the warnings above and confirm your edit!'} type="error" />
           <button

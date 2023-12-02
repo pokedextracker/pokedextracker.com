@@ -58,7 +58,7 @@ export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }: Props
           />
           {query.length > 0 ?
             <a className="clear-btn" onClick={handleClearClick}>
-              <FontAwesomeIcon icon={faTimes} />
+              <FontAwesomeIcon className="input-icon" icon={faTimes} />
             </a> :
             null
           }

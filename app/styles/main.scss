@@ -429,6 +429,16 @@ select {
     }
   }
 
+  .form-option {
+    @include flexbox();
+
+    margin-bottom: 5px;
+
+    .tooltip {
+      margin-left: 5px;
+    }
+  }
+
   .radio {
     display: inline-block;
     margin: 0 13px;
@@ -550,12 +560,17 @@ select {
   }
 
   .svg-inline--fa {
-    &:last-child {
+    &.input-icon {
       position: absolute;
       bottom: 16px;
       right: 15px;
       font-size: 10px;
       color: $brand-primary;
+    }
+
+    &.tooltip-icon {
+      font-size: 12px;
+      color: $brand-secondary;
     }
 
     &.fa-chevron-down {

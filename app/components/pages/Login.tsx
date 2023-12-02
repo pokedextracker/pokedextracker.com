@@ -81,7 +81,7 @@ export function Login () {
               type="text"
               value={username}
             />
-            <FontAwesomeIcon icon={faAsterisk} />
+            <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
           </div>
           <div className="form-group">
             <label htmlFor="password">Password</label>
@@ -96,7 +96,7 @@ export function Login () {
               type="password"
               value={password}
             />
-            <FontAwesomeIcon icon={faAsterisk} />
+            <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
           </div>
           <button className="btn btn-blue" disabled={loginMutation.isLoading} type="submit">Let&apos;s go! <FontAwesomeIcon icon={faLongArrowAltRight} /></button>
           <p>Don&apos;t have an account yet? <Link className="link" to="/register">Register here</Link>!</p>

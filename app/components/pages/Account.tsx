@@ -117,7 +117,7 @@ export function Account () {
                   type="password"
                   value={password}
                 />
-                <FontAwesomeIcon icon={faAsterisk} />
+                <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
               </div>
               <div className="form-group">
                 <input
@@ -130,7 +130,7 @@ export function Account () {
                   type="password"
                   value={passwordConfirm}
                 />
-                <FontAwesomeIcon icon={faAsterisk} />
+                <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
               </div>
             </div>
           }
@@ -163,7 +163,7 @@ export function Account () {
             <select className="form-control">
               <option>English</option>
             </select>
-            <FontAwesomeIcon icon={faChevronDown} />
+            <FontAwesomeIcon className="input-icon" icon={faChevronDown} />
           </div>
           <button className="btn btn-blue" type="submit">
             {/* The double check for isLoading is necessary because there is a slight delay when applying visibility: hidden onto the icon. */}
