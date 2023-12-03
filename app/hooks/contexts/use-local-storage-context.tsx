@@ -29,7 +29,7 @@ interface Props {
 }
 
 export const LocalStorageContextProvider = ({ children }: Props) => {
-  const [hideNotification, setHideNotification] = useLocalStorage('notif-2023.06.08', { defaultValue: false, parseAsJson: true });
+  const [hideNotification, setHideNotification] = useLocalStorage('notif-2023.12.02', { defaultValue: false, parseAsJson: true });
   const [isNightMode, setIsNightMode] = useLocalStorage('nightMode', { defaultValue: false, parseAsJson: true });
   const [showInfo, setShowInfo] = useLocalStorage('showInfo', { defaultValue: window.innerWidth > MOBILE_WIDTH, parseAsJson: true });
 

@@ -24,6 +24,7 @@ export function Home () {
         <div className="sub">
           <h2>A tool for tracking your Living Dex progress! We currently support:</h2>
           <ul>
+            <li><h2><Link className="link" to="/u/ashketchum10/scarlet-expansion-living-dex">Pokémon Scarlet &amp; Violet (Expansion Pass) Full Paldea Dex</Link> and <Link className="link" to="/u/ashketchum10/scarlet-kitakami-living-dex">Kitakami Dex</Link></h2></li>
             <li><h2><Link className="link" to="/u/ashketchum10/scarlet-regional-living-dex">Pokémon Scarlet &amp; Violet Regional Dex</Link></h2></li>
             <li><h2><Link className="link" to="/u/ashketchum10/home-national-living-dex">HOME Generation 9 National Dex</Link> (and Generations 6, 7, and 8)</h2></li>
             <li><h2><Link className="link" to="/u/ashketchum10/legends-arceus-regional-living-dex">Pokémon Legends: Arceus Regional Dex</Link></h2></li>
