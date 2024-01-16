@@ -13,6 +13,9 @@ primary_region = "sjc"
   auto_stop_machines = false
   auto_start_machines = false
   min_machines_running = 1
+  [[services.ports]]
+    handlers = ["http"]
+    port = 80
   [[services.http_checks]]
     interval = 10000
     grace_period = "5s"
