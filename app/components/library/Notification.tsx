@@ -15,7 +15,7 @@ export function Notification () {
   return (
     <div className="alert alert-muted">
       <FontAwesomeIcon icon={faTimes} onClick={handleClick} />
-      <p>Scarlet and Violet Expansion Pass (The Teal Mask) Support is Here! <a href="http://bit.ly/pt-teal-mask" rel="noopener noreferrer" target="_blank">Read more</a>.</p>
+      <p>We&apos;ve updated for The Indigo Disk! <a href="http://bit.ly/pt-indigo-disk" rel="noopener noreferrer" target="_blank">Read more here</a>.</p>
     </div>
   );
 }
