@@ -15,7 +15,7 @@ export function Notification () {
   return (
     <div className="alert alert-muted">
       <FontAwesomeIcon icon={faTimes} onClick={handleClick} />
-      <p>We've updated for The Indigo Disk! <a href="http://bit.ly/pt-indigo-disk" rel="noopener noreferrer" target="_blank">Read more here</a>.</p>
+      <p>We&apos;ve updated for The Indigo Disk! <a href="http://bit.ly/pt-indigo-disk" rel="noopener noreferrer" target="_blank">Read more here</a>.</p>
     </div>
   );
 }
