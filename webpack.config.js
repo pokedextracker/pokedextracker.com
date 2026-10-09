@@ -1,9 +1,11 @@
 'use strict';
 
+const { hostname } = require('os');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Webpack = require('webpack');
 
 const PRODUCTION = process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production';
+const machine = hostname().toLowerCase();
 
 module.exports = {
   entry: ['whatwg-fetch', './app/index.tsx'],
@@ -32,9 +34,18 @@ module.exports = {
       return middlewares;
     },
     historyApiFallback: true,
+    // Allow the server machine's hostname and mDNS name, as well as IP addresses.
+    allowedHosts: [machine, `${machine}.local`],
     host: '0.0.0.0',
     hot: true,
     port: 9898,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8647',
+        changeOrigin: true,
+        pathRewrite: { '^/api': '' },
+      },
+    },
     static: 'public/',
   },
   mode: PRODUCTION ? 'production' : 'none',
