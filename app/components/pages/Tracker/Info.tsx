@@ -30,6 +30,8 @@ const SEREBII_LINKS: Record<string, string> = {
   legends_arceus: 'pokedex-swsh',
   scarlet_violet: 'pokedex-sv',
   scarlet_violet_expansion_pass: 'pokedex-sv',
+  legends_za: 'pokedex-sv',
+  legends_za_expansion_pass: 'pokedex-sv',
   home: 'pokedex-sv',
 };
 
@@ -57,9 +59,14 @@ export function Info ({ selectedPokemon, setSelectedPokemon }: Props) {
     const swshLocation = find(pokemon.locations, (loc) => loc.game.game_family.id === 'sword_shield');
     const bdspLocation = find(pokemon.locations, (loc) => loc.game.game_family.id === 'brilliant_diamond_shining_pearl');
     const plaLocation = find(pokemon.locations, (loc) => loc.game.game_family.id === 'legends_arceus');
-    const svLocation = find(pokemon.locations, (loc) => loc.game.game_family.id === 'scarlet_violet');
+    const gen9Location = find(pokemon.locations, (loc) => [
+      'scarlet_violet',
+      'scarlet_violet_expansion_pass',
+      'legends_za',
+      'legends_za_expansion_pass',
+    ].includes(loc.game.game_family.id));
 
-    if (dex.game.game_family.id === 'home' && !svLocation) {
+    if (dex.game.game_family.id === 'home' && !gen9Location) {
       if (swshLocation && swshLocation.value.length > 0 && swshLocation.value[0] === 'Currently unavailable' && !bdspLocation && !plaLocation) {
         // If the Pokemon's location is 'Currently unavailable' for SwSh and they
         // don't have locations for any other gen8 game, that means they aren't
@@ -69,7 +76,7 @@ export function Info ({ selectedPokemon, setSelectedPokemon }: Props) {
         return 'pokedex-sm';
       }
 
-      // This is a HOME dex, there is no SV location, and there is a gen8
+      // This is a HOME dex, there is no gen9 location, and there is a gen8
       // location, so we use the SwSh link.
       return 'pokedex-swsh';
     }

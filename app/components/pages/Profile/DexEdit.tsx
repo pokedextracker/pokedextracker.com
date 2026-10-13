@@ -23,6 +23,7 @@ import type { Customization, Dex, DexType, Game } from '../../../types';
 
 const GAME_WARNING = 'Any capture info specific to your old game will be lost.';
 const REGIONAL_WARNING = 'Any non-regional capture info will be lost.';
+const DEX_TYPE_WARNING = 'Capture info for Pokémon not included in the selected dex type may be lost.';
 const URL_WARNING = 'The old URL to your dex will not function anymore.';
 
 interface Props {
@@ -95,6 +96,10 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
     return matchedDexType.id;
   }, [customizationsByBaseDexTypeId, customizationDexTypesByBaseDexTypeId, dexType, selectedCustomizations]);
 
+  useEffect(() => {
+    setIsConfirmingUpdate(false);
+  }, [game, resolvedDexType, title]);
+
   const updateDexMutation = useUpdateDex();
   const deleteDexMutation = useDeleteDex();
 
@@ -132,6 +137,10 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
   }, [dex.id, game, gamesById, regional]);
 
   const showRegionalWarning = useMemo(() => regional && !dex.dex_type.tags.includes('regional'), [dex.id, regional]);
+  // A different family is not necessarily a superset, even when moving to an expansion.
+  // Without membership data, warn on any template change unless the game warning already covers it.
+  const showDexTypeWarning = !showGameWarning && resolvedDexType !== dex.dex_type.id;
+  const dexTypeWarning = showRegionalWarning ? REGIONAL_WARNING : showDexTypeWarning && DEX_TYPE_WARNING;
   const showUrlWarning = useMemo(() => slug(title || 'Living Dex', { lower: true }) !== dex.slug, [dex.id, title]);
 
   const handleRequestClose = () => {
@@ -196,7 +205,7 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
   const handleUpdateSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!isConfirmingUpdate && (showGameWarning || showRegionalWarning || showUrlWarning)) {
+    if (!isConfirmingUpdate && (showGameWarning || dexTypeWarning || showUrlWarning)) {
       setIsConfirmingUpdate(true);
       return;
     }
@@ -281,7 +290,7 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
             <FontAwesomeIcon className="input-icon" icon={faChevronDown} />
           </div>
           <div className="form-group">
-            <FormWarning message={showRegionalWarning && REGIONAL_WARNING} />
+            <FormWarning message={dexTypeWarning} />
             <label htmlFor="dex-type">Dex Type</label>
             {dexTypesByGameFamilyId[gamesById[game].game_family.id].filter((dt) => !dt.base_dex_type_id).map((dt) => (
               <div className="form-option" key={dt.id}>
