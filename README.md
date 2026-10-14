@@ -1,6 +1,6 @@
 # pokedextracker.com
 
-[![CircleCI](https://circleci.com/gh/pokedextracker/pokedextracker.com.svg?style=shield)](https://circleci.com/gh/pokedextracker/pokedextracker.com)
+[![CI](https://github.com/pokedextracker/pokedextracker.com/actions/workflows/ci.yml/badge.svg)](https://github.com/pokedextracker/pokedextracker.com/actions/workflows/ci.yml)
 
 A website to track your completion of a Living Pokedex.
 
