@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # Installs the Node.js and Yarn versions pinned in mise.toml.
+      # Installs the tool versions pinned in mise.toml.
       - uses: jdx/mise-action@v5
 
       - uses: actions/cache@v6
@@ -28,7 +28,7 @@ jobs:
           key: node-modules-${{ runner.os }}-${{ hashFiles('mise.toml', 'yarn.lock') }}
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: mise install:web
 
       - name: Lint
         run: yarn lint
@@ -37,6 +37,46 @@ jobs:
         run: yarn lint:types
 
       - name: Build
-        run: yarn build
+        run: mise build:web
+
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    services:
+      # Matches the production database version.
+      postgres:
+        image: postgres:9.4.26
         env:
-          NODE_ENV: production
+          POSTGRES_DB: pokedex_tracker_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_USER: pokedex_tracker_admin
+        ports:
+          - 9876:5432
+        options: >-
+          --health-cmd "pg_isready -U pokedex_tracker_admin"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
+    env:
+      DATABASE_DEBUG: "false"
+    steps:
+      - uses: actions/checkout@v7
+
+      # Installs the tool versions pinned in mise.toml.
+      - uses: jdx/mise-action@v5
+
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: go-${{ runner.os }}-${{ hashFiles('mise.toml', 'go.sum') }}
+
+      - name: Install dependencies
+        run: mise install:go
+
+      - name: Lint
+        run: mise lint:go
+
+      - name: Test
+        run: mise test:go
