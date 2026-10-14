@@ -1,0 +1,73 @@
+run:
+  timeout: 5m
+  skip-dirs:
+    - cmd/scratch
+
+linters:
+  disable-all: true
+  enable:
+  - bodyclose
+  - dogsled
+  - errcheck
+  - exhaustive
+  - exportloopref
+  - exportloopref
+  - gocritic
+  - godot
+  - goerr113
+  - goheader
+  - goimports
+  - gosec
+  - gosimple
+  - govet
+  - ineffassign
+  - misspell
+  - noctx
+  - revive
+  - staticcheck
+  - stylecheck
+  - typecheck
+  - unconvert
+  - unparam
+  - unused
+  - whitespace
+
+linters-settings:
+  gocritic:
+    disabled-checks:
+      - appendAssign
+      - ifElseChain
+      - singleCaseSwitch
+  gosec:
+    excludes:
+      - G108 # Profiling endpoint is automatically exposed
+      - G401 # Use of weak cryptographic primitive
+      - G404 # Use of weak random number generator
+      - G501 # Blocklisted import crypto/md5
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-rules:
+    # It's complaining about InsecureSkipVerify being set to true, but we are
+    # setting it to true intentionally if the host is localhost.
+    - path: pkg/database/database.go
+      text: G402 # checking for InsecureSkipVerify
+    # Ignore a bunch of linters for test files.
+    - path: _test\.go
+      linters:
+        - errcheck
+        - goerr113
+        - gosec
+        - noctx
+    # The tableName struct field is used by go-pg, even if we don't use it
+    # directly.
+    - linters:
+        - unused
+      text: tableName
+    # It detects that only a single value is passed into a function, but
+    # sometimes it's useful to make it a bit abstract in anticipation for future
+    # use.
+#    - linters:
+#        - unparam
+#      text: always receives

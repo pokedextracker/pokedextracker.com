@@ -1,0 +1,46 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: cimg/go:1.20.5
+        environment:
+          ENVIRONMENT: test
+          DATABASE_PORT: "5432"
+      - image: cimg/postgres:13.6
+        environment:
+          POSTGRES_DB: pokedex_tracker_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_PASSWORD: ""
+          POSTGRES_USER: pokedex_tracker_admin
+    working_directory: ~/api.pokedextracker.com
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - deps-v1-{{ checksum ".go-version" }}-{{ checksum "go.sum" }}
+            - deps-v1-{{ checksum ".go-version" }}-
+      - run:
+          name: Install dependencies
+          command: make install
+      - save_cache:
+          key: deps-v1-{{ checksum ".go-version" }}-{{ checksum "go.sum" }}
+          paths:
+            - ~/.cache/go-build
+            - ~/go/pkg/mod
+      - run:
+          name: Run migrations
+          command: make db:migrate
+      - run:
+          name: Run tests
+          command: make test
+      # - run:
+      #     name: Enforce coverage
+      #     command: make enforce
+      - store_artifacts:
+          path: coverage.out
+
+workflows:
+  test:
+    jobs:
+      - test

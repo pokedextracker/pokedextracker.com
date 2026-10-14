@@ -358,3 +358,6 @@ tags
 
 .idea
 build
+bin
+tmp
+cmd/scratch

@@ -1,0 +1,29 @@
+# Docs: https://fly.io/docs/reference/configuration/
+
+app = "pokedextracker-production-backend"
+primary_region = "sjc"
+
+[deploy]
+  release_command = "migrations migrate"
+  strategy = "rolling"
+
+[env]
+  ENVIRONMENT = "production"
+
+[[services]]
+  processes = ["api"]
+  internal_port = 8647
+  protocol = "tcp"
+  auto_stop_machines = false
+  auto_start_machines = false
+  min_machines_running = 1
+  [[services.http_checks]]
+    interval = 10000
+    grace_period = "10s"
+    method = "get"
+    path = "/health"
+    protocol = "http"
+    timeout = 2000
+
+[processes]
+  api = "api"

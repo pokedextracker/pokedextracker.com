@@ -1,0 +1,7 @@
+# At the time of writing, we're currently using an older version of Postgres. That version is quite old and doesn't have
+# support for arm64 images. The intention is that we'll update it soon, but we can't really make any changes to the API
+# until it's rewritten, so we'll just use the newer version locally so that we can rewrite it.
+
+FROM postgres:15.3-alpine
+
+RUN apk add vim
