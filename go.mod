@@ -1,4 +1,4 @@
-module github.com/pokedextracker/api.pokedextracker.com
+module github.com/pokedextracker/pokedextracker.com
 
 go 1.20
 

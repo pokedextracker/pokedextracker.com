@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/config"
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/database"
+	"github.com/pokedextracker/pokedextracker.com/pkg/config"
+	"github.com/pokedextracker/pokedextracker.com/pkg/database"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

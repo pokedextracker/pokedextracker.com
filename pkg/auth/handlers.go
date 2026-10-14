@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/errcodes"
+	"github.com/pokedextracker/pokedextracker.com/pkg/errcodes"
 	"github.com/robinjoseph08/golib/pointerutil"
 	"golang.org/x/crypto/bcrypt"
 )

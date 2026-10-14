@@ -3,7 +3,7 @@ package pokemon
 import (
 	"time"
 
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/games"
+	"github.com/pokedextracker/pokedextracker.com/pkg/games"
 	"github.com/segmentio/encoding/json"
 )
 

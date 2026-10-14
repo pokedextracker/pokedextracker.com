@@ -2,8 +2,8 @@ package dextypes
 
 import (
 	"github.com/go-pg/pg/v10/orm"
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/games"
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/pokemoncaptures"
+	"github.com/pokedextracker/pokedextracker.com/pkg/games"
+	"github.com/pokedextracker/pokedextracker.com/pkg/pokemoncaptures"
 )
 
 func init() {

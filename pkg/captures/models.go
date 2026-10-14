@@ -3,7 +3,7 @@ package captures
 import (
 	"time"
 
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/pokemoncaptures"
+	"github.com/pokedextracker/pokedextracker.com/pkg/pokemoncaptures"
 )
 
 type Capture struct {

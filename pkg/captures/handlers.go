@@ -5,10 +5,10 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/auth"
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/dexes"
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/errcodes"
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/pokemon"
+	"github.com/pokedextracker/pokedextracker.com/pkg/auth"
+	"github.com/pokedextracker/pokedextracker.com/pkg/dexes"
+	"github.com/pokedextracker/pokedextracker.com/pkg/errcodes"
+	"github.com/pokedextracker/pokedextracker.com/pkg/pokemon"
 )
 
 type handler struct {

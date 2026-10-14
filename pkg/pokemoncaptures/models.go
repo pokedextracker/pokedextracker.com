@@ -1,6 +1,6 @@
 package pokemoncaptures
 
-import "github.com/pokedextracker/api.pokedextracker.com/pkg/games"
+import "github.com/pokedextracker/pokedextracker.com/pkg/games"
 
 type Pokemon struct {
 	tableName struct{} `pg:"pokemon,alias:p"`

@@ -13,8 +13,8 @@ ARG VERSION
 ARG TARGETARCH
 ENV GOARCH $TARGETARCH
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/bin/api -installsuffix cgo -ldflags "-w -s -X 'github.com/pokedextracker/api.pokedextracker.com/pkg/config.Version=${VERSION}'" ./cmd/api
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/bin/migrations -installsuffix cgo -ldflags "-w -s -X 'github.com/pokedextracker/api.pokedextracker.com/pkg/config.Version=${VERSION}'" ./cmd/migrations
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/bin/api -installsuffix cgo -ldflags "-w -s -X 'github.com/pokedextracker/pokedextracker.com/pkg/config.Version=${VERSION}'" ./cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/bin/migrations -installsuffix cgo -ldflags "-w -s -X 'github.com/pokedextracker/pokedextracker.com/pkg/config.Version=${VERSION}'" ./cmd/migrations
 
 FROM alpine:3.18
 

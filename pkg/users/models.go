@@ -3,7 +3,7 @@ package users
 import (
 	"time"
 
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/dexes"
+	"github.com/pokedextracker/pokedextracker.com/pkg/dexes"
 	"github.com/segmentio/encoding/json"
 )
 

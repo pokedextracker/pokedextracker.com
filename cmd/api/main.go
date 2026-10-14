@@ -8,9 +8,9 @@ import (
 	"runtime"
 
 	"github.com/pkg/errors"
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/config"
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/database"
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/server"
+	"github.com/pokedextracker/pokedextracker.com/pkg/config"
+	"github.com/pokedextracker/pokedextracker.com/pkg/database"
+	"github.com/pokedextracker/pokedextracker.com/pkg/server"
 	"github.com/robinjoseph08/golib/logger"
 	"github.com/robinjoseph08/golib/signals"
 	"github.com/rollbar/rollbar-go"

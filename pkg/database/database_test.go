@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/config"
+	"github.com/pokedextracker/pokedextracker.com/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

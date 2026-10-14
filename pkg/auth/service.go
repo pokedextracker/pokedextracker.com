@@ -7,8 +7,8 @@ import (
 	"github.com/go-pg/pg/v10"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/config"
-	"github.com/pokedextracker/api.pokedextracker.com/pkg/errcodes"
+	"github.com/pokedextracker/pokedextracker.com/pkg/config"
+	"github.com/pokedextracker/pokedextracker.com/pkg/errcodes"
 )
 
 type RetrieveSessionOptions struct {
