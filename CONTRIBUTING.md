@@ -8,11 +8,10 @@ up the PR directly!
 
 Some guidelines you should follow when submitting a PR:
 
-* We use [`generate-changelog`](https://github.com/lob/generate-changelog) for automatic changelog generation whenever
-  we deploy, so please follow the commit message format: `feat(info): add animations when toggling`.
-* Ideally, your PR has one commit in it. If you you need to add another one because of a typo or refactor, you should
-  squash your commits together. This makes the changelog and commit history much more managable to go through. If you
-  need help squashing them, we can always help you out!
+* PRs are squash merged, so the PR title becomes the commit message. Titles should follow the format
+  `[Category] Change description`, for example `[Frontend] Add dark mode toggle to settings page`. Use `[Frontend]`,
+  `[Backend]`, or `[Feature]` for features, `[Fix]` for bug fixes, `[Docs]` for documentation, `[Test]` or `[E2E]` for
+  tests, and `[CI]` or `[CD]` for CI/CD changes.
 * Any API code should have associated tests with it. Though this isn't a mission-critical API, it would be nice if it
   didn't go down every week. Having a well-tested API helps mitigate bugs and downtime. Run the tests with
   `mise test:go`, and you can check coverage against the threshold with `mise test:enforce`.

@@ -1,3 +1,9 @@
+# Changelog
+
+We no longer cut versioned releases, so this file isn't updated anymore. To see
+what's changed since 2.9.0, look through the [commit
+history](https://github.com/pokedextracker/pokedextracker.com/commits/master).
+
 ### 2.9.0 (2019-1-12)
 
 ##### New Features
