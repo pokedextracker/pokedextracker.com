@@ -37,7 +37,19 @@ This repo doesn't include a way to completely load up the DB with all of the
 actual Pokemon data. That's only been loaded into the staging and production
 databases. A local database has the schema but no Pokemon, games, or dex
 types, so `mise start:web` (which uses the staging API) is the easiest way to
-work on the frontend with real data.
+work on the frontend with real data. For API changes, you should be relying on
+tests and factories instead of the database state.
+
+## Docker
+
+Every time we deploy, we build new Docker images and upload them to Docker
+Hub, tagged with the first 7 characters of the commit hash. The API image
+listens on port 8647, so if you run it locally, make sure that traffic is
+forwarded to that port. For example:
+
+```sh
+docker run --rm --publish 8647:8647 --name pokedextracker-api pokedextracker/api.pokedextracker.com:$(git rev-parse --short HEAD)
+```
 
 ## Deployments
 

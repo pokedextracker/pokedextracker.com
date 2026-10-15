@@ -10,6 +10,10 @@ yarn = "1.22.19"
 # which is gitignored. A missing .env is fine. Use names that don't collide with
 # the app's own config (DATABASE_*, PORT, etc.) so local dev never picks them up.
 _.file = ".env"
+# The frontend deploy script reads ROLLBAR_TOKEN from .env itself to upload
+# source maps. Blank it here so the local API (which reads the same variable)
+# doesn't report development errors to Rollbar.
+ROLLBAR_TOKEN = ""
 
 # These use get_env so that values already set in the environment (e.g. in CI)
 # take precedence over the local defaults.
@@ -50,12 +54,8 @@ run = "yarn build"
 description = "Remove build artifacts"
 run = [
   "go clean",
-  "rm -rf ./build coverage.out ./tmp",
+  "rm -rf ./build coverage.out",
 ]
-
-[tasks.install]
-description = "Install Go and frontend dependencies"
-depends = ["install:go", "install:web"]
 
 [tasks."install:go"]
 description = "Download Go module dependencies"
