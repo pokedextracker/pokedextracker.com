@@ -15,16 +15,6 @@ _.file = ".env"
 # doesn't report development errors to Rollbar.
 ROLLBAR_TOKEN = ""
 
-# These use get_env so that values already set in the environment (e.g. in CI)
-# take precedence over the local defaults.
-ENVIRONMENT = "{{ get_env(name='ENVIRONMENT', default='development') }}"
-DATABASE_USER = "{{ get_env(name='DATABASE_USER', default='pokedex_tracker_admin') }}"
-DATABASE_PORT = "{{ get_env(name='DATABASE_PORT', default='9876') }}"
-DATABASE_DEBUG = "{{ get_env(name='DATABASE_DEBUG', default='true') }}"
-LOG_LEVEL = "{{ get_env(name='LOG_LEVEL', default='info') }}"
-DEVELOPMENT_DATABASE_NAME = "pokedex_tracker"
-TEST_DATABASE_NAME = "pokedex_tracker_test"
-
 # === Build ===
 
 [tasks.build]
@@ -66,36 +56,33 @@ description = "Install frontend dependencies"
 run = "yarn install --frozen-lockfile"
 
 # === Dev Server ===
+#
+# These go through the dev launcher (cmd/dev), which shares one PostgreSQL
+# container between worktrees, gives each worktree its own database, and picks
+# free ports so several worktrees can run at once.
 
 [tasks.start]
 description = "Start the API with hot reload and the frontend dev server pointed at it"
-depends = ["start:air", "start:web:local"]
-
-[tasks."start:test"]
-description = "Start the API with hot reload in the test environment"
-env = { ENVIRONMENT = "test" }
-run = "mise start:air"
+env = { DATABASE_DEBUG = "{{ get_env(name='DATABASE_DEBUG', default='true') }}" }
+run = "go run ./cmd/dev start"
 
 [tasks."start:air"]
-description = "Start API with hot reload via Air (starts PostgreSQL if needed)"
-depends = ["db:start"]
-env = { TZ = "UTC" }
-run = "air"
+description = "Start just the API with hot reload"
+env = { DATABASE_DEBUG = "{{ get_env(name='DATABASE_DEBUG', default='true') }}" }
+run = "go run ./cmd/dev start air"
 
 [tasks."start:api"]
-description = "Start API directly, no hot reload (starts PostgreSQL if needed)"
-depends = ["db:start"]
-env = { TZ = "UTC" }
-run = "go run ./cmd/api"
+description = "Start just the API, without hot reload"
+env = { DATABASE_DEBUG = "{{ get_env(name='DATABASE_DEBUG', default='true') }}" }
+run = "go run ./cmd/dev start api"
 
 [tasks."start:web"]
-description = "Start the frontend dev server on port 9898, using the staging API"
-run = "yarn start"
+description = "Start just the frontend dev server, using this worktree's running API"
+run = "go run ./cmd/dev start web"
 
-[tasks."start:web:local"]
-description = "Start the frontend dev server on port 9898, using the local API"
-env = { NODE_ENV = "local" }
-run = "yarn start"
+[tasks."start:web:staging"]
+description = "Start just the frontend dev server, using the staging API"
+run = "go run ./cmd/dev start web-staging"
 
 # === Linting ===
 
@@ -117,10 +104,8 @@ run = "yarn lint:all"
 # === Testing ===
 
 [tasks."test:go"]
-description = "Run Go tests with coverage (requires PostgreSQL to be running)"
-depends = ["db:migrate:test"]
-env = { ENVIRONMENT = "test", TZ = "UTC" }
-run = "go test -race ${TEST_FILES:-./pkg/...} -coverprofile coverage.out"
+description = "Run Go tests against this worktree's test database (extra args replace the default go test args)"
+run = "go run ./cmd/dev test"
 
 [tasks."test:cover"]
 description = "Open coverage report in browser"
@@ -132,50 +117,45 @@ run = "./scripts/coverage.sh coverage.out"
 
 [tasks.bench]
 description = "Run benchmarks"
-env = { ENVIRONMENT = "test" }
-run = "go test -run=XXX -bench=. -memprofile memprofile.out ${TEST_FILES:-./pkg/...}"
+run = "go run ./cmd/dev test -run=XXX -bench=. -memprofile memprofile.out ./pkg/..."
 
 # === Database ===
 
-[tasks."db:start"]
-description = "Start PostgreSQL in the background and wait for it to accept connections"
-env = { COMPOSE_DOCKER_CLI_BUILD = "1", DOCKER_BUILDKIT = "1" }
-run = '''
-touch ~/.psqlrc ~/.inputrc
-docker-compose up --build --detach --remove-orphans
-echo "Waiting for PostgreSQL..."
-until docker-compose exec -T postgres pg_isready -U "$DATABASE_USER" >/dev/null 2>&1; do sleep 0.5; done
-'''
-
-[tasks."db:stop"]
-description = "Stop PostgreSQL"
-run = "docker-compose stop"
-
 [tasks."db:migrate"]
-description = "Run all pending migrations"
-run = "go run ./cmd/migrations migrate"
+description = "Run pending migrations on this worktree's database"
+run = "go run ./cmd/dev db migrate"
 
 [tasks."db:migrate:create"]
 description = "Create a new migration"
 usage = 'arg "<name>" help="Migration name"'
-run = 'go run ./cmd/migrations create "$usage_name"'
-
-[tasks."db:migrate:test"]
-description = "Run all pending migrations against the test database"
-env = { ENVIRONMENT = "test" }
-run = "go run ./cmd/migrations migrate"
+run = 'go run ./cmd/dev db create "$usage_name"'
 
 [tasks."db:rollback"]
-description = "Rollback last migration"
-run = "go run ./cmd/migrations rollback"
+description = "Roll back the last batch of migrations on this worktree's database"
+run = "go run ./cmd/dev db rollback"
+
+[tasks."db:reset"]
+description = "Delete and recreate this worktree's database"
+run = "go run ./cmd/dev db reset"
+
+[tasks.clone]
+description = "Copy the main checkout's database into this worktree"
+usage = '''flag "--to-main" help="Copy this worktree's database into the main checkout instead"'''
+run = '''
+if [ "${usage_to_main:-false}" = "true" ]; then
+  go run ./cmd/dev clone --to-main
+else
+  go run ./cmd/dev clone
+fi
+'''
 
 [tasks.psql]
-description = "Open psql against the development database"
-run = 'psql -h localhost -p "$DATABASE_PORT" -d "$DEVELOPMENT_DATABASE_NAME" -U "$DATABASE_USER"'
+description = "Open psql against this worktree's database"
+run = "go run ./cmd/dev psql"
 
 [tasks."psql:test"]
-description = "Open psql against the test database"
-run = 'psql -h localhost -p "$DATABASE_PORT" -d "$TEST_DATABASE_NAME" -U "$DATABASE_USER"'
+description = "Open psql against this worktree's test database"
+run = "go run ./cmd/dev psql --test"
 
 # === Deploys ===
 
@@ -190,16 +170,10 @@ run = "./scripts/deploy.sh"
 # === Other ===
 
 [tasks.setup]
-description = "Install dependencies, start PostgreSQL, and create and migrate the databases"
-run = '''
-mise install
-mise install:go
-mise install:web
-mise db:start
-if ! docker-compose exec -T postgres psql -X -U "$DATABASE_USER" -d "$DEVELOPMENT_DATABASE_NAME" -tAc "SELECT 1 FROM pg_database WHERE datname = '$TEST_DATABASE_NAME'" | grep -qx 1; then
-  docker-compose exec -T postgres createdb -U "$DATABASE_USER" "$TEST_DATABASE_NAME"
-fi
-mise db:migrate
-mise db:migrate:test
-echo "Ready. PostgreSQL is still running in the background (stop it with mise db:stop)."
-'''
+description = "Install tools and dependencies, start PostgreSQL, and create and migrate this worktree's databases"
+run = [
+  "mise install",
+  "mise install:go",
+  "mise install:web",
+  "go run ./cmd/dev setup",
+]

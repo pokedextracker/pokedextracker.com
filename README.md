@@ -15,30 +15,44 @@ mise setup
 ```
 
 That installs the tools and dependencies, starts PostgreSQL in the background,
-creates the test database, and runs migrations for both databases.
+and creates and migrates this worktree's development and test databases.
 
 ## Development
 
 ```sh
-mise start          # API on port 8647 with hot reload, plus the frontend at http://localhost:9898 using it
-mise start:web      # Just the frontend, using the staging API
-mise lint           # golangci-lint, ESLint, and TypeScript checks
-mise test:go        # Go tests (needs PostgreSQL running)
-mise build          # Build the API and migrations into build/, and the frontend into build/web
-mise db:migrate     # Run pending migrations
-mise db:stop        # Stop PostgreSQL
+mise start              # API with hot reload, plus the frontend dev server using it
+mise start:web:staging  # Just the frontend, using the staging API
+mise lint               # golangci-lint, ESLint, and TypeScript checks
+mise test:go            # Go tests
+mise build              # Build the API and migrations into build/, and the frontend into build/web
+mise db:migrate         # Run pending migrations
+mise psql               # Open psql against this worktree's database
 ```
 
 Run `mise tasks` to see everything else.
+
+The tasks go through a small dev launcher (`cmd/dev`), so several worktrees
+can run at once without stepping on each other:
+
+- **PostgreSQL** runs in one Docker container shared by every worktree. Any
+  worktree starts it when it's needed, and it keeps running in the background.
+  Its port (9876, or the next free one) is recorded in the main checkout's
+  `tmp/database.env`.
+- **Databases** are per worktree. The main checkout uses `pokedextracker_com`,
+  and each linked worktree gets its own, copied from the main checkout's the
+  first time it's needed. Tests use a separate `_test` database.
+- **Ports** start at 8647 for the API and 9898 for the frontend, and move up
+  when another worktree or project already has them. `mise start` prints the
+  URLs it picked.
 
 ## Data
 
 This repo doesn't include a way to completely load up the DB with all of the
 actual Pokemon data. That's only been loaded into the staging and production
 databases. A local database has the schema but no Pokemon, games, or dex
-types, so `mise start:web` (which uses the staging API) is the easiest way to
-work on the frontend with real data. For API changes, you should be relying on
-tests and factories instead of the database state.
+types, so `mise start:web:staging` is the easiest way to work on the frontend
+with real data. For API changes, you should be relying on tests and factories
+instead of the database state.
 
 ## Docker
 

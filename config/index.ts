@@ -1,5 +1,4 @@
 import { Development } from './development';
-import { Local } from './local';
 import { Production } from './production';
 import { Staging } from './staging';
 import { Environment } from './types';
@@ -15,7 +14,6 @@ const environment = ENVIRONMENTS[window.location.hostname] || process.env.NODE_E
 
 const Configs: Record<Environment, ConfigType> = {
   [Environment.Development]: Development,
-  [Environment.Local]: Local,
   [Environment.Production]: Production,
   [Environment.Staging]: Staging,
 };

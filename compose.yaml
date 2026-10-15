@@ -1,0 +1,29 @@
+# The shared local PostgreSQL. Don't run this directly: the dev launcher
+# (cmd/dev, behind the mise tasks) pins the project to the main checkout so
+# every worktree uses one container, and picks POSTGRES_PORT.
+services:
+  postgres:
+    # Same 9.4 line as production (9.4.7). There's no arm64 image, so Docker
+    # emulates it on Apple Silicon.
+    image: postgres:9.4.26
+    platform: linux/amd64
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_USER: pokedex_tracker_admin
+    # Checked over TCP: on first boot, the image runs a temporary server on the
+    # Unix socket only while it initializes, then restarts.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U pokedex_tracker_admin -d postgres"]
+      interval: 1s
+      timeout: 5s
+      retries: 60
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT}:5432"
+    # A named volume, not a bind mount: Docker Desktop's file sharing does not
+    # give PostgreSQL reliable fsync, so an unclean stop could corrupt it.
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+volumes:
+  postgres:
