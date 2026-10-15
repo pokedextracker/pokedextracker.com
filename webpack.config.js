@@ -10,7 +10,7 @@ const machine = hostname().toLowerCase();
 module.exports = {
   entry: ['whatwg-fetch', './app/index.tsx'],
   output: {
-    path: `${__dirname}/build`,
+    path: `${__dirname}/build/web`,
     filename: PRODUCTION ? '[name].[contenthash].js' : '[name].[fullhash].js',
     publicPath: '/',
   },

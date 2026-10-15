@@ -1,0 +1,18 @@
+version: "2.4"
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    environment:
+      PGDATA: /tmp/pgdata
+      POSTGRES_DB: "pokedex_tracker"
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_PASSWORD: ""
+      POSTGRES_USER: "pokedex_tracker_admin"
+    ports:
+      - "9876:5432"
+    volumes:
+      - "./tmp/pgdata:/tmp/pgdata:cached"
+      - "~/.inputrc:/root/.inputrc:delegated"
+      - "~/.psqlrc:/root/.psqlrc:delegated"

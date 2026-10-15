@@ -358,3 +358,8 @@ tags
 
 .idea
 .git
+.env*
+*.out
+build
+cmd/scratch
+tmp

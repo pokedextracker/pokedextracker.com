@@ -2,30 +2,66 @@
 
 [![CI](https://github.com/pokedextracker/pokedextracker.com/actions/workflows/ci.yml/badge.svg)](https://github.com/pokedextracker/pokedextracker.com/actions/workflows/ci.yml)
 
-A website to track your completion of a Living Pokedex.
+A website to track your completion of a Living Pokedex. This repo holds both
+the React frontend (`app/`) and the Go API (`cmd/` and `pkg/`).
 
 ## Setup
 
-Node.js and Yarn versions are pinned in `mise.toml`. With
-[`mise`](https://mise.jdx.dev/) installed, run:
+This repo uses [mise](https://mise.jdx.dev/) to manage tools (Go, Node.js,
+Yarn, Air, golangci-lint) and tasks, and Docker to run PostgreSQL.
 
 ```sh
-mise install
-yarn
+mise setup
 ```
+
+That installs the tools and dependencies, starts PostgreSQL in the background,
+creates the test database, and runs migrations for both databases.
 
 ## Development
 
 ```sh
-yarn start       # Dev server at http://localhost:9898
-yarn lint:all    # ESLint and TypeScript checks (run in CI)
-yarn build       # Production build into build/
+mise start          # API on port 8647 with hot reload, plus the frontend at http://localhost:9898 using it
+mise start:web      # Just the frontend, using the staging API
+mise lint           # golangci-lint, ESLint, and TypeScript checks
+mise test:go        # Go tests (needs PostgreSQL running)
+mise build          # Build the API and migrations into build/, and the frontend into build/web
+mise db:migrate     # Run pending migrations
+mise db:stop        # Stop PostgreSQL
+```
+
+Run `mise tasks` to see everything else.
+
+## Data
+
+This repo doesn't include a way to completely load up the DB with all of the
+actual Pokemon data. That's only been loaded into the staging and production
+databases. A local database has the schema but no Pokemon, games, or dex
+types, so `mise start:web` (which uses the staging API) is the easiest way to
+work on the frontend with real data. For API changes, you should be relying on
+tests and factories instead of the database state.
+
+## Docker
+
+Every time we deploy, we build new Docker images and upload them to Docker
+Hub, tagged with the first 7 characters of the commit hash. The API image
+listens on port 8647, so if you run it locally, make sure that traffic is
+forwarded to that port. For example:
+
+```sh
+docker run --rm --publish 8647:8647 --name pokedextracker-api pokedextracker/api.pokedextracker.com:$(git rev-parse --short HEAD)
 ```
 
 ## Deployments
 
 > Note: you need the necessary permissions to be able to deploy.
 
-`yarn deploy` builds and pushes a multi-arch Docker image, deploys it to
-staging on [Fly.io](https://fly.io/), and then prompts before deploying to
-production.
+The frontend and API currently deploy separately. Each deploy script builds a
+multi-arch Docker image (`linux/amd64` and `linux/arm64`), pushes it to Docker
+Hub, and deploys it to staging on [Fly.io](https://fly.io/). Once you've
+checked staging, type `yes` at the prompt to deploy the same image to
+production. Anything else skips production.
+
+```sh
+mise deploy:web     # Frontend
+mise deploy:api     # API
+```

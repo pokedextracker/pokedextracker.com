@@ -1,3 +1,205 @@
 [tools]
+go = "1.20.5"
 node = "18.16.0"
 yarn = "1.22.19"
+"github:air-verse/air" = "1.67.4"
+"github:golangci/golangci-lint" = "1.53.3"
+
+[env]
+# Local secrets (deploy tokens, credentials for pulling data) live in .env,
+# which is gitignored. A missing .env is fine. Use names that don't collide with
+# the app's own config (DATABASE_*, PORT, etc.) so local dev never picks them up.
+_.file = ".env"
+# The frontend deploy script reads ROLLBAR_TOKEN from .env itself to upload
+# source maps. Blank it here so the local API (which reads the same variable)
+# doesn't report development errors to Rollbar.
+ROLLBAR_TOKEN = ""
+
+# These use get_env so that values already set in the environment (e.g. in CI)
+# take precedence over the local defaults.
+ENVIRONMENT = "{{ get_env(name='ENVIRONMENT', default='development') }}"
+DATABASE_USER = "{{ get_env(name='DATABASE_USER', default='pokedex_tracker_admin') }}"
+DATABASE_PORT = "{{ get_env(name='DATABASE_PORT', default='9876') }}"
+DATABASE_DEBUG = "{{ get_env(name='DATABASE_DEBUG', default='true') }}"
+LOG_LEVEL = "{{ get_env(name='LOG_LEVEL', default='info') }}"
+DEVELOPMENT_DATABASE_NAME = "pokedex_tracker"
+TEST_DATABASE_NAME = "pokedex_tracker_test"
+
+# === Build ===
+
+[tasks.build]
+description = "Build the API, migrations, and frontend"
+depends = ["build:api", "build:web"]
+
+[tasks."build:api"]
+description = "Build the api and migrations binaries"
+depends = ["install:go"]
+env = { CGO_ENABLED = "0" }
+run = [
+  "go build -o ./build/api/api -installsuffix cgo ./cmd/api",
+  "go build -o ./build/migrations/migrations -installsuffix cgo ./cmd/migrations",
+]
+
+[tasks."build:air"]
+description = "Build development API binary (used by air)"
+run = "go build -o ./build/api/api-air ./cmd/api"
+
+[tasks."build:web"]
+description = "Build the frontend into build/web"
+depends = ["install:web"]
+env = { NODE_ENV = "production" }
+run = "yarn build"
+
+[tasks.clean]
+description = "Remove build artifacts"
+run = [
+  "go clean",
+  "rm -rf ./build coverage.out",
+]
+
+[tasks."install:go"]
+description = "Download Go module dependencies"
+run = "go mod download"
+
+[tasks."install:web"]
+description = "Install frontend dependencies"
+run = "yarn install --frozen-lockfile"
+
+# === Dev Server ===
+
+[tasks.start]
+description = "Start the API with hot reload and the frontend dev server pointed at it"
+depends = ["start:air", "start:web:local"]
+
+[tasks."start:test"]
+description = "Start the API with hot reload in the test environment"
+env = { ENVIRONMENT = "test" }
+run = "mise start:air"
+
+[tasks."start:air"]
+description = "Start API with hot reload via Air (starts PostgreSQL if needed)"
+depends = ["db:start"]
+env = { TZ = "UTC" }
+run = "air"
+
+[tasks."start:api"]
+description = "Start API directly, no hot reload (starts PostgreSQL if needed)"
+depends = ["db:start"]
+env = { TZ = "UTC" }
+run = "go run ./cmd/api"
+
+[tasks."start:web"]
+description = "Start the frontend dev server on port 9898, using the staging API"
+run = "yarn start"
+
+[tasks."start:web:local"]
+description = "Start the frontend dev server on port 9898, using the local API"
+env = { NODE_ENV = "local" }
+run = "yarn start"
+
+# === Linting ===
+
+[tasks.lint]
+description = "Run all linters"
+depends = ["lint:go", "lint:web"]
+
+[tasks."lint:go"]
+description = "Run Go linting"
+# Per-worktree cache so concurrent worktrees don't trip golangci-lint's
+# "parallel golangci-lint is running" lock against each other.
+env = { GOLANGCI_LINT_CACHE = "{{config_root}}/tmp/golangci-lint-cache" }
+run = "golangci-lint run"
+
+[tasks."lint:web"]
+description = "Run ESLint and TypeScript checks"
+run = "yarn lint:all"
+
+# === Testing ===
+
+[tasks."test:go"]
+description = "Run Go tests with coverage (requires PostgreSQL to be running)"
+depends = ["db:migrate:test"]
+env = { ENVIRONMENT = "test", TZ = "UTC" }
+run = "go test -race ${TEST_FILES:-./pkg/...} -coverprofile coverage.out"
+
+[tasks."test:cover"]
+description = "Open coverage report in browser"
+run = "go tool cover -html coverage.out"
+
+[tasks."test:enforce"]
+description = "Enforce the coverage threshold"
+run = "./scripts/coverage.sh coverage.out"
+
+[tasks.bench]
+description = "Run benchmarks"
+env = { ENVIRONMENT = "test" }
+run = "go test -run=XXX -bench=. -memprofile memprofile.out ${TEST_FILES:-./pkg/...}"
+
+# === Database ===
+
+[tasks."db:start"]
+description = "Start PostgreSQL in the background and wait for it to accept connections"
+env = { COMPOSE_DOCKER_CLI_BUILD = "1", DOCKER_BUILDKIT = "1" }
+run = '''
+touch ~/.psqlrc ~/.inputrc
+docker-compose up --build --detach --remove-orphans
+echo "Waiting for PostgreSQL..."
+until docker-compose exec -T postgres pg_isready -U "$DATABASE_USER" >/dev/null 2>&1; do sleep 0.5; done
+'''
+
+[tasks."db:stop"]
+description = "Stop PostgreSQL"
+run = "docker-compose stop"
+
+[tasks."db:migrate"]
+description = "Run all pending migrations"
+run = "go run ./cmd/migrations migrate"
+
+[tasks."db:migrate:create"]
+description = "Create a new migration"
+usage = 'arg "<name>" help="Migration name"'
+run = 'go run ./cmd/migrations create "$usage_name"'
+
+[tasks."db:migrate:test"]
+description = "Run all pending migrations against the test database"
+env = { ENVIRONMENT = "test" }
+run = "go run ./cmd/migrations migrate"
+
+[tasks."db:rollback"]
+description = "Rollback last migration"
+run = "go run ./cmd/migrations rollback"
+
+[tasks.psql]
+description = "Open psql against the development database"
+run = 'psql -h localhost -p "$DATABASE_PORT" -d "$DEVELOPMENT_DATABASE_NAME" -U "$DATABASE_USER"'
+
+[tasks."psql:test"]
+description = "Open psql against the test database"
+run = 'psql -h localhost -p "$DATABASE_PORT" -d "$TEST_DATABASE_NAME" -U "$DATABASE_USER"'
+
+# === Deploys ===
+
+[tasks."deploy:api"]
+description = "Deploy the API to Fly.io (staging, then production after a prompt)"
+run = "./scripts/deploy-api.sh"
+
+[tasks."deploy:web"]
+description = "Deploy the frontend to Fly.io (staging, then production after a prompt)"
+run = "./scripts/deploy.sh"
+
+# === Other ===
+
+[tasks.setup]
+description = "Install dependencies, start PostgreSQL, and create and migrate the databases"
+run = '''
+mise install
+mise install:go
+mise install:web
+mise db:start
+if ! docker-compose exec -T postgres psql -X -U "$DATABASE_USER" -d "$DEVELOPMENT_DATABASE_NAME" -tAc "SELECT 1 FROM pg_database WHERE datname = '$TEST_DATABASE_NAME'" | grep -qx 1; then
+  docker-compose exec -T postgres createdb -U "$DATABASE_USER" "$TEST_DATABASE_NAME"
+fi
+mise db:migrate
+mise db:migrate:test
+echo "Ready. PostgreSQL is still running in the background (stop it with mise db:stop)."
+'''
