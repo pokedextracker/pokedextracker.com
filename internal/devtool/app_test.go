@@ -177,7 +177,7 @@ func TestStartWebRefusesToGuessAnAPI(t *testing.T) {
 
 func TestStartWebUsesTheRecordedAPIPort(t *testing.T) {
 	h := newHarness(t, false)
-	lease, err := (&FilePortAllocator{LockRoot: portLockRoot(h.env)}).Acquire(freePort(t))
+	lease, err := (&FilePortAllocator{LockRoot: portLockRoot(h.env), Owner: h.env.CurrentRoot}).Acquire(freePort(t))
 	require.NoError(t, err)
 	defer func() { _ = lease.Close() }()
 	forget, err := recordAPIPort(h.env, lease.Port())
@@ -191,7 +191,7 @@ func TestStartWebUsesTheRecordedAPIPort(t *testing.T) {
 
 func TestStartWebIgnoresAPortLeftByACrashedLauncher(t *testing.T) {
 	h := newHarness(t, false)
-	lease, err := (&FilePortAllocator{LockRoot: portLockRoot(h.env)}).Acquire(freePort(t))
+	lease, err := (&FilePortAllocator{LockRoot: portLockRoot(h.env), Owner: h.env.CurrentRoot}).Acquire(freePort(t))
 	require.NoError(t, err)
 	forget, err := recordAPIPort(h.env, lease.Port())
 	require.NoError(t, err)
@@ -203,6 +203,20 @@ func TestStartWebIgnoresAPortLeftByACrashedLauncher(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "no API is running in this worktree")
+}
+
+func TestStartWebIgnoresAPortAnotherWorktreeLeased(t *testing.T) {
+	h := newHarness(t, false)
+	lease, err := (&FilePortAllocator{LockRoot: portLockRoot(h.env), Owner: "/some/other/worktree"}).Acquire(freePort(t))
+	require.NoError(t, err)
+	defer func() { _ = lease.Close() }()
+	forget, err := recordAPIPort(h.env, lease.Port())
+	require.NoError(t, err)
+	defer forget()
+
+	err = h.app.Run(context.Background(), []string{"start", "web"})
+
+	require.Error(t, err, "the port this worktree recorded now belongs to another worktree's API")
 }
 
 func TestDatabaseStop(t *testing.T) {

@@ -26,6 +26,9 @@ type PortAllocator interface {
 // the main checkout's tmp/ports directory.
 type FilePortAllocator struct {
 	LockRoot string
+	// Owner is written into each lock file this allocator holds, so other
+	// commands can tell which worktree a leased port belongs to.
+	Owner string
 }
 
 type filePortLease struct {
@@ -51,6 +54,11 @@ func (a *FilePortAllocator) Acquire(preferred int) (PortLease, error) {
 			return nil, fmt.Errorf("lock port %d: %w", port, err)
 		}
 		if portAvailable(port) {
+			if err := writeOwner(file, a.Owner); err != nil {
+				_ = syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
+				_ = file.Close()
+				return nil, err
+			}
 			return &filePortLease{port: port, file: file}, nil
 		}
 		_ = syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
@@ -59,18 +67,33 @@ func (a *FilePortAllocator) Acquire(preferred int) (PortLease, error) {
 	return nil, fmt.Errorf("no available port at or above %d", preferred)
 }
 
-// portLeased reports whether a running launcher holds the lease on port.
-func portLeased(lockRoot string, port int) bool {
+func writeOwner(file *os.File, owner string) error {
+	if err := file.Truncate(0); err != nil {
+		return fmt.Errorf("record port owner: %w", err)
+	}
+	if _, err := file.WriteAt([]byte(owner), 0); err != nil {
+		return fmt.Errorf("record port owner: %w", err)
+	}
+	return nil
+}
+
+// portLeasedBy reports whether a running launcher for owner holds the lease on
+// port. A lease another worktree holds doesn't count.
+func portLeasedBy(lockRoot string, port int, owner string) bool {
 	file, err := os.OpenFile(filepath.Join(lockRoot, strconv.Itoa(port)+".lock"), os.O_RDWR, 0o600)
 	if err != nil {
 		return false
 	}
 	defer func() { _ = file.Close() }()
-	if err := syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
-		return errors.Is(err, syscall.EWOULDBLOCK)
+	if err := syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err == nil {
+		// Nobody holds the lease.
+		_ = syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
+		return false
+	} else if !errors.Is(err, syscall.EWOULDBLOCK) {
+		return false
 	}
-	_ = syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
-	return false
+	contents, err := os.ReadFile(file.Name())
+	return err == nil && string(contents) == owner
 }
 
 func (l *filePortLease) Port() int {

@@ -61,7 +61,10 @@ func (d *DockerDatabase) Ensure(ctx context.Context, env Environment) (int, erro
 
 	// A running container is the source of truth for its port, so a lost or
 	// stale tmp/database.env can't point everything at the wrong one.
-	port, published := d.publishedPort(ctx, env, recorded)
+	port, published, err := d.publishedPort(ctx, env, recorded)
+	if err != nil {
+		return 0, err
+	}
 	if published {
 		if port != recorded {
 			if err := writePostgresPort(env.MainRoot, port); err != nil {
@@ -90,6 +93,9 @@ func (d *DockerDatabase) Ensure(ctx context.Context, env Environment) (int, erro
 		if startErr == nil {
 			return port, nil
 		}
+		if ctx.Err() != nil {
+			return 0, ctx.Err()
+		}
 		if !portConflict(output) || attempt == postgresStartAttempts {
 			return 0, fmt.Errorf("start PostgreSQL: %w: %s", startErr, strings.TrimSpace(string(output)))
 		}
@@ -109,21 +115,45 @@ func (d *DockerDatabase) Stop(ctx context.Context, env Environment) error {
 }
 
 // publishedPort asks Docker which host port the running container publishes.
-// It reports false when the container isn't running.
-func (d *DockerDatabase) publishedPort(ctx context.Context, env Environment, recorded int) (int, bool) {
+// It reports false only when Docker says the container isn't running; any
+// other failure is an error, so a hiccup can't make the launcher pick a new
+// port and recreate a container other worktrees are using.
+func (d *DockerDatabase) publishedPort(ctx context.Context, env Environment, recorded int) (int, bool, error) {
 	if recorded == 0 {
 		recorded = defaultPostgresPort
 	}
-	output, err := d.composeCommand(ctx, env, recorded, "port", "postgres", "5432").Output()
+	running, err := d.composeOutput(ctx, env, recorded, "ps", "--status", "running", "--quiet", "postgres")
 	if err != nil {
-		return 0, false
+		return 0, false, fmt.Errorf("check PostgreSQL container: %w", err)
 	}
-	_, value, found := strings.Cut(strings.TrimSpace(string(output)), ":")
-	port, err := strconv.Atoi(value)
-	if !found || err != nil || port == 0 {
-		return 0, false
+	if strings.TrimSpace(running) == "" {
+		return 0, false, nil
 	}
-	return port, true
+	output, err := d.composeOutput(ctx, env, recorded, "port", "postgres", "5432")
+	if err != nil {
+		return 0, false, fmt.Errorf("find PostgreSQL port: %w", err)
+	}
+	port, err := parsePublishedPort(output)
+	if err != nil {
+		return 0, false, err
+	}
+	return port, true, nil
+}
+
+// parsePublishedPort reads the port from `docker compose port` output, like
+// "127.0.0.1:9876". The first line is enough, and IPv6 forms like
+// "[::]:9876" work too.
+func parsePublishedPort(output string) (int, error) {
+	line, _, _ := strings.Cut(strings.TrimSpace(output), "\n")
+	index := strings.LastIndex(line, ":")
+	if index < 0 {
+		return 0, fmt.Errorf("unexpected docker compose port output %q", output)
+	}
+	port, err := strconv.Atoi(strings.TrimSpace(line[index+1:]))
+	if err != nil || port < 1 || port > 65535 {
+		return 0, fmt.Errorf("unexpected docker compose port output %q", output)
+	}
+	return port, nil
 }
 
 func portConflict(output []byte) bool {
@@ -222,10 +252,7 @@ func (d *DockerDatabase) Clone(ctx context.Context, env Environment, source, tar
 		if backup, err = stagingDatabaseName(); err != nil {
 			return err
 		}
-		if err := d.terminateConnections(background, env, target); err != nil {
-			return fmt.Errorf("disconnect database %s: %w", target, err)
-		}
-		if err := d.rename(background, env, target, backup); err != nil {
+		if err := d.disconnectAndRename(background, env, target, backup); err != nil {
 			return fmt.Errorf("move database %s aside: %w", target, err)
 		}
 	}
@@ -242,11 +269,32 @@ func (d *DockerDatabase) Clone(ctx context.Context, env Environment, source, tar
 	}
 	stagePresent = false
 	if backup != "" {
+		// The clone itself succeeded, so a leftover backup is only worth a
+		// warning.
 		if err := d.drop(background, env, backup); err != nil {
-			return fmt.Errorf("remove replaced database %s: %w", backup, err)
+			d.printf("Warning: couldn't remove the replaced database %s: %v\n", backup, err)
 		}
 	}
 	return nil
+}
+
+// disconnectAndRename renames a database other clients may be using. A client
+// that reconnects between disconnecting and renaming makes the rename fail, so
+// it's retried a few times.
+func (d *DockerDatabase) disconnectAndRename(ctx context.Context, env Environment, source, target string) error {
+	var err error
+	for attempt := 0; attempt < 5; attempt++ {
+		if attempt > 0 {
+			time.Sleep(200 * time.Millisecond)
+		}
+		if err = d.terminateConnections(ctx, env, source); err != nil {
+			continue
+		}
+		if err = d.rename(ctx, env, source, target); err == nil {
+			return nil
+		}
+	}
+	return err
 }
 
 func (d *DockerDatabase) dumpAndRestore(ctx context.Context, env Environment, source, target string) error {
@@ -287,15 +335,19 @@ func (d *DockerDatabase) dumpAndRestore(ctx context.Context, env Environment, so
 
 	restoreErr := restore.Wait()
 	dumpErr := dump.Wait()
-	// The restore's error explains a dump that failed because its reader went
-	// away, so it's reported first.
-	if restoreErr != nil {
-		return fmt.Errorf("restore database %s: %w: %s", target, restoreErr, strings.TrimSpace(restoreErrors.String()))
+	if ctx.Err() != nil {
+		return ctx.Err()
 	}
+	// Either side failing usually makes the other fail too, so both are
+	// reported: a dump error is the cause behind a "file too short" restore.
+	var errs []error
 	if dumpErr != nil {
-		return fmt.Errorf("dump database %s: %w: %s", source, dumpErr, strings.TrimSpace(dumpErrors.String()))
+		errs = append(errs, fmt.Errorf("dump database %s: %w: %s", source, dumpErr, strings.TrimSpace(dumpErrors.String())))
 	}
-	return nil
+	if restoreErr != nil {
+		errs = append(errs, fmt.Errorf("restore database %s: %w: %s", target, restoreErr, strings.TrimSpace(restoreErrors.String())))
+	}
+	return errors.Join(errs...)
 }
 
 func (d *DockerDatabase) rename(ctx context.Context, env Environment, source, target string) error {
@@ -325,8 +377,27 @@ func (d *DockerDatabase) psqlOutput(ctx context.Context, env Environment, args .
 	}
 	commandArgs := append([]string{"exec", "-T", "postgres", "psql", "-X", "-v", "ON_ERROR_STOP=1", "-U", postgresUser, "-d", postgresAdminDatabase}, args...)
 	output, err := d.composeCommand(ctx, env, port, commandArgs...).CombinedOutput()
+	if ctx.Err() != nil {
+		return "", ctx.Err()
+	}
 	if err != nil {
 		return "", fmt.Errorf("%w: %s", err, strings.TrimSpace(string(output)))
+	}
+	return string(output), nil
+}
+
+// composeOutput runs a docker compose command and returns its standard
+// output.
+func (d *DockerDatabase) composeOutput(ctx context.Context, env Environment, port int, args ...string) (string, error) {
+	var stderr bytes.Buffer
+	command := d.composeCommand(ctx, env, port, args...)
+	command.Stderr = &stderr
+	output, err := command.Output()
+	if ctx.Err() != nil {
+		return "", ctx.Err()
+	}
+	if err != nil {
+		return "", fmt.Errorf("%w: %s", err, strings.TrimSpace(stderr.String()))
 	}
 	return string(output), nil
 }
@@ -337,6 +408,9 @@ func (d *DockerDatabase) run(ctx context.Context, env Environment, action string
 		return err
 	}
 	output, err := d.composeCommand(ctx, env, port, args...).CombinedOutput()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	if err != nil {
 		return fmt.Errorf("%s: %w: %s", action, err, strings.TrimSpace(string(output)))
 	}

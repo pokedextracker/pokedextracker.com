@@ -26,13 +26,10 @@ func main() {
 
 func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
+	// Later signals are absorbed rather than killing the launcher, so it always
+	// gets to stop its child process groups (force-killing them if they take
+	// too long) and finish a database swap it's in the middle of.
 	defer stop()
-	// After the first signal starts a clean shutdown, a second one kills the
-	// launcher outright.
-	go func() {
-		<-ctx.Done()
-		stop()
-	}()
 
 	return devtool.NewApp().Run(ctx, os.Args[1:])
 }

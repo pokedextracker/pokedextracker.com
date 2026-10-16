@@ -53,7 +53,7 @@ func NewApp() *App {
 		Resolve:  ResolveEnvironment,
 		Database: &DockerDatabase{Stdout: os.Stdout},
 		Ports: func(env Environment) PortAllocator {
-			return &FilePortAllocator{LockRoot: portLockRoot(env)}
+			return &FilePortAllocator{LockRoot: portLockRoot(env), Owner: env.CurrentRoot}
 		},
 		Processes: &OSProcesses{},
 		Getenv:    os.Getenv,
@@ -443,8 +443,8 @@ func recordAPIPort(env Environment, port int) (func(), error) {
 }
 
 // recordedAPIPort returns the port of the API running in this worktree, or
-// zero if none is. A recorded port whose lease nobody holds anymore was left
-// behind by a launcher that didn't exit cleanly, so it's ignored.
+// zero if none is. A recorded port this worktree no longer holds the lease on
+// was left behind by a launcher that didn't exit cleanly, so it's ignored.
 func recordedAPIPort(env Environment) (int, error) {
 	contents, err := os.ReadFile(apiPortPath(env))
 	if errors.Is(err, os.ErrNotExist) {
@@ -457,7 +457,7 @@ func recordedAPIPort(env Environment) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("read API port: %w", err)
 	}
-	if !portLeased(portLockRoot(env), port) {
+	if !portLeasedBy(portLockRoot(env), port, env.CurrentRoot) {
 		return 0, nil
 	}
 	return port, nil
