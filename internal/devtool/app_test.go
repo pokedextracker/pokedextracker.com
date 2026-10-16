@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -217,6 +219,24 @@ func TestStartWebIgnoresAPortAnotherWorktreeLeased(t *testing.T) {
 	err = h.app.Run(context.Background(), []string{"start", "web"})
 
 	require.Error(t, err, "the port this worktree recorded now belongs to another worktree's API")
+	assert.Contains(t, err.Error(), "no API is running in this worktree")
+}
+
+func TestConfirmStopsWaitingWhenInterrupted(t *testing.T) {
+	h := newHarness(t, false)
+	reader, writer, err := os.Pipe()
+	require.NoError(t, err)
+	defer func() { _ = writer.Close() }()
+	h.app.Stdin = reader
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		cancel()
+	}()
+
+	_, err = h.app.confirm(ctx, "Proceed?")
+
+	assert.ErrorIs(t, err, context.Canceled, "nobody has to press Enter after Ctrl+C")
 }
 
 func TestDatabaseStop(t *testing.T) {

@@ -231,7 +231,7 @@ func (a *App) database(ctx context.Context, env Environment, args []string) erro
 			return err
 		}
 		if exists {
-			confirmed, err := a.confirm(fmt.Sprintf("Reset database %s and delete all of its data?", env.CurrentDatabase))
+			confirmed, err := a.confirm(ctx, fmt.Sprintf("Reset database %s and delete all of its data?", env.CurrentDatabase))
 			if err != nil {
 				return err
 			}
@@ -281,7 +281,7 @@ func (a *App) clone(ctx context.Context, env Environment, args []string) error {
 		return err
 	}
 	if targetExists {
-		confirmed, err := a.confirm(fmt.Sprintf("Replace %s data with data from %s?", targetLabel, sourceLabel))
+		confirmed, err := a.confirm(ctx, fmt.Sprintf("Replace %s data with data from %s?", targetLabel, sourceLabel))
 		if err != nil {
 			return err
 		}
@@ -467,16 +467,31 @@ func portLockRoot(env Environment) string {
 	return filepath.Join(env.MainRoot, "tmp", "ports")
 }
 
-func (a *App) confirm(message string) (bool, error) {
+// confirm asks a yes/no question. Ctrl+C while it waits for an answer stops
+// the command instead of waiting for Enter.
+func (a *App) confirm(ctx context.Context, message string) (bool, error) {
 	if err := a.printf("%s [y/N] ", message); err != nil {
 		return false, err
 	}
-	line, err := bufio.NewReader(a.Stdin).ReadString('\n')
-	if err != nil && !errors.Is(err, io.EOF) {
-		return false, fmt.Errorf("read confirmation: %w", err)
+	type answer struct {
+		line string
+		err  error
 	}
-	answer := strings.ToLower(strings.TrimSpace(line))
-	return answer == "y" || answer == "yes", nil
+	answers := make(chan answer, 1)
+	go func() {
+		line, err := bufio.NewReader(a.Stdin).ReadString('\n')
+		answers <- answer{line: line, err: err}
+	}()
+	select {
+	case <-ctx.Done():
+		return false, ctx.Err()
+	case got := <-answers:
+		if got.err != nil && !errors.Is(got.err, io.EOF) {
+			return false, fmt.Errorf("read confirmation: %w", got.err)
+		}
+		reply := strings.ToLower(strings.TrimSpace(got.line))
+		return reply == "y" || reply == "yes", nil
+	}
 }
 
 func (a *App) printf(format string, values ...any) error {

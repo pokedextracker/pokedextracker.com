@@ -53,6 +53,9 @@ func (a *FilePortAllocator) Acquire(preferred int) (PortLease, error) {
 			}
 			return nil, fmt.Errorf("lock port %d: %w", port, err)
 		}
+		// Clear any owner a crashed launcher left behind before probing, so
+		// nothing reads a stale owner while this lease is being decided.
+		_ = file.Truncate(0)
 		if portAvailable(port) {
 			if err := writeOwner(file, a.Owner); err != nil {
 				_ = syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
@@ -101,6 +104,8 @@ func (l *filePortLease) Port() int {
 }
 
 func (l *filePortLease) Close() error {
+	// Clear the owner while still holding the lease, so it never outlives it.
+	_ = l.file.Truncate(0)
 	unlockErr := syscall.Flock(int(l.file.Fd()), syscall.LOCK_UN)
 	closeErr := l.file.Close()
 	return errors.Join(unlockErr, closeErr)

@@ -87,6 +87,9 @@ func (d *DockerDatabase) Ensure(ctx context.Context, env Environment) (int, erro
 	}
 
 	for attempt := 1; ; attempt++ {
+		if ctx.Err() != nil {
+			return 0, ctx.Err()
+		}
 		d.printf("Starting PostgreSQL on port %d...\n", port)
 		command := d.composeCommand(ctx, env, port, "up", "--detach", "--wait", "postgres")
 		output, startErr := command.CombinedOutput()
@@ -211,7 +214,11 @@ func (d *DockerDatabase) Psql(ctx context.Context, env Environment, name string)
 	command.Stdin = os.Stdin
 	command.Stdout = os.Stdout
 	command.Stderr = os.Stderr
-	return command.Run()
+	err = command.Run()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+	return err
 }
 
 // Clone copies source into target through a staging database, so target is
@@ -225,12 +232,11 @@ func (d *DockerDatabase) Clone(ctx context.Context, env Environment, source, tar
 	if err != nil {
 		return err
 	}
-	if err := d.Create(ctx, env, stage); err != nil {
-		return fmt.Errorf("create staging database: %w", err)
-	}
 	// The swap and cleanup ignore cancellation, so an interrupt can't stop
 	// them halfway. Their docker commands run in their own process groups, so
-	// Ctrl+C in the terminal doesn't reach them either.
+	// Ctrl+C in the terminal doesn't reach them either. Cleanup is registered
+	// before the staging database is created, since an interrupt can report
+	// failure for a createdb that actually succeeded.
 	background := context.Background()
 	stagePresent := true
 	defer func() {
@@ -238,6 +244,9 @@ func (d *DockerDatabase) Clone(ctx context.Context, env Environment, source, tar
 			_ = d.drop(background, env, stage)
 		}
 	}()
+	if err := d.Create(ctx, env, stage); err != nil {
+		return fmt.Errorf("create staging database: %w", err)
+	}
 
 	if err := d.dumpAndRestore(ctx, env, source, stage); err != nil {
 		return err

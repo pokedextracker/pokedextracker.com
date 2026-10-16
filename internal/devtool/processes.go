@@ -59,7 +59,11 @@ func (p *OSProcesses) Start(ctx context.Context, env Environment, mode string, s
 	default:
 		return fmt.Errorf("unknown start mode %q", mode)
 	}
-	// Ctrl+C is how dev servers are meant to stop, so it isn't an error.
+	return serverExit(err)
+}
+
+// serverExit treats Ctrl+C as a normal way for dev servers to stop.
+func serverExit(err error) error {
 	if errors.Is(err, context.Canceled) {
 		return nil
 	}
