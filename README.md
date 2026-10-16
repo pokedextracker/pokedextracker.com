@@ -27,6 +27,7 @@ mise test:go            # Go tests
 mise build              # Build the API and migrations into build/, and the frontend into build/web
 mise db:migrate         # Run pending migrations
 mise psql               # Open psql against this worktree's database
+mise db:seed            # Reload this worktree's Pokémon, games, and dexes from seeds/
 mise db:stop            # Stop the shared PostgreSQL container (its data is kept)
 ```
 
@@ -59,12 +60,20 @@ If you used this repo before the launcher existed, the old setup's container
 
 ## Data
 
-This repo doesn't include a way to completely load up the DB with all of the
-actual Pokemon data. That's only been loaded into the staging and production
-databases. A local database has the schema but no Pokemon, games, or dex
-types, so `mise start:web:staging` is the easiest way to work on the frontend
-with real data. For API changes, you should be relying on tests and factories
-instead of the database state.
+`seeds/` holds a copy of production's Pokémon, game, and dex data, so local
+databases look like the real site. A new database is seeded when it's created
+(`mise setup`, `mise db:reset`, or a worktree with no main checkout database to
+copy), and `mise db:seed` reloads an existing one without touching local users
+or dexes. Tests don't use seeds; they rely on their own fixtures.
+
+`mise db:pull` refreshes `seeds/` from production. It needs
+`PRODUCTION_DATABASE_URL` in the main checkout's `.env`:
+
+```sh
+PRODUCTION_DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DATABASE?sslmode=require
+```
+
+Editing `seeds/` doesn't change production. See [`seeds/README.md`](seeds/README.md).
 
 ## Docker
 

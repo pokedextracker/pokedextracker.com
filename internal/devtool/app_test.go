@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -16,7 +17,23 @@ import (
 type fakeDatabase struct {
 	port      int
 	databases map[string]bool
+	seeded    map[string]bool
 	calls     []string
+}
+
+func (f *fakeDatabase) Pull(_ context.Context, _ Environment, url, localDatabase, dir string) ([]PulledTable, error) {
+	f.calls = append(f.calls, "pull "+url+" "+localDatabase+" "+filepath.Base(dir))
+	return []PulledTable{{Name: "pokemon", Rows: 3}}, nil
+}
+
+func (f *fakeDatabase) Seed(_ context.Context, _ Environment, name, dir string) ([]string, error) {
+	f.calls = append(f.calls, "seed "+name+" "+filepath.Base(dir))
+	f.seeded[name] = true
+	return nil, nil
+}
+
+func (f *fakeDatabase) HasReferenceData(_ context.Context, _ Environment, name string) (bool, error) {
+	return f.seeded[name], nil
 }
 
 func (f *fakeDatabase) Ensure(context.Context, Environment) (int, error) {
@@ -116,7 +133,7 @@ func newHarness(t *testing.T, main bool) *harness {
 	}
 	h := &harness{
 		env:       env,
-		database:  &fakeDatabase{port: 9876, databases: map[string]bool{}},
+		database:  &fakeDatabase{port: 9876, databases: map[string]bool{}, seeded: map[string]bool{}},
 		processes: &fakeProcesses{},
 		stdout:    &bytes.Buffer{},
 		getenv:    map[string]string{},
@@ -342,4 +359,119 @@ func TestPsqlLeavesAnExistingDatabaseAlone(t *testing.T) {
 
 	assert.Empty(t, h.processes.calls, "an existing database isn't migrated, so a rollback stays visible")
 	assert.Contains(t, h.database.calls, "psql pdt_worktree")
+}
+
+// writeSeeds gives the harness's worktree a complete set of seed files.
+func writeSeeds(t *testing.T, h *harness) {
+	t.Helper()
+	dir := seedsPath(h.env)
+	require.NoError(t, os.MkdirAll(dir, 0o755))
+	for _, table := range seedTables {
+		require.NoError(t, os.WriteFile(seedFile(dir, table), []byte("id\n"), 0o644))
+	}
+}
+
+func TestANewEmptyDatabaseIsSeeded(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"start", "air"}))
+
+	assert.Equal(t, []string{"ensure", "create pdt_worktree", "seed pdt_worktree seeds"}, h.database.calls)
+	assert.Equal(t, []string{"migrate development pdt_worktree:9876 migrate"}, h.processes.calls, "migrated before seeding")
+}
+
+func TestADatabaseCopiedFromMainIsNotSeededAgain(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	h.database.databases["pdt"] = true
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"start", "air"}))
+
+	assert.Contains(t, h.database.calls, "clone pdt pdt_worktree")
+	assert.NotContains(t, h.database.calls, "seed pdt_worktree seeds")
+}
+
+func TestStartLeavesAnExistingDatabaseAloneButSaysItIsEmpty(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	h.database.databases["pdt_worktree"] = true
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"start", "air"}))
+
+	assert.NotContains(t, h.database.calls, "seed pdt_worktree seeds")
+	assert.Contains(t, h.stdout.String(), "Load them with mise db:seed")
+}
+
+func TestStartIsQuietWhenTheDatabaseIsSeeded(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	h.database.databases["pdt_worktree"] = true
+	h.database.seeded["pdt_worktree"] = true
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"start", "air"}))
+
+	assert.NotContains(t, h.stdout.String(), "mise db:seed")
+}
+
+func TestBranchesWithoutSeedsSkipSeeding(t *testing.T) {
+	h := newHarness(t, false)
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"start", "air"}))
+
+	assert.Contains(t, h.database.calls, "create pdt_worktree")
+	assert.NotContains(t, strings.Join(h.database.calls, ","), "seed")
+	assert.NotContains(t, h.stdout.String(), "mise db:seed")
+}
+
+func TestResetSeedsTheRecreatedDatabase(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	h.database.databases["pdt_worktree"] = true
+	h.app.Stdin = strings.NewReader("y\n")
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"db", "reset"}))
+
+	assert.Equal(t, []string{"ensure", "reset pdt_worktree", "seed pdt_worktree seeds"}, h.database.calls)
+}
+
+func TestSeedReloadsAnExistingDatabase(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	h.database.databases["pdt_worktree"] = true
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"db", "seed"}))
+
+	assert.Equal(t, []string{"ensure", "seed pdt_worktree seeds"}, h.database.calls)
+}
+
+func TestSeedNeedsSeedFiles(t *testing.T) {
+	h := newHarness(t, false)
+
+	err := h.app.Run(context.Background(), []string{"db", "seed"})
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "run mise db:pull first")
+}
+
+func TestPullNeedsTheProductionURL(t *testing.T) {
+	h := newHarness(t, false)
+
+	err := h.app.Run(context.Background(), []string{"db", "pull"})
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), productionDatabaseURLEnv)
+	assert.Empty(t, h.database.calls, "nothing runs without the URL")
+}
+
+func TestPullWritesSeedsForThisWorktree(t *testing.T) {
+	h := newHarness(t, false)
+	h.database.databases["pdt_worktree"] = true
+	h.getenv[productionDatabaseURLEnv] = "postgres://prod"
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"db", "pull"}))
+
+	assert.Contains(t, h.database.calls, "pull postgres://prod pdt_worktree seeds")
+	assert.Contains(t, h.stdout.String(), "pokemon")
+	assert.Contains(t, h.stdout.String(), "3 rows")
 }

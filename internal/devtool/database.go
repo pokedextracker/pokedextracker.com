@@ -36,6 +36,20 @@ type DatabaseManager interface {
 	Clone(context.Context, Environment, string, string) error
 	Reset(context.Context, Environment, string) error
 	Psql(context.Context, Environment, string) error
+	// Pull exports the reference tables from the database at url into CSV
+	// files in dir, using the local database name for the expected columns.
+	Pull(ctx context.Context, env Environment, url, localDatabase, dir string) ([]PulledTable, error)
+	// Seed replaces the reference tables in a database with the CSV files in
+	// dir, and returns warnings about local data left pointing at missing rows.
+	Seed(ctx context.Context, env Environment, name, dir string) ([]string, error)
+	// HasReferenceData reports whether a database has any Pokemon.
+	HasReferenceData(ctx context.Context, env Environment, name string) (bool, error)
+}
+
+// PulledTable summarizes one table written by a pull.
+type PulledTable struct {
+	Name string
+	Rows int
 }
 
 // DockerDatabase manages PostgreSQL through a Compose project pinned to the
@@ -443,6 +457,186 @@ func (d *DockerDatabase) composeCommand(ctx context.Context, env Environment, po
 	// Ctrl+C only reaches the launcher, which decides what to cancel.
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	return command
+}
+
+func (d *DockerDatabase) Pull(ctx context.Context, env Environment, url, localDatabase, dir string) ([]PulledTable, error) {
+	// Everything is written to a scratch directory first, so a failed pull
+	// never leaves seeds half updated.
+	if err := os.MkdirAll(filepath.Join(env.CurrentRoot, "tmp"), 0o755); err != nil {
+		return nil, fmt.Errorf("create tmp directory: %w", err)
+	}
+	scratch, err := os.MkdirTemp(filepath.Join(env.CurrentRoot, "tmp"), "seeds-pull-")
+	if err != nil {
+		return nil, fmt.Errorf("create scratch directory: %w", err)
+	}
+	defer func() { _ = os.RemoveAll(scratch) }()
+
+	var pulled []PulledTable
+	for _, table := range seedTables {
+		localColumns, err := d.queryLines(ctx, env, localDatabase, columnsQuery(table.Name))
+		if err != nil {
+			return nil, fmt.Errorf("read local columns of %s: %w", table.Name, err)
+		}
+		remoteColumns, err := d.remote(ctx, env, url, "SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;\n"+columnsQuery(table.Name)+";\n", "-tA")
+		if err != nil {
+			return nil, fmt.Errorf("read production columns of %s: %w", table.Name, err)
+		}
+		if missing, extra := columnDifferences(localColumns, lines(remoteColumns)); len(missing) > 0 || len(extra) > 0 {
+			return nil, fmt.Errorf("%s columns differ between production and the local schema (missing in production: %v, only in production: %v); are the migrations up to date on both?", table.Name, missing, extra)
+		}
+
+		output, err := d.remote(ctx, env, url, pullScript(table, localColumns))
+		if err != nil {
+			return nil, fmt.Errorf("export %s: %w", table.Name, err)
+		}
+		if err := os.WriteFile(seedFile(scratch, table), []byte(output), 0o600); err != nil {
+			return nil, fmt.Errorf("write %s: %w", table.Name, err)
+		}
+		rows := strings.Count(output, "\n") - 1
+		if rows < 0 {
+			rows = 0
+		}
+		pulled = append(pulled, PulledTable{Name: table.Name, Rows: rows})
+	}
+
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return nil, fmt.Errorf("create %s: %w", dir, err)
+	}
+	for _, table := range seedTables {
+		if err := os.Rename(seedFile(scratch, table), seedFile(dir, table)); err != nil {
+			return nil, fmt.Errorf("install %s: %w", table.Name, err)
+		}
+	}
+	return pulled, nil
+}
+
+func (d *DockerDatabase) Seed(ctx context.Context, env Environment, name, dir string) ([]string, error) {
+	script, err := seedScript(dir)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := d.psqlScript(ctx, env, name, strings.NewReader(script), "--single-transaction"); err != nil {
+		return nil, fmt.Errorf("seed database %s: %w", name, err)
+	}
+
+	output, err := d.queryLines(ctx, env, name, orphansQuery)
+	if err != nil || len(output) != 1 {
+		return nil, fmt.Errorf("check for orphaned local data: %w", err)
+	}
+	var dexTypes, games, captures int
+	if _, err := fmt.Sscanf(output[0], "%d|%d|%d", &dexTypes, &games, &captures); err != nil {
+		return nil, fmt.Errorf("check for orphaned local data: %w", err)
+	}
+	var warnings []string
+	if dexTypes > 0 {
+		warnings = append(warnings, fmt.Sprintf("%d local dexes use a dex type that isn't in the seed data", dexTypes))
+	}
+	if games > 0 {
+		warnings = append(warnings, fmt.Sprintf("%d local dexes use a game that isn't in the seed data", games))
+	}
+	if captures > 0 {
+		warnings = append(warnings, fmt.Sprintf("%d local captures are of Pokemon that aren't in the seed data", captures))
+	}
+	return warnings, nil
+}
+
+func (d *DockerDatabase) HasReferenceData(ctx context.Context, env Environment, name string) (bool, error) {
+	output, err := d.queryLines(ctx, env, name, "SELECT EXISTS (SELECT 1 FROM pokemon)")
+	if err != nil {
+		return false, fmt.Errorf("check for reference data: %w", err)
+	}
+	return len(output) == 1 && output[0] == "t", nil
+}
+
+// remote runs a psql script against the database at url, from inside the
+// local container so no PostgreSQL client is needed on the host. The URL is
+// passed through the environment, never on a command line, and the session
+// is read-only.
+func (d *DockerDatabase) remote(ctx context.Context, env Environment, url, script string, args ...string) (string, error) {
+	port, err := readPostgresPort(env.MainRoot)
+	if err != nil {
+		return "", err
+	}
+	psql := "exec psql \"$" + productionDatabaseURLEnv + "\" -X -q -v ON_ERROR_STOP=1 " + strings.Join(args, " ") + " -f -"
+	command := d.composeCommand(ctx, env, port,
+		"exec", "-T",
+		"-e", productionDatabaseURLEnv, "-e", "PGOPTIONS", "-e", "PGCONNECT_TIMEOUT",
+		"postgres", "sh", "-c", psql)
+	command.Env = append(command.Env,
+		productionDatabaseURLEnv+"="+url,
+		"PGOPTIONS=-c default_transaction_read_only=on",
+		"PGCONNECT_TIMEOUT=15",
+	)
+	return d.capture(ctx, command, strings.NewReader(script))
+}
+
+// psqlScript runs a psql script read from stdin against a local database.
+func (d *DockerDatabase) psqlScript(ctx context.Context, env Environment, name string, script io.Reader, args ...string) (string, error) {
+	port, err := readPostgresPort(env.MainRoot)
+	if err != nil {
+		return "", err
+	}
+	commandArgs := append([]string{"exec", "-T", "postgres", "psql", "-X", "-q", "-v", "ON_ERROR_STOP=1", "-U", postgresUser, "-d", name}, args...)
+	commandArgs = append(commandArgs, "-f", "-")
+	return d.capture(ctx, d.composeCommand(ctx, env, port, commandArgs...), script)
+}
+
+// queryLines runs one query against a local database and returns its rows,
+// one per line, with columns separated by "|".
+func (d *DockerDatabase) queryLines(ctx context.Context, env Environment, name, query string) ([]string, error) {
+	output, err := d.psqlScript(ctx, env, name, strings.NewReader(query+";\n"), "-tA")
+	if err != nil {
+		return nil, err
+	}
+	return lines(output), nil
+}
+
+// capture runs a command with stdin, returning stdout. Stderr is included in
+// the error so psql's message is shown.
+func (d *DockerDatabase) capture(ctx context.Context, command *exec.Cmd, stdin io.Reader) (string, error) {
+	var stdout, stderr bytes.Buffer
+	command.Stdin = stdin
+	command.Stdout = &stdout
+	command.Stderr = &stderr
+	err := command.Run()
+	if ctx.Err() != nil {
+		return "", ctx.Err()
+	}
+	if err != nil {
+		return "", fmt.Errorf("%w: %s", err, strings.TrimSpace(stderr.String()))
+	}
+	return stdout.String(), nil
+}
+
+func lines(output string) []string {
+	var result []string
+	for _, line := range strings.Split(output, "\n") {
+		if line = strings.TrimSpace(line); line != "" {
+			result = append(result, line)
+		}
+	}
+	return result
+}
+
+// columnDifferences compares two column lists by name.
+func columnDifferences(local, remote []string) (missing, extra []string) {
+	remoteSet := map[string]bool{}
+	for _, column := range remote {
+		remoteSet[column] = true
+	}
+	localSet := map[string]bool{}
+	for _, column := range local {
+		localSet[column] = true
+		if !remoteSet[column] {
+			missing = append(missing, column)
+		}
+	}
+	for _, column := range remote {
+		if !localSet[column] {
+			extra = append(extra, column)
+		}
+	}
+	return missing, extra
 }
 
 // lockFile holds an exclusive advisory lock on path until the returned

@@ -135,6 +135,14 @@ run = "go run ./cmd/dev db rollback"
 description = "Stop the shared PostgreSQL container (its data is kept)"
 run = "go run ./cmd/dev db stop"
 
+[tasks."db:seed"]
+description = "Replace this worktree's Pokemon, games, and dex data with seeds/ (keeps local users and dexes)"
+run = "go run ./cmd/dev db seed"
+
+[tasks."db:pull"]
+description = "Refresh seeds/ from production (needs PRODUCTION_DATABASE_URL in the main checkout's .env)"
+run = "go run ./cmd/dev db pull"
+
 [tasks."db:reset"]
 description = "Delete and recreate this worktree's database"
 run = "go run ./cmd/dev db reset"
