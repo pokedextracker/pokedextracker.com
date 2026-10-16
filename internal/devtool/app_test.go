@@ -22,6 +22,11 @@ func (f *fakeDatabase) Ensure(context.Context, Environment) (int, error) {
 	return f.port, nil
 }
 
+func (f *fakeDatabase) Stop(context.Context, Environment) error {
+	f.calls = append(f.calls, "stop")
+	return nil
+}
+
 func (f *fakeDatabase) Exists(_ context.Context, _ Environment, name string) (bool, error) {
 	return f.databases[name], nil
 }
@@ -159,25 +164,62 @@ func TestStartCreatesAnEmptyDatabaseWithoutAMainDatabase(t *testing.T) {
 	assert.Equal(t, []string{"migrate development pdt_worktree:9876 migrate"}, h.processes.calls)
 }
 
-func TestStartWebAloneSkipsTheDatabase(t *testing.T) {
+func TestStartWebRefusesToGuessAnAPI(t *testing.T) {
 	h := newHarness(t, false)
 
-	require.NoError(t, h.app.Run(context.Background(), []string{"start", "web"}))
+	err := h.app.Run(context.Background(), []string{"start", "web"})
 
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "no API is running in this worktree")
 	assert.Empty(t, h.database.calls)
-	assert.Zero(t, h.processes.servers.APIPort)
-	assert.Equal(t, "http://127.0.0.1:8647", h.processes.servers.APIURL, "no API is recorded, so the default port is used")
+	assert.Empty(t, h.processes.mode, "nothing is started")
 }
 
 func TestStartWebUsesTheRecordedAPIPort(t *testing.T) {
 	h := newHarness(t, false)
-	forget, err := recordAPIPort(h.env, 8650)
+	lease, err := (&FilePortAllocator{LockRoot: portLockRoot(h.env)}).Acquire(freePort(t))
+	require.NoError(t, err)
+	defer func() { _ = lease.Close() }()
+	forget, err := recordAPIPort(h.env, lease.Port())
 	require.NoError(t, err)
 	defer forget()
 
 	require.NoError(t, h.app.Run(context.Background(), []string{"start", "web"}))
 
-	assert.Equal(t, "http://127.0.0.1:8650", h.processes.servers.APIURL)
+	assert.Equal(t, apiURL(lease.Port()), h.processes.servers.APIURL)
+}
+
+func TestStartWebIgnoresAPortLeftByACrashedLauncher(t *testing.T) {
+	h := newHarness(t, false)
+	lease, err := (&FilePortAllocator{LockRoot: portLockRoot(h.env)}).Acquire(freePort(t))
+	require.NoError(t, err)
+	forget, err := recordAPIPort(h.env, lease.Port())
+	require.NoError(t, err)
+	defer forget()
+	// The launcher died without cleaning up: the file remains, the lease doesn't.
+	require.NoError(t, lease.Close())
+
+	err = h.app.Run(context.Background(), []string{"start", "web"})
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "no API is running in this worktree")
+}
+
+func TestDatabaseStop(t *testing.T) {
+	h := newHarness(t, false)
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"db", "stop"}))
+
+	assert.Equal(t, []string{"stop"}, h.database.calls, "stopping doesn't start PostgreSQL first")
+}
+
+func TestDatabaseCreateDoesNotApplyMigrations(t *testing.T) {
+	h := newHarness(t, false)
+	h.database.databases["pdt_worktree"] = true
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"db", "create", "add_things"}))
+
+	assert.Equal(t, []string{"migrate development pdt_worktree:9876 create add_things"}, h.processes.calls)
 }
 
 func TestStartWebStagingUsesTheStagingAPI(t *testing.T) {

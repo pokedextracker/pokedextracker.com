@@ -3,10 +3,9 @@
 # every worktree uses one container, and picks POSTGRES_PORT.
 services:
   postgres:
-    # Same 9.4 line as production (9.4.7). There's no arm64 image, so Docker
-    # emulates it on Apple Silicon.
+    # The last 9.4 release, the closest image to production's 9.4.7, which has
+    # no arm64 build.
     image: postgres:9.4.26
-    platform: linux/amd64
     environment:
       POSTGRES_DB: postgres
       POSTGRES_HOST_AUTH_METHOD: trust
@@ -18,8 +17,9 @@ services:
       interval: 1s
       timeout: 5s
       retries: 60
+      start_period: 30s
     ports:
-      - "127.0.0.1:${POSTGRES_PORT}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:?run this through the mise tasks}:5432"
     # A named volume, not a bind mount: Docker Desktop's file sharing does not
     # give PostgreSQL reliable fsync, so an unclean stop could corrupt it.
     volumes:

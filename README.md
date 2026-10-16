@@ -27,6 +27,7 @@ mise test:go            # Go tests
 mise build              # Build the API and migrations into build/, and the frontend into build/web
 mise db:migrate         # Run pending migrations
 mise psql               # Open psql against this worktree's database
+mise db:stop            # Stop the shared PostgreSQL container (its data is kept)
 ```
 
 Run `mise tasks` to see everything else.
@@ -38,12 +39,23 @@ can run at once without stepping on each other:
   worktree starts it when it's needed, and it keeps running in the background.
   Its port (9876, or the next free one) is recorded in the main checkout's
   `tmp/database.env`.
-- **Databases** are per worktree. The main checkout uses `pokedextracker_com`,
-  and each linked worktree gets its own, copied from the main checkout's the
-  first time it's needed. Tests use a separate `_test` database.
+- **Databases** are per worktree, named after the checkout's directory (for
+  example `pokedextracker_com` for the main checkout). Each linked worktree
+  gets its own, copied from the main checkout's the first time it's needed.
+  Tests use a separate `_test` database.
 - **Ports** start at 8647 for the API and 9898 for the frontend, and move up
   when another worktree or project already has them. `mise start` prints the
-  URLs it picked.
+  URLs it picked. `mise start:web` on its own uses the API this worktree is
+  running, so start one with `mise start:air` first.
+
+Because the database and ports are chosen by the launcher, running the API or
+`go test` directly (for example from an editor) won't find the database. Use
+`mise start:api` and `mise test:go`, which also accepts `go test` arguments,
+like `mise test:go -run TestNew ./pkg/config`.
+
+If you used this repo before the launcher existed, the old setup's container
+(named after the checkout, like `pokedextracker-com-postgres-1`) and its
+`tmp/pgdata` directory can be deleted. Nothing carries over from them.
 
 ## Data
 

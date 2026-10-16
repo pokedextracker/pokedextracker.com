@@ -53,7 +53,7 @@ func NewApp() *App {
 		Resolve:  ResolveEnvironment,
 		Database: &DockerDatabase{Stdout: os.Stdout},
 		Ports: func(env Environment) PortAllocator {
-			return &FilePortAllocator{LockRoot: filepath.Join(env.MainRoot, "tmp", "ports")}
+			return &FilePortAllocator{LockRoot: portLockRoot(env)}
 		},
 		Processes: &OSProcesses{},
 		Getenv:    os.Getenv,
@@ -129,7 +129,10 @@ func (a *App) start(ctx context.Context, env Environment, args []string) error {
 		if err := a.ensureDevelopmentDatabase(ctx, env, port); err != nil {
 			return err
 		}
-		servers.Database = DatabaseTarget{Environment: "development", Name: env.CurrentDatabase, Port: port}
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		servers.Database = developmentTarget(env, port)
 
 		lease, err := ports.Acquire(defaultAPIPort)
 		if err != nil {
@@ -158,17 +161,15 @@ func (a *App) start(ctx context.Context, env Environment, args []string) error {
 		case servers.APIPort != 0:
 			servers.APIURL = apiURL(servers.APIPort)
 		default:
-			// The frontend alone talks to whichever API this worktree is
-			// already running, or the default port if none is.
+			// The frontend alone talks to the API this worktree is already
+			// running. Guessing a port could reach another worktree's API, and
+			// with it that worktree's database.
 			port, err := recordedAPIPort(env)
 			if err != nil {
 				return err
 			}
 			if port == 0 {
-				port = defaultAPIPort
-				if err := a.printf("No API is running in this worktree; proxying /api to port %d. Start one with mise start:air.\n", port); err != nil {
-					return err
-				}
+				return errors.New("no API is running in this worktree; start one with mise start:air, run both with mise start, or use the staging API with mise start:web:staging")
 			}
 			servers.APIURL = apiURL(port)
 		}
@@ -194,7 +195,10 @@ func (a *App) start(ctx context.Context, env Environment, args []string) error {
 
 func (a *App) database(ctx context.Context, env Environment, args []string) error {
 	if len(args) == 0 {
-		return errors.New("database command must be migrate, rollback, reset, or create")
+		return errors.New("database command must be migrate, rollback, reset, create, or stop")
+	}
+	if len(args) == 1 && args[0] == "stop" {
+		return a.Database.Stop(ctx, env)
 	}
 	if args[0] == "create" && len(args) != 2 {
 		return errors.New("usage: db create <migration name>")
@@ -207,7 +211,7 @@ func (a *App) database(ctx context.Context, env Environment, args []string) erro
 	if err != nil {
 		return err
 	}
-	target := DatabaseTarget{Environment: "development", Name: env.CurrentDatabase, Port: port}
+	target := developmentTarget(env, port)
 
 	switch args[0] {
 	case "migrate":
@@ -215,7 +219,9 @@ func (a *App) database(ctx context.Context, env Environment, args []string) erro
 	case "rollback":
 		return a.Processes.Migrate(ctx, env, target, "rollback")
 	case "create":
-		if err := a.ensureDevelopmentDatabase(ctx, env, port); err != nil {
+		// cmd/migrations connects before writing the file, so the database
+		// has to exist, but creating a migration shouldn't apply others.
+		if _, err := a.createDevelopmentDatabase(ctx, env); err != nil {
 			return err
 		}
 		return a.Processes.Migrate(ctx, env, target, "create", args[1])
@@ -315,7 +321,7 @@ func (a *App) test(ctx context.Context, env Environment, args []string) error {
 	if err := a.ensureTestDatabase(ctx, env, port); err != nil {
 		return err
 	}
-	target := DatabaseTarget{Environment: "test", Name: env.TestDatabase(), Port: port}
+	target := testTarget(env, port)
 	return a.Processes.Test(ctx, env, target, args...)
 }
 
@@ -333,10 +339,10 @@ func (a *App) psql(ctx context.Context, env Environment, args []string) error {
 	}
 	// Only a database this creates gets migrated, so psql shows an existing
 	// database as it is, for example right after a rollback.
-	target := DatabaseTarget{Environment: "development", Name: env.CurrentDatabase, Port: port}
+	target := developmentTarget(env, port)
 	create := a.createDevelopmentDatabase
 	if test {
-		target = DatabaseTarget{Environment: "test", Name: env.TestDatabase(), Port: port}
+		target = testTarget(env, port)
 		create = a.createTestDatabase
 	}
 	created, err := create(ctx, env)
@@ -357,7 +363,7 @@ func (a *App) ensureDevelopmentDatabase(ctx context.Context, env Environment, po
 	if _, err := a.createDevelopmentDatabase(ctx, env); err != nil {
 		return err
 	}
-	target := DatabaseTarget{Environment: "development", Name: env.CurrentDatabase, Port: port}
+	target := developmentTarget(env, port)
 	return a.Processes.Migrate(ctx, env, target, "migrate")
 }
 
@@ -392,7 +398,7 @@ func (a *App) ensureTestDatabase(ctx context.Context, env Environment, port int)
 	if _, err := a.createTestDatabase(ctx, env); err != nil {
 		return err
 	}
-	target := DatabaseTarget{Environment: "test", Name: env.TestDatabase(), Port: port}
+	target := testTarget(env, port)
 	return a.Processes.Migrate(ctx, env, target, "migrate")
 }
 
@@ -404,6 +410,14 @@ func (a *App) createTestDatabase(ctx context.Context, env Environment) (bool, er
 		return false, err
 	}
 	return true, a.Database.Create(ctx, env, env.TestDatabase())
+}
+
+func developmentTarget(env Environment, port int) DatabaseTarget {
+	return DatabaseTarget{Environment: "development", Name: env.CurrentDatabase, Port: port}
+}
+
+func testTarget(env Environment, port int) DatabaseTarget {
+	return DatabaseTarget{Environment: "test", Name: env.TestDatabase(), Port: port}
 }
 
 func apiURL(port int) string {
@@ -429,7 +443,8 @@ func recordAPIPort(env Environment, port int) (func(), error) {
 }
 
 // recordedAPIPort returns the port of the API running in this worktree, or
-// zero if none is.
+// zero if none is. A recorded port whose lease nobody holds anymore was left
+// behind by a launcher that didn't exit cleanly, so it's ignored.
 func recordedAPIPort(env Environment) (int, error) {
 	contents, err := os.ReadFile(apiPortPath(env))
 	if errors.Is(err, os.ErrNotExist) {
@@ -442,7 +457,14 @@ func recordedAPIPort(env Environment) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("read API port: %w", err)
 	}
+	if !portLeased(portLockRoot(env), port) {
+		return 0, nil
+	}
 	return port, nil
+}
+
+func portLockRoot(env Environment) string {
+	return filepath.Join(env.MainRoot, "tmp", "ports")
 }
 
 func (a *App) confirm(message string) (bool, error) {

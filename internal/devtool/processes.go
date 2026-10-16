@@ -12,7 +12,9 @@ import (
 	"time"
 )
 
-const serverStartupTimeout = 60 * time.Second
+// serverStartupTimeout includes Air's first compile, which is slow with a cold
+// Go build cache.
+const serverStartupTimeout = 120 * time.Second
 
 // DatabaseTarget is one database and the environment the API should treat it
 // as.
@@ -43,19 +45,25 @@ type ProcessManager interface {
 type OSProcesses struct{}
 
 func (p *OSProcesses) Start(ctx context.Context, env Environment, mode string, servers Servers) error {
-	environment := append(apiEnvironment(servers.Database), webEnvironment(servers)...)
+	environment := append(apiEnvironment(servers.Database), serverEnvironment(servers)...)
+	var err error
 	switch mode {
 	case startAll:
-		return runDevelopmentProcesses(ctx, env.CurrentRoot, environment, servers.APIPort)
+		err = runDevelopmentProcesses(ctx, env.CurrentRoot, environment, servers.APIPort)
 	case startAir:
-		return runSingleProcess(ctx, env.CurrentRoot, environment, "air")
+		err = runSingleProcess(ctx, env.CurrentRoot, environment, "air")
 	case startAPI:
-		return runSingleProcess(ctx, env.CurrentRoot, environment, "go", "run", "./cmd/api")
+		err = runSingleProcess(ctx, env.CurrentRoot, environment, "go", "run", "./cmd/api")
 	case startWeb, startWebStaging:
-		return runSingleProcess(ctx, env.CurrentRoot, environment, "yarn", "start")
+		err = runSingleProcess(ctx, env.CurrentRoot, environment, "yarn", "start")
 	default:
 		return fmt.Errorf("unknown start mode %q", mode)
 	}
+	// Ctrl+C is how dev servers are meant to stop, so it isn't an error.
+	if errors.Is(err, context.Canceled) {
+		return nil
+	}
+	return err
 }
 
 func (p *OSProcesses) Migrate(ctx context.Context, env Environment, target DatabaseTarget, args ...string) error {
@@ -84,10 +92,16 @@ func apiEnvironment(target DatabaseTarget) []string {
 	)
 }
 
-func webEnvironment(servers Servers) []string {
+// serverEnvironment passes the chosen ports to the dev servers: PORT to the
+// API's config, and WEB_PORT and API_URL to webpack.config.js.
+func serverEnvironment(servers Servers) []string {
 	var values []string
 	if servers.APIPort != 0 {
 		values = append(values, "PORT="+strconv.Itoa(servers.APIPort))
+		// The dev API logs its queries unless DATABASE_DEBUG says otherwise.
+		if os.Getenv("DATABASE_DEBUG") == "" {
+			values = append(values, "DATABASE_DEBUG=true")
+		}
 	}
 	if servers.WebPort != 0 {
 		values = append(values, "WEB_PORT="+strconv.Itoa(servers.WebPort))
@@ -127,12 +141,16 @@ func runDevelopmentProcesses(ctx context.Context, root string, environment []str
 	}
 	webDone := waitForProcess(web)
 
+	// Either exiting stops both groups, including anything left in the one
+	// that exited, like the binary Air was running.
 	select {
 	case err := <-apiDone:
+		terminateProcess(api)
 		terminateProcess(web)
 		awaitTermination(web, webDone)
 		return processExitError("API", err)
 	case err := <-webDone:
+		terminateProcess(web)
 		terminateProcess(api)
 		awaitTermination(api, apiDone)
 		return processExitError("web server", err)
@@ -157,7 +175,9 @@ func runSingleProcess(ctx context.Context, root string, environment []string, na
 	case <-ctx.Done():
 		terminateProcess(command)
 		awaitTermination(command, done)
-		return nil
+		// One-shot commands like tests and migrations didn't finish, so this
+		// is an error. Start treats it as a normal stop.
+		return ctx.Err()
 	}
 }
 

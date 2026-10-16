@@ -59,6 +59,20 @@ func (a *FilePortAllocator) Acquire(preferred int) (PortLease, error) {
 	return nil, fmt.Errorf("no available port at or above %d", preferred)
 }
 
+// portLeased reports whether a running launcher holds the lease on port.
+func portLeased(lockRoot string, port int) bool {
+	file, err := os.OpenFile(filepath.Join(lockRoot, strconv.Itoa(port)+".lock"), os.O_RDWR, 0o600)
+	if err != nil {
+		return false
+	}
+	defer func() { _ = file.Close() }()
+	if err := syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+		return errors.Is(err, syscall.EWOULDBLOCK)
+	}
+	_ = syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
+	return false
+}
+
 func (l *filePortLease) Port() int {
 	return l.port
 }

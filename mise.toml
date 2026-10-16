@@ -63,17 +63,14 @@ run = "yarn install --frozen-lockfile"
 
 [tasks.start]
 description = "Start the API with hot reload and the frontend dev server pointed at it"
-env = { DATABASE_DEBUG = "{{ get_env(name='DATABASE_DEBUG', default='true') }}" }
 run = "go run ./cmd/dev start"
 
 [tasks."start:air"]
 description = "Start just the API with hot reload"
-env = { DATABASE_DEBUG = "{{ get_env(name='DATABASE_DEBUG', default='true') }}" }
 run = "go run ./cmd/dev start air"
 
 [tasks."start:api"]
 description = "Start just the API, without hot reload"
-env = { DATABASE_DEBUG = "{{ get_env(name='DATABASE_DEBUG', default='true') }}" }
 run = "go run ./cmd/dev start api"
 
 [tasks."start:web"]
@@ -133,6 +130,10 @@ run = 'go run ./cmd/dev db create "$usage_name"'
 [tasks."db:rollback"]
 description = "Roll back the last batch of migrations on this worktree's database"
 run = "go run ./cmd/dev db rollback"
+
+[tasks."db:stop"]
+description = "Stop the shared PostgreSQL container (its data is kept)"
+run = "go run ./cmd/dev db stop"
 
 [tasks."db:reset"]
 description = "Delete and recreate this worktree's database"
