@@ -11,8 +11,8 @@ func loadTestConfig(cfg *Config) {
 		cfg.Port = port
 	}
 	cfg.CORSAllowedOrigins = []string{"http://localhost:9898"}
-	cfg.DatabaseHost = "localhost"
-	cfg.DatabaseName = "pokedex_tracker_test"
+	cfg.DatabaseHost = envOrDefault("DATABASE_HOST", "localhost")
+	cfg.DatabaseName = envOrDefault("DATABASE_NAME", "pokedex_tracker_test")
 	cfg.DatabaseSSLMode = "disable"
 	cfg.DatabaseUser = "pokedex_tracker_admin"
 	cfg.Environment = "test"

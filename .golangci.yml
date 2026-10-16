@@ -53,6 +53,12 @@ issues:
     # setting it to true intentionally if the host is localhost.
     - path: pkg/database/database.go
       text: G402 # checking for InsecureSkipVerify
+    # The dev launcher's errors are printed straight to a terminal rather than
+    # matched by callers, so sentinel errors would only add noise.
+    - path: (cmd/dev|internal/devtool)/
+      linters:
+        - goerr113
+      text: do not define dynamic errors
     # Ignore a bunch of linters for test files.
     - path: _test\.go
       linters:

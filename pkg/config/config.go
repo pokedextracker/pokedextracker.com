@@ -36,6 +36,16 @@ type Config struct {
 
 const environmentENV = "ENVIRONMENT"
 
+// envOrDefault returns the environment variable's value, or fallback when it's
+// unset or empty. The development and test configs use it so the dev launcher
+// can point each worktree at its own database.
+func envOrDefault(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
+}
+
 // New returns an instance of Config based on the "ENVIRONMENT" environment
 // variable.
 func New() (*Config, error) {

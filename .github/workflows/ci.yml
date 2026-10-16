@@ -61,6 +61,9 @@ jobs:
           --health-retries 30
     env:
       DATABASE_DEBUG: "false"
+      # Points `mise test:go` at the service above instead of the local Docker
+      # container the dev launcher would otherwise start.
+      TEST_DATABASE_PORT: "9876"
     steps:
       - uses: actions/checkout@v7
 
