@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -37,7 +38,10 @@ type DatabaseManager interface {
 
 // DockerDatabase manages PostgreSQL through a Compose project pinned to the
 // main checkout, so every worktree shares one container.
-type DockerDatabase struct{}
+type DockerDatabase struct {
+	// Stdout receives progress messages, like when the container is started.
+	Stdout io.Writer
+}
 
 func (d *DockerDatabase) Ensure(ctx context.Context, env Environment) (int, error) {
 	unlock, err := lockFile(filepath.Join(env.MainRoot, "tmp", "database.lock"))
@@ -55,6 +59,9 @@ func (d *DockerDatabase) Ensure(ctx context.Context, env Environment) (int, erro
 	}
 
 	for attempt := 1; ; attempt++ {
+		if d.Stdout != nil {
+			fmt.Fprintf(d.Stdout, "Starting PostgreSQL on port %d...\n", port)
+		}
 		command := d.composeCommand(ctx, env, port, "up", "--detach", "--wait", "postgres")
 		output, startErr := command.CombinedOutput()
 		if startErr == nil {

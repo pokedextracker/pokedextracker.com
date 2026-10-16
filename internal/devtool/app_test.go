@@ -248,11 +248,22 @@ func TestCloneToMainSwapsDirection(t *testing.T) {
 	assert.Contains(t, h.database.calls, "clone pdt_worktree pdt")
 }
 
-func TestPsqlOpensTheRightDatabase(t *testing.T) {
+func TestPsqlCreatesAndMigratesAMissingDatabase(t *testing.T) {
 	h := newHarness(t, false)
 
 	require.NoError(t, h.app.Run(context.Background(), []string{"psql", "--test"}))
 
-	assert.Contains(t, h.database.calls, "create pdt_worktree_test", "a missing test database is created first")
+	assert.Contains(t, h.database.calls, "create pdt_worktree_test")
+	assert.Equal(t, []string{"migrate test pdt_worktree_test:9876 migrate"}, h.processes.calls)
 	assert.Contains(t, h.database.calls, "psql pdt_worktree_test")
+}
+
+func TestPsqlLeavesAnExistingDatabaseAlone(t *testing.T) {
+	h := newHarness(t, false)
+	h.database.databases["pdt_worktree"] = true
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"psql"}))
+
+	assert.Empty(t, h.processes.calls, "an existing database isn't migrated, so a rollback stays visible")
+	assert.Contains(t, h.database.calls, "psql pdt_worktree")
 }

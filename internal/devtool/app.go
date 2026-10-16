@@ -51,7 +51,7 @@ func NewApp() *App {
 		Stdin:    os.Stdin,
 		Stdout:   os.Stdout,
 		Resolve:  ResolveEnvironment,
-		Database: &DockerDatabase{},
+		Database: &DockerDatabase{Stdout: os.Stdout},
 		Ports: func(env Environment) PortAllocator {
 			return &FilePortAllocator{LockRoot: filepath.Join(env.MainRoot, "tmp", "ports")}
 		},
@@ -331,61 +331,79 @@ func (a *App) psql(ctx context.Context, env Environment, args []string) error {
 	if err != nil {
 		return err
 	}
+	// Only a database this creates gets migrated, so psql shows an existing
+	// database as it is, for example right after a rollback.
+	target := DatabaseTarget{Environment: "development", Name: env.CurrentDatabase, Port: port}
+	create := a.createDevelopmentDatabase
 	if test {
-		if err := a.ensureTestDatabase(ctx, env, port); err != nil {
-			return err
-		}
-		return a.Database.Psql(ctx, env, env.TestDatabase())
+		target = DatabaseTarget{Environment: "test", Name: env.TestDatabase(), Port: port}
+		create = a.createTestDatabase
 	}
-	if err := a.ensureDevelopmentDatabase(ctx, env, port); err != nil {
-		return err
-	}
-	return a.Database.Psql(ctx, env, env.CurrentDatabase)
-}
-
-// ensureDevelopmentDatabase creates this worktree's database the first time
-// it's needed, copied from the main checkout's when that exists, and brings it
-// up to date.
-func (a *App) ensureDevelopmentDatabase(ctx context.Context, env Environment, port int) error {
-	exists, err := a.Database.Exists(ctx, env, env.CurrentDatabase)
+	created, err := create(ctx, env)
 	if err != nil {
 		return err
 	}
-	if !exists {
-		mainExists := false
-		if !env.IsMain() {
-			mainExists, err = a.Database.Exists(ctx, env, env.MainDatabase)
-			if err != nil {
-				return err
-			}
-		}
-		if mainExists {
-			if err := a.printf("Copying the main checkout's database into %s...\n", env.CurrentDatabase); err != nil {
-				return err
-			}
-			if err := a.Database.Clone(ctx, env, env.MainDatabase, env.CurrentDatabase); err != nil {
-				return fmt.Errorf("clone main database: %w", err)
-			}
-		} else if err := a.Database.Create(ctx, env, env.CurrentDatabase); err != nil {
+	if created {
+		if err := a.Processes.Migrate(ctx, env, target, "migrate"); err != nil {
 			return err
 		}
+	}
+	return a.Database.Psql(ctx, env, target.Name)
+}
+
+// ensureDevelopmentDatabase creates this worktree's database if needed and
+// brings it up to date.
+func (a *App) ensureDevelopmentDatabase(ctx context.Context, env Environment, port int) error {
+	if _, err := a.createDevelopmentDatabase(ctx, env); err != nil {
+		return err
 	}
 	target := DatabaseTarget{Environment: "development", Name: env.CurrentDatabase, Port: port}
 	return a.Processes.Migrate(ctx, env, target, "migrate")
 }
 
-func (a *App) ensureTestDatabase(ctx context.Context, env Environment, port int) error {
-	exists, err := a.Database.Exists(ctx, env, env.TestDatabase())
-	if err != nil {
-		return err
+// createDevelopmentDatabase creates this worktree's database the first time
+// it's needed, copied from the main checkout's when that exists. It reports
+// whether it created one.
+func (a *App) createDevelopmentDatabase(ctx context.Context, env Environment) (bool, error) {
+	exists, err := a.Database.Exists(ctx, env, env.CurrentDatabase)
+	if err != nil || exists {
+		return false, err
 	}
-	if !exists {
-		if err := a.Database.Create(ctx, env, env.TestDatabase()); err != nil {
-			return err
+	mainExists := false
+	if !env.IsMain() {
+		mainExists, err = a.Database.Exists(ctx, env, env.MainDatabase)
+		if err != nil {
+			return false, err
 		}
+	}
+	if !mainExists {
+		return true, a.Database.Create(ctx, env, env.CurrentDatabase)
+	}
+	if err := a.printf("Copying the main checkout's database into %s...\n", env.CurrentDatabase); err != nil {
+		return false, err
+	}
+	if err := a.Database.Clone(ctx, env, env.MainDatabase, env.CurrentDatabase); err != nil {
+		return false, fmt.Errorf("clone main database: %w", err)
+	}
+	return true, nil
+}
+
+func (a *App) ensureTestDatabase(ctx context.Context, env Environment, port int) error {
+	if _, err := a.createTestDatabase(ctx, env); err != nil {
+		return err
 	}
 	target := DatabaseTarget{Environment: "test", Name: env.TestDatabase(), Port: port}
 	return a.Processes.Migrate(ctx, env, target, "migrate")
+}
+
+// createTestDatabase creates this worktree's empty test database if it doesn't
+// exist yet, and reports whether it did.
+func (a *App) createTestDatabase(ctx context.Context, env Environment) (bool, error) {
+	exists, err := a.Database.Exists(ctx, env, env.TestDatabase())
+	if err != nil || exists {
+		return false, err
+	}
+	return true, a.Database.Create(ctx, env, env.TestDatabase())
 }
 
 func apiURL(port int) string {
