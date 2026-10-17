@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
 	"github.com/pkg/errors"
 	migrations "github.com/robinjoseph08/go-pg-migrations/v3"
@@ -46,6 +47,18 @@ func init() {
 		_, err = db.Exec("ALTER TABLE dex_types_pokemon ADD CONSTRAINT dex_types_pokemon_pokemon_id_foreign FOREIGN KEY (pokemon_id) REFERENCES pokemon (id)")
 		if err != nil {
 			return errors.WithStack(err)
+		}
+
+		// The inserts below backfilled the dex types that existed when this
+		// migration first ran in production. A database built from scratch has
+		// no game families yet, so they'd only fail on their foreign keys. Seed
+		// data (mise db:seed) loads the dex types there instead.
+		var gameFamilies int
+		if _, err = db.QueryOne(pg.Scan(&gameFamilies), "SELECT count(*) FROM game_families"); err != nil {
+			return errors.WithStack(err)
+		}
+		if gameFamilies == 0 {
+			return nil
 		}
 
 		// Populate the dex_types table with all of the current dex types.
