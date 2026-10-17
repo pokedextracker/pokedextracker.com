@@ -70,7 +70,7 @@ or dexes. Tests don't use seeds; they rely on their own fixtures.
 `PRODUCTION_DATABASE_URL` in the main checkout's `.env`:
 
 ```sh
-PRODUCTION_DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DATABASE?sslmode=require
+PRODUCTION_DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DATABASE?sslmode=disable
 ```
 
 Editing `seeds/` doesn't change production. See [`seeds/README.md`](seeds/README.md).
