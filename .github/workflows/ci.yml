@@ -41,6 +41,29 @@ jobs:
       - name: Build
         run: mise build:web
 
+  # Seed data mirrors production, so pull requests from forks can't change
+  # it. Maintainers' branches live in this repository and aren't checked.
+  seed-data:
+    name: Seed data
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # HEAD is the PR merged into its base, so its first parent is exactly
+      # the base it was built on.
+      - name: Check for seed data changes
+        run: |
+          changed=$(git diff --name-only HEAD^1 HEAD -- 'seeds/*.csv')
+          if [ -n "$changed" ]; then
+            echo "Changed seed files:"
+            echo "$changed"
+            echo "::error title=Seed data can't be changed by pull request::The files in seeds/ are a copy of the production database, so changing them doesn't change pokedextracker.com. To report incorrect Pokémon data, please open an issue: https://github.com/pokedextracker/pokedextracker.com/issues/new"
+            exit 1
+          fi
+
   backend:
     name: Backend
     runs-on: ubuntu-latest

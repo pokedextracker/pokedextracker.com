@@ -6,6 +6,10 @@ decided on before the PR goes up and to make sure no one is working on the same 
 bit smoother, so you don't have to keep going back adding things. If it's just a bug fix though, feel free to just put
 up the PR directly!
 
+If you've found incorrect Pokémon data, like a wrong location or a missing evolution, please open an issue instead of a
+PR. The files in `seeds/` are a copy of the production database for local development, so changing them doesn't change
+the site. See [`seeds/README.md`](seeds/README.md).
+
 Some guidelines you should follow when submitting a PR:
 
 * PRs are squash merged, so the PR title becomes the commit message. Titles should follow the format

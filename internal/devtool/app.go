@@ -132,6 +132,9 @@ func (a *App) start(ctx context.Context, env Environment, args []string) error {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
+		if err := a.hintIfUnseeded(ctx, env); err != nil {
+			return err
+		}
 		servers.Database = developmentTarget(env, port)
 
 		lease, err := ports.Acquire(defaultAPIPort)
@@ -195,10 +198,13 @@ func (a *App) start(ctx context.Context, env Environment, args []string) error {
 
 func (a *App) database(ctx context.Context, env Environment, args []string) error {
 	if len(args) == 0 {
-		return errors.New("database command must be migrate, rollback, reset, create, or stop")
+		return errors.New("database command must be migrate, rollback, reset, create, stop, seed, or pull")
 	}
 	if len(args) == 1 && args[0] == "stop" {
 		return a.Database.Stop(ctx, env)
+	}
+	if len(args) == 1 && args[0] == "pull" {
+		return a.pull(ctx, env)
 	}
 	if args[0] == "create" && len(args) != 2 {
 		return errors.New("usage: db create <migration name>")
@@ -220,8 +226,13 @@ func (a *App) database(ctx context.Context, env Environment, args []string) erro
 		return a.Processes.Migrate(ctx, env, target, "rollback")
 	case "create":
 		// cmd/migrations connects before writing the file, so the database
-		// has to exist, but creating a migration shouldn't apply others.
-		if _, err := a.createDevelopmentDatabase(ctx, env); err != nil {
+		// has to exist, but creating a migration shouldn't apply others to an
+		// existing database.
+		how, err := a.createDevelopmentDatabase(ctx, env)
+		if err != nil {
+			return err
+		}
+		if err := a.setUpNewDatabase(ctx, env, port, how); err != nil {
 			return err
 		}
 		return a.Processes.Migrate(ctx, env, target, "create", args[1])
@@ -242,7 +253,26 @@ func (a *App) database(ctx context.Context, env Environment, args []string) erro
 		if err := a.Database.Reset(ctx, env, env.CurrentDatabase); err != nil {
 			return err
 		}
-		return a.Processes.Migrate(ctx, env, target, "migrate")
+		if err := a.Processes.Migrate(ctx, env, target, "migrate"); err != nil {
+			return err
+		}
+		return a.seedIfAvailable(ctx, env)
+	case "seed":
+		if !hasSeeds(seedsPath(env)) {
+			return fmt.Errorf("seed files are missing from %s; run mise db:pull first", seedsPath(env))
+		}
+		how, err := a.createDevelopmentDatabase(ctx, env)
+		if err != nil {
+			return err
+		}
+		// A new empty database is seeded as part of setting it up.
+		if how == createdEmpty {
+			return a.setUpNewDatabase(ctx, env, port, how)
+		}
+		if err := a.Processes.Migrate(ctx, env, target, "migrate"); err != nil {
+			return err
+		}
+		return a.seed(ctx, env)
 	default:
 		return fmt.Errorf("unknown database command %q", args[0])
 	}
@@ -337,61 +367,117 @@ func (a *App) psql(ctx context.Context, env Environment, args []string) error {
 	if err != nil {
 		return err
 	}
-	// Only a database this creates gets migrated, so psql shows an existing
+	// Only a database this creates gets set up, so psql shows an existing
 	// database as it is, for example right after a rollback.
-	target := developmentTarget(env, port)
-	create := a.createDevelopmentDatabase
 	if test {
-		target = testTarget(env, port)
-		create = a.createTestDatabase
+		created, err := a.createTestDatabase(ctx, env)
+		if err != nil {
+			return err
+		}
+		if created {
+			if err := a.Processes.Migrate(ctx, env, testTarget(env, port), "migrate"); err != nil {
+				return err
+			}
+		}
+		return a.Database.Psql(ctx, env, env.TestDatabase())
 	}
-	created, err := create(ctx, env)
+	how, err := a.createDevelopmentDatabase(ctx, env)
 	if err != nil {
 		return err
 	}
-	if created {
-		if err := a.Processes.Migrate(ctx, env, target, "migrate"); err != nil {
-			return err
-		}
+	if err := a.setUpNewDatabase(ctx, env, port, how); err != nil {
+		return err
 	}
-	return a.Database.Psql(ctx, env, target.Name)
+	return a.Database.Psql(ctx, env, env.CurrentDatabase)
 }
 
 // ensureDevelopmentDatabase creates this worktree's database if needed and
 // brings it up to date.
 func (a *App) ensureDevelopmentDatabase(ctx context.Context, env Environment, port int) error {
-	if _, err := a.createDevelopmentDatabase(ctx, env); err != nil {
+	how, err := a.createDevelopmentDatabase(ctx, env)
+	if err != nil {
 		return err
 	}
-	target := developmentTarget(env, port)
-	return a.Processes.Migrate(ctx, env, target, "migrate")
+	if how == alreadyExisted {
+		return a.Processes.Migrate(ctx, env, developmentTarget(env, port), "migrate")
+	}
+	return a.setUpNewDatabase(ctx, env, port, how)
 }
 
+// creation says how createDevelopmentDatabase found or made a database.
+type creation int
+
+const (
+	alreadyExisted creation = iota
+	createdEmpty
+	copiedFromMain
+)
+
 // createDevelopmentDatabase creates this worktree's database the first time
-// it's needed, copied from the main checkout's when that exists. It reports
-// whether it created one.
-func (a *App) createDevelopmentDatabase(ctx context.Context, env Environment) (bool, error) {
+// it's needed, copied from the main checkout's when that exists.
+func (a *App) createDevelopmentDatabase(ctx context.Context, env Environment) (creation, error) {
 	exists, err := a.Database.Exists(ctx, env, env.CurrentDatabase)
 	if err != nil || exists {
-		return false, err
+		return alreadyExisted, err
 	}
 	mainExists := false
 	if !env.IsMain() {
 		mainExists, err = a.Database.Exists(ctx, env, env.MainDatabase)
 		if err != nil {
-			return false, err
+			return alreadyExisted, err
 		}
 	}
 	if !mainExists {
-		return true, a.Database.Create(ctx, env, env.CurrentDatabase)
+		return createdEmpty, a.Database.Create(ctx, env, env.CurrentDatabase)
 	}
 	if err := a.printf("Copying the main checkout's database into %s...\n", env.CurrentDatabase); err != nil {
-		return false, err
+		return alreadyExisted, err
 	}
 	if err := a.Database.Clone(ctx, env, env.MainDatabase, env.CurrentDatabase); err != nil {
-		return false, fmt.Errorf("clone main database: %w", err)
+		return alreadyExisted, fmt.Errorf("clone main database: %w", err)
 	}
-	return true, nil
+	return copiedFromMain, nil
+}
+
+// setUpNewDatabase finishes a database createDevelopmentDatabase just made:
+// it migrates it, and seeds it unless it was copied from the main checkout
+// (which brings its data along). Existing databases are left alone.
+func (a *App) setUpNewDatabase(ctx context.Context, env Environment, port int, how creation) error {
+	if how == alreadyExisted {
+		return nil
+	}
+	if err := a.Processes.Migrate(ctx, env, developmentTarget(env, port), "migrate"); err != nil {
+		return err
+	}
+	if how == createdEmpty {
+		return a.seedIfAvailable(ctx, env)
+	}
+	return nil
+}
+
+// seedIfAvailable seeds this worktree's database when the branch has seed
+// files, and quietly does nothing on branches from before seeds existed.
+func (a *App) seedIfAvailable(ctx context.Context, env Environment) error {
+	if !hasSeeds(seedsPath(env)) {
+		return nil
+	}
+	return a.seed(ctx, env)
+}
+
+func (a *App) seed(ctx context.Context, env Environment) error {
+	if err := a.printf("Seeding reference data into %s...\n", env.CurrentDatabase); err != nil {
+		return err
+	}
+	warnings, err := a.Database.Seed(ctx, env, env.CurrentDatabase, seedsPath(env))
+	if err != nil {
+		return err
+	}
+	for _, warning := range warnings {
+		if err := a.printf("Warning: %s.\n", warning); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (a *App) ensureTestDatabase(ctx context.Context, env Environment, port int) error {
@@ -410,6 +496,56 @@ func (a *App) createTestDatabase(ctx context.Context, env Environment) (bool, er
 		return false, err
 	}
 	return true, a.Database.Create(ctx, env, env.TestDatabase())
+}
+
+// pull refreshes the seed files from production. The local database is
+// migrated first because its schema decides which columns are exported.
+func (a *App) pull(ctx context.Context, env Environment) error {
+	url, err := productionDatabaseURL(env, a.Getenv)
+	if err != nil {
+		return err
+	}
+	port, err := a.Database.Ensure(ctx, env)
+	if err != nil {
+		return err
+	}
+	if err := a.ensureDevelopmentDatabase(ctx, env, port); err != nil {
+		return err
+	}
+	if err := a.printf("Pulling reference data from production...\n"); err != nil {
+		return err
+	}
+	tables, err := a.Database.Pull(ctx, env, url, env.CurrentDatabase, seedsPath(env))
+	if err != nil {
+		return err
+	}
+	for _, table := range tables {
+		if err := a.printf("  %-20s %s\n", table.Name, plural(table.Rows, "row", "rows")); err != nil {
+			return err
+		}
+	}
+	return a.printf("Wrote %s. Review the changes with git diff --stat seeds/, then commit them.\n", seedsPath(env))
+}
+
+// hintIfUnseeded points out a database without reference data instead of
+// changing it behind the developer's back.
+func (a *App) hintIfUnseeded(ctx context.Context, env Environment) error {
+	if !hasSeeds(seedsPath(env)) {
+		return nil
+	}
+	status, err := a.Database.ReferenceData(ctx, env, env.CurrentDatabase)
+	if err != nil {
+		return err
+	}
+	switch status {
+	case ReferenceEmpty:
+		return a.printf("This database has no Pokémon or games yet. Load them with mise db:seed.\n")
+	case ReferenceOutdatedSchema:
+		return a.printf("This database was created before the boxes primary key was fixed, so it can't hold the seed data. Rebuild it once with mise db:reset.\n")
+	case ReferenceSeeded:
+		return nil
+	}
+	return nil
 }
 
 func developmentTarget(env Environment, port int) DatabaseTarget {

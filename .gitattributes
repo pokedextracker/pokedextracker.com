@@ -1,0 +1,2 @@
+# Generated from production by `mise db:pull`; GitHub collapses these in diffs.
+seeds/*.csv linguist-generated=true
