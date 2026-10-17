@@ -485,7 +485,15 @@ func (d *DockerDatabase) Pull(ctx context.Context, env Environment, url, localDa
 			return nil, fmt.Errorf("%s columns differ between production and the local schema (missing in production: %v, only in production: %v); are the migrations up to date on both?", table.Name, missing, extra)
 		}
 
-		output, err := d.remote(ctx, env, url, pullScript(table, localColumns))
+		primaryKey, err := d.queryLines(ctx, env, localDatabase, primaryKeyQuery(table.Name))
+		if err != nil {
+			return nil, fmt.Errorf("read primary key of %s: %w", table.Name, err)
+		}
+		if len(primaryKey) == 0 {
+			return nil, fmt.Errorf("%s has no primary key, so its rows can't be ordered", table.Name)
+		}
+
+		output, err := d.remote(ctx, env, url, pullScript(table, localColumns, primaryKey))
 		if err != nil {
 			return nil, fmt.Errorf("export %s: %w", table.Name, err)
 		}

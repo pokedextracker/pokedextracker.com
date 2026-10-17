@@ -15,7 +15,7 @@ func init() {
 			    pokemon_id INT NOT NULL,
 			    value TEXT NOT NULL,
 			    
-			    PRIMARY KEY (game_family_id, pokemon_id)
+			    PRIMARY KEY (game_family_id, regional, pokemon_id)
 			)
 		`)
 		if err != nil {

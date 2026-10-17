@@ -20,24 +20,24 @@ const (
 )
 
 // seedTable is one reference table copied from production. Rows are ordered by
-// the primary key so pulls diff cleanly.
+// the table's primary key, read from the local schema, so every pull writes
+// rows in the same order and diffs stay clean.
 type seedTable struct {
-	Name    string
-	OrderBy []string
+	Name string
 }
 
 // seedTables are the reference tables, parents before children. User data
 // (users, dexes, captures) is deliberately absent and is never pulled.
 // game_family_dex_numbers is left out because nothing reads it anymore.
 var seedTables = []seedTable{
-	{Name: "game_families", OrderBy: []string{"id"}},
-	{Name: "games", OrderBy: []string{"id"}},
-	{Name: "pokemon", OrderBy: []string{"id"}},
-	{Name: "dex_types", OrderBy: []string{"id"}},
-	{Name: "dex_types_pokemon", OrderBy: []string{"dex_type_id", "pokemon_id"}},
-	{Name: "boxes", OrderBy: []string{"game_family_id", "pokemon_id"}},
-	{Name: "locations", OrderBy: []string{"game_id", "pokemon_id"}},
-	{Name: "evolutions", OrderBy: []string{"evolving_pokemon_id", "evolved_pokemon_id"}},
+	{Name: "game_families"},
+	{Name: "games"},
+	{Name: "pokemon"},
+	{Name: "dex_types"},
+	{Name: "dex_types_pokemon"},
+	{Name: "boxes"},
+	{Name: "locations"},
+	{Name: "evolutions"},
 }
 
 // seededSequences are reset after seeding so new local rows don't collide with
@@ -69,12 +69,22 @@ func hasSeeds(dir string) bool {
 // pullScript exports one table as CSV. The session is read-only, and the time
 // zone and date style are pinned so the output doesn't depend on the server's
 // settings.
-func pullScript(table seedTable, columns []string) string {
+func pullScript(table seedTable, columns, orderBy []string) string {
 	return fmt.Sprintf(`SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;
 SET TimeZone = 'UTC';
 SET DateStyle = 'ISO, YMD';
 COPY (SELECT %s FROM %s ORDER BY %s) TO STDOUT WITH (FORMAT csv, HEADER);
-`, quoteIdentifiers(columns), quoteIdentifier(table.Name), quoteIdentifiers(table.OrderBy))
+`, quoteIdentifiers(columns), quoteIdentifier(table.Name), quoteIdentifiers(orderBy))
+}
+
+// primaryKeyQuery lists a table's primary key columns in key order. It avoids
+// array_position, which PostgreSQL 9.4 doesn't have.
+func primaryKeyQuery(table string) string {
+	return `SELECT kcu.column_name FROM information_schema.table_constraints tc
+JOIN information_schema.key_column_usage kcu
+  ON kcu.constraint_name = tc.constraint_name AND kcu.table_schema = tc.table_schema AND kcu.table_name = tc.table_name
+WHERE tc.table_schema = 'public' AND tc.table_name = '` + sqlLiteral(table) + `' AND tc.constraint_type = 'PRIMARY KEY'
+ORDER BY kcu.ordinal_position`
 }
 
 // columnsQuery lists a table's columns in order.

@@ -13,12 +13,11 @@ import (
 func TestSeedTablesNeverIncludeUserData(t *testing.T) {
 	for _, table := range seedTables {
 		assert.NotContains(t, []string{"users", "dexes", "captures", "migrations", "migration_lock"}, table.Name)
-		assert.NotEmpty(t, table.OrderBy, table.Name)
 	}
 }
 
 func TestPullScriptIsReadOnlyAndOrdered(t *testing.T) {
-	script := pullScript(seedTable{Name: "dex_types_pokemon", OrderBy: []string{"dex_type_id", "pokemon_id"}}, []string{"dex_type_id", "pokemon_id", "order"})
+	script := pullScript(seedTable{Name: "dex_types_pokemon"}, []string{"dex_type_id", "pokemon_id", "order"}, []string{"dex_type_id", "pokemon_id"})
 
 	assert.Contains(t, script, "TRANSACTION READ ONLY")
 	assert.Contains(t, script, "SET TimeZone = 'UTC'")
