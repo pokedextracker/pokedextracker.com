@@ -15,6 +15,7 @@ var Version = ""
 // application.
 type Config struct {
 	BcryptCost                int
+	BlogURL                   string // where /blog is forwarded; empty for no blog
 	CORSAllowedOrigins        []string
 	DatabaseConnectRetryCount int
 	DatabaseConnectRetryDelay time.Duration
@@ -64,6 +65,7 @@ func New() (*Config, error) {
 
 	cfg := &Config{
 		BcryptCost:                10,
+		BlogURL:                   os.Getenv("BLOG_URL"),
 		DatabaseConnectRetryCount: 10,
 		DatabaseConnectRetryDelay: 2 * time.Second,
 		DatabaseDebug:             os.Getenv("DATABASE_DEBUG") == "true",

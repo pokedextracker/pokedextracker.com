@@ -18,8 +18,9 @@ ROLLBAR_TOKEN = ""
 # === Build ===
 
 [tasks.build]
-description = "Build the API, migrations, and frontend"
-depends = ["build:api", "build:web"]
+description = "Build the frontend, then the API (which embeds it) and migrations"
+# The API binary embeds the frontend build, so it has to come second.
+run = ["mise run build:web", "mise run build:api"]
 
 [tasks."build:api"]
 description = "Build the api and migrations binaries"
@@ -35,7 +36,7 @@ description = "Build development API binary (used by air)"
 run = "go build -o ./build/api/api-air ./cmd/api"
 
 [tasks."build:web"]
-description = "Build the frontend into build/web"
+description = "Build the frontend into internal/webapp/dist"
 depends = ["install:web"]
 env = { NODE_ENV = "production" }
 run = "yarn build"
@@ -80,6 +81,10 @@ run = "go run ./cmd/dev start web"
 [tasks."start:web:staging"]
 description = "Start just the frontend dev server, using the staging API"
 run = "go run ./cmd/dev start web-staging"
+
+[tasks."start:preview"]
+description = "Build and run the production binary (API and frontend on one port) against this worktree's database"
+run = "go run ./cmd/dev start preview"
 
 # === Linting ===
 
@@ -167,6 +172,10 @@ description = "Open psql against this worktree's test database"
 run = "go run ./cmd/dev psql --test"
 
 # === Deploys ===
+
+[tasks."deploy:app"]
+description = "Deploy the single-binary app to the new Fly apps (staging, then production after a prompt)"
+run = "./scripts/deploy-app.sh"
 
 [tasks."deploy:api"]
 description = "Deploy the API to Fly.io (staging, then production after a prompt)"

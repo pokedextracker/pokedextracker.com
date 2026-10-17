@@ -22,9 +22,10 @@ and creates and migrates this worktree's development and test databases.
 ```sh
 mise start              # API with hot reload, plus the frontend dev server using it
 mise start:web:staging  # Just the frontend, using the staging API
+mise start:preview      # The production build: one binary serving the API and frontend
 mise lint               # golangci-lint, ESLint, and TypeScript checks
 mise test:go            # Go tests
-mise build              # Build the API and migrations into build/, and the frontend into build/web
+mise build              # Build the frontend, then the API (which embeds it) and migrations into build/
 mise db:migrate         # Run pending migrations
 mise psql               # Open psql against this worktree's database
 mise db:seed            # Reload this worktree's Pokémon, games, and dexes from seeds/
@@ -80,28 +81,36 @@ PRODUCTION_DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DATABASE?sslmode=disa
 
 Editing `seeds/` doesn't change production. See [`seeds/README.md`](seeds/README.md).
 
-## Docker
+## How it's served
 
-Every time we deploy, we build new Docker images and upload them to Docker
-Hub, tagged with the first 7 characters of the commit hash. The API image
-listens on port 8647, so if you run it locally, make sure that traffic is
-forwarded to that port. For example:
-
-```sh
-docker run --rm --publish 8647:8647 --name pokedextracker-api pokedextracker/api.pokedextracker.com:$(git rev-parse --short HEAD)
-```
+In production, one Go binary serves the whole site: the API under `/api`, the
+frontend (embedded into the binary from `internal/webapp/dist`) for everything
+else, and `/blog`, which it forwards to the hosted Ghost blog. It also
+redirects `www.` to the bare domain. Hashed JavaScript is cached forever,
+`index.html` and `/version` are always revalidated, and other static files are
+cached for an hour. `mise start:preview` runs this same build locally.
 
 ## Deployments
 
 > Note: you need the necessary permissions to be able to deploy.
 
-The frontend and API currently deploy separately. Each deploy script builds a
-multi-arch Docker image (`linux/amd64` and `linux/arm64`), pushes it to Docker
-Hub, and deploys it to staging on [Fly.io](https://fly.io/). Once you've
-checked staging, type `yes` at the prompt to deploy the same image to
-production. Anything else skips production.
+`mise deploy:app` builds a multi-arch image (`linux/amd64` and `linux/arm64`)
+from `Dockerfile.app`, pushes it to the GitHub Container Registry
+(`ghcr.io/pokedextracker/pokedextracker.com`), uploads source maps to Rollbar,
+and deploys it to the `pokedextracker-staging` app on [Fly.io](https://fly.io/).
+Once you've checked staging, type `yes` at the prompt to deploy the same image
+to `pokedextracker-production`. Anything else skips production. Pushing uses
+your `gh` login, which needs the `write:packages` scope once:
 
 ```sh
-mise deploy:web     # Frontend
-mise deploy:api     # API
+gh auth refresh -s write:packages
+mise deploy:app
+```
+
+Until the cutover to those apps, the current site still runs as separate
+frontend and API apps behind an nginx proxy, deployed with:
+
+```sh
+mise deploy:web     # Frontend (Dockerfile, Docker Hub)
+mise deploy:api     # API (Dockerfile.api, Docker Hub)
 ```

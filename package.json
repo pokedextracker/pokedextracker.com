@@ -8,9 +8,9 @@
   },
   "scripts": {
     "build": "npm run build:bundle && npm run build:public && npm run build:version",
-    "build:bundle": "rm -rf build/web && webpack",
-    "build:public": "mkdir -p build/web && cp -R public/* build/web/",
-    "build:version": "mkdir -p build/web && date > build/web/version",
+    "build:bundle": "webpack",
+    "build:public": "cp -R public/* internal/webapp/dist/",
+    "build:version": "date > internal/webapp/dist/version",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx --max-warnings 0 .",
     "lint:all": "yarn lint && yarn lint:types",
     "lint:types": "tsc --noEmit",

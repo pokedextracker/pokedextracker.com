@@ -7,7 +7,11 @@ COPY go.sum go.sum
 RUN go mod download
 
 COPY cmd cmd
+COPY internal internal
 COPY pkg pkg
+# The old backend apps don't serve the frontend, so the binary is built with
+# an empty frontend directory (the build output isn't in the Docker context).
+RUN mkdir -p internal/webapp/dist && touch internal/webapp/dist/.gitkeep
 
 ARG VERSION
 ARG TARGETARCH

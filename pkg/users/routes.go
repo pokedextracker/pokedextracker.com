@@ -9,8 +9,8 @@ import (
 	"github.com/pokedextracker/pokedextracker.com/pkg/games"
 )
 
-// RegisterRoutes takes in an Echo router and registers routes onto it.
-func RegisterRoutes(e *echo.Echo, cfg *config.Config, db *pg.DB, enforceAuth echo.MiddlewareFunc, nonEnforceAuth echo.MiddlewareFunc) {
+// RegisterRoutes registers routes onto an Echo route group.
+func RegisterRoutes(e *echo.Group, cfg *config.Config, db *pg.DB, enforceAuth echo.MiddlewareFunc, nonEnforceAuth echo.MiddlewareFunc) {
 	authService := auth.NewService(cfg, db)
 	dexTypeService := dextypes.NewService(db)
 	gameService := games.NewService(db)

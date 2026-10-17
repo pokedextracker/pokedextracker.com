@@ -10,7 +10,10 @@ const machine = hostname().toLowerCase();
 module.exports = {
   entry: ['whatwg-fetch', './app/index.tsx'],
   output: {
-    path: `${__dirname}/build/web`,
+    // The Go binary embeds this directory (internal/webapp). The tracked
+    // .gitkeep keeps it present for builds without a frontend.
+    path: `${__dirname}/internal/webapp/dist`,
+    clean: { keep: /\.gitkeep$/ },
     filename: PRODUCTION ? '[name].[contenthash].js' : '[name].[fullhash].js',
     publicPath: '/',
   },
@@ -39,14 +42,13 @@ module.exports = {
     host: '0.0.0.0',
     hot: true,
     // The dev launcher (cmd/dev) picks free ports per worktree and passes them
-    // in. API_URL is where /api goes: the local API, or the staging API for
-    // `mise start:web:staging`.
+    // in. API_URL is the server /api goes to: the local API, or staging for
+    // `mise start:web:staging`. Both serve the API under /api.
     port: Number(process.env.WEB_PORT) || 9898,
     proxy: {
       '/api': {
         target: process.env.API_URL || 'http://127.0.0.1:8647',
         changeOrigin: true,
-        pathRewrite: { '^/api': '' },
       },
     },
     static: 'public/',

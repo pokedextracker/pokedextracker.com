@@ -1,0 +1,30 @@
+# The single-binary app: API, frontend, and blog proxy in one.
+# Docs: https://fly.io/docs/reference/configuration/
+
+app = "pokedextracker-staging"
+primary_region = "sjc"
+
+[deploy]
+  release_command = "migrations migrate"
+  strategy = "rolling"
+
+[env]
+  ENVIRONMENT = "staging"
+
+[http_service]
+  internal_port = 8647
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = false
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "10s"
+    method = "GET"
+    path = "/health"
+    timeout = "2s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
