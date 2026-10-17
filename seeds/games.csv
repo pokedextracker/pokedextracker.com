@@ -1,0 +1,45 @@
+id,name,game_family_id,order
+alpha_sapphire,Alpha Sapphire,omega_ruby_alpha_sapphire,24
+black,Black,black_white,17
+black_2,Black 2,black_2_white_2,19
+blue,Blue,red_blue,2
+brilliant_diamond,Brilliant Diamond,brilliant_diamond_shining_pearl,35
+crystal,Crystal,crystal,6
+diamond,Diamond,diamond_pearl,12
+emerald,Emerald,emerald,11
+fire_red,FireRed,fire_red_leaf_green,9
+gold,Gold,gold_silver,4
+heart_gold,HeartGold,heart_gold_soul_silver,15
+home,HOME,home,9999
+leaf_green,LeafGreen,fire_red_leaf_green,10
+legends_arceus,Legends: Arceus,legends_arceus,37
+legends_za,Legends: Z-A,legends_za,42
+legends_za_mega_dimension,Legends: Z-A (Mega Dimension),legends_za_expansion_pass,43
+lets_go_eevee,"Let's Go, Eevee!",lets_go_pikachu_eevee,30
+lets_go_pikachu,"Let's Go, Pikachu!",lets_go_pikachu_eevee,29
+moon,Moon,sun_moon,26
+omega_ruby,Omega Ruby,omega_ruby_alpha_sapphire,23
+pearl,Pearl,diamond_pearl,13
+platinum,Platinum,platinum,14
+red,Red,red_blue,1
+ruby,Ruby,ruby_sapphire,7
+sapphire,Sapphire,ruby_sapphire,8
+scarlet,Scarlet,scarlet_violet,38
+scarlet_expansion_pass,Scarlet (Expansion Pass),scarlet_violet_expansion_pass,40
+shield,Shield,sword_shield,32
+shield_expansion_pass,Shield (Expansion Pass),sword_shield_expansion_pass,34
+shining_pearl,Shining Pearl,brilliant_diamond_shining_pearl,36
+silver,Silver,gold_silver,5
+soul_silver,SoulSilver,heart_gold_soul_silver,16
+sun,Sun,sun_moon,25
+sword,Sword,sword_shield,31
+sword_expansion_pass,Sword (Expansion Pass),sword_shield_expansion_pass,33
+ultra_moon,Ultra Moon,ultra_sun_ultra_moon,28
+ultra_sun,Ultra Sun,ultra_sun_ultra_moon,27
+violet,Violet,scarlet_violet,39
+violet_expansion_pass,Violet (Expansion Pass),scarlet_violet_expansion_pass,41
+white,White,black_white,18
+white_2,White 2,black_2_white_2,20
+x,X,x_y,21
+y,Y,x_y,22
+yellow,Yellow,yellow,3
