@@ -52,11 +52,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      # HEAD is the PR merged into its base, so its first parent is exactly
+      # the base it was built on.
       - name: Check for seed data changes
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
-          changed=$(git diff --name-only "$BASE_SHA" HEAD -- 'seeds/*.csv')
+          changed=$(git diff --name-only HEAD^1 HEAD -- 'seeds/*.csv')
           if [ -n "$changed" ]; then
             echo "Changed seed files:"
             echo "$changed"

@@ -6,7 +6,7 @@ development databases by `mise db:seed`.
 
 **Editing these files doesn't change pokedextracker.com.** The site reads from
 its own database, and these files only flow one way: from production into
-local databases. Pull requests that change them can't be merged.
+local databases. Pull requests from forks that change them fail CI.
 
 If you've found incorrect data, like a wrong location, a missing evolution, or
 a Pokémon missing from a dex, please [open an
@@ -18,6 +18,7 @@ into these files.
 
 - `mise db:pull` reads production through a read-only session. It needs
   `PRODUCTION_DATABASE_URL` in the main checkout's `.env`.
-- Each table is one file, sorted by its primary key, so `git diff seeds/`
-  shows exactly what changed in production since the last pull.
+- Each table is one file, sorted by its primary key (then by its other
+  columns), so `git diff seeds/` shows exactly what changed in production
+  since the last pull.
 - User data (users, dexes, captures) is never pulled.

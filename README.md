@@ -61,10 +61,15 @@ If you used this repo before the launcher existed, the old setup's container
 ## Data
 
 `seeds/` holds a copy of production's Pokémon, game, and dex data, so local
-databases look like the real site. A new database is seeded when it's created
-(`mise setup`, `mise db:reset`, or a worktree with no main checkout database to
-copy), and `mise db:seed` reloads an existing one without touching local users
-or dexes. Tests don't use seeds; they rely on their own fixtures.
+databases look like the real site. Whenever the launcher creates an empty
+database (for example on `mise setup` or `mise db:reset`), it seeds it. A new
+worktree copies the main checkout's database instead, data included.
+`mise db:seed` reloads an existing database without touching local users or
+dexes. Tests don't use seeds; they rely on their own fixtures.
+
+Databases created before seed data existed have an outdated `boxes` primary
+key and can't be seeded. `mise start` says so; rebuild them once with
+`mise db:reset`.
 
 `mise db:pull` refreshes `seeds/` from production. It needs
 `PRODUCTION_DATABASE_URL` in the main checkout's `.env`:

@@ -37,14 +37,26 @@ type DatabaseManager interface {
 	Reset(context.Context, Environment, string) error
 	Psql(context.Context, Environment, string) error
 	// Pull exports the reference tables from the database at url into CSV
-	// files in dir, using the local database name for the expected columns.
+	// files in dir, using the local database for the expected columns and
+	// row order.
 	Pull(ctx context.Context, env Environment, url, localDatabase, dir string) ([]PulledTable, error)
 	// Seed replaces the reference tables in a database with the CSV files in
 	// dir, and returns warnings about local data left pointing at missing rows.
 	Seed(ctx context.Context, env Environment, name, dir string) ([]string, error)
-	// HasReferenceData reports whether a database has any Pokemon.
-	HasReferenceData(ctx context.Context, env Environment, name string) (bool, error)
+	// ReferenceData reports whether a database has been seeded.
+	ReferenceData(ctx context.Context, env Environment, name string) (ReferenceStatus, error)
 }
+
+// ReferenceStatus describes a database's reference data.
+type ReferenceStatus int
+
+const (
+	ReferenceSeeded ReferenceStatus = iota
+	ReferenceEmpty
+	// ReferenceOutdatedSchema means the database predates a schema fix the
+	// seed data needs, and has to be rebuilt with mise db:reset.
+	ReferenceOutdatedSchema
+)
 
 // PulledTable summarizes one table written by a pull.
 type PulledTable struct {
@@ -412,17 +424,7 @@ func (d *DockerDatabase) psqlOutput(ctx context.Context, env Environment, args .
 // composeOutput runs a docker compose command and returns its standard
 // output.
 func (d *DockerDatabase) composeOutput(ctx context.Context, env Environment, port int, args ...string) (string, error) {
-	var stderr bytes.Buffer
-	command := d.composeCommand(ctx, env, port, args...)
-	command.Stderr = &stderr
-	output, err := command.Output()
-	if ctx.Err() != nil {
-		return "", ctx.Err()
-	}
-	if err != nil {
-		return "", fmt.Errorf("%w: %s", err, strings.TrimSpace(stderr.String()))
-	}
-	return string(output), nil
+	return d.capture(ctx, d.composeCommand(ctx, env, port, args...), nil)
 }
 
 func (d *DockerDatabase) run(ctx context.Context, env Environment, action string, args ...string) error {
@@ -460,8 +462,12 @@ func (d *DockerDatabase) composeCommand(ctx context.Context, env Environment, po
 }
 
 func (d *DockerDatabase) Pull(ctx context.Context, env Environment, url, localDatabase, dir string) ([]PulledTable, error) {
-	// Everything is written to a scratch directory first, so a failed pull
-	// never leaves seeds half updated.
+	connection, err := connectionEnvironment(url)
+	if err != nil {
+		return nil, err
+	}
+	// Every table is exported to a scratch directory first, so a failed export
+	// never touches seeds/.
 	if err := os.MkdirAll(filepath.Join(env.CurrentRoot, "tmp"), 0o755); err != nil {
 		return nil, fmt.Errorf("create tmp directory: %w", err)
 	}
@@ -473,38 +479,35 @@ func (d *DockerDatabase) Pull(ctx context.Context, env Environment, url, localDa
 
 	var pulled []PulledTable
 	for _, table := range seedTables {
-		localColumns, err := d.queryLines(ctx, env, localDatabase, columnsQuery(table.Name))
+		localColumns, err := d.queryLines(ctx, env, localDatabase, columnsQuery(table))
 		if err != nil {
-			return nil, fmt.Errorf("read local columns of %s: %w", table.Name, err)
+			return nil, fmt.Errorf("read local columns of %s: %w", table, err)
 		}
-		remoteColumns, err := d.remote(ctx, env, url, "SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;\n"+columnsQuery(table.Name)+";\n", "-tA")
+		remoteColumns, err := d.remote(ctx, env, connection, columnsQuery(table)+";\n", "-tA")
 		if err != nil {
-			return nil, fmt.Errorf("read production columns of %s: %w", table.Name, err)
+			return nil, fmt.Errorf("read production columns of %s: %w", table, err)
 		}
 		if missing, extra := columnDifferences(localColumns, lines(remoteColumns)); len(missing) > 0 || len(extra) > 0 {
-			return nil, fmt.Errorf("%s columns differ between production and the local schema (missing in production: %v, only in production: %v); are the migrations up to date on both?", table.Name, missing, extra)
+			return nil, fmt.Errorf("%s columns differ between production and the local schema (missing in production: %v, only in production: %v); are the migrations up to date on both?", table, missing, extra)
+		}
+		primaryKey, err := d.queryLines(ctx, env, localDatabase, primaryKeyQuery(table))
+		if err != nil {
+			return nil, fmt.Errorf("read primary key of %s: %w", table, err)
 		}
 
-		primaryKey, err := d.queryLines(ctx, env, localDatabase, primaryKeyQuery(table.Name))
+		output, err := d.remote(ctx, env, connection, pullScript(table, localColumns, pullOrder(primaryKey, localColumns)))
 		if err != nil {
-			return nil, fmt.Errorf("read primary key of %s: %w", table.Name, err)
-		}
-		if len(primaryKey) == 0 {
-			return nil, fmt.Errorf("%s has no primary key, so its rows can't be ordered", table.Name)
-		}
-
-		output, err := d.remote(ctx, env, url, pullScript(table, localColumns, primaryKey))
-		if err != nil {
-			return nil, fmt.Errorf("export %s: %w", table.Name, err)
+			return nil, fmt.Errorf("export %s: %w", table, err)
 		}
 		if err := os.WriteFile(seedFile(scratch, table), []byte(output), 0o600); err != nil {
-			return nil, fmt.Errorf("write %s: %w", table.Name, err)
+			return nil, fmt.Errorf("write %s: %w", table, err)
 		}
+		// Counts lines, which matches rows while no value spans lines.
 		rows := strings.Count(output, "\n") - 1
 		if rows < 0 {
 			rows = 0
 		}
-		pulled = append(pulled, PulledTable{Name: table.Name, Rows: rows})
+		pulled = append(pulled, PulledTable{Name: table, Rows: rows})
 	}
 
 	if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -512,13 +515,24 @@ func (d *DockerDatabase) Pull(ctx context.Context, env Environment, url, localDa
 	}
 	for _, table := range seedTables {
 		if err := os.Rename(seedFile(scratch, table), seedFile(dir, table)); err != nil {
-			return nil, fmt.Errorf("install %s: %w", table.Name, err)
+			return nil, fmt.Errorf("install %s: %w", table, err)
 		}
 	}
 	return pulled, nil
 }
 
+// errOutdatedBoxesKey explains the one schema fix that a migration can't
+// apply to databases built before it.
+var errOutdatedBoxesKey = errors.New("this database was created before the boxes primary key was fixed, so it can't hold the seed data; rebuild it once with mise db:reset")
+
 func (d *DockerDatabase) Seed(ctx context.Context, env Environment, name, dir string) ([]string, error) {
+	outdated, err := d.boxesKeyOutdated(ctx, env, name)
+	if err != nil {
+		return nil, err
+	}
+	if outdated {
+		return nil, errOutdatedBoxesKey
+	}
 	script, err := seedScript(dir)
 	if err != nil {
 		return nil, err
@@ -527,54 +541,87 @@ func (d *DockerDatabase) Seed(ctx context.Context, env Environment, name, dir st
 		return nil, fmt.Errorf("seed database %s: %w", name, err)
 	}
 
+	// The seed has committed by now, so a problem checking for orphaned local
+	// data is only worth a warning.
 	output, err := d.queryLines(ctx, env, name, orphansQuery)
-	if err != nil || len(output) != 1 {
-		return nil, fmt.Errorf("check for orphaned local data: %w", err)
-	}
 	var dexTypes, games, captures int
-	if _, err := fmt.Sscanf(output[0], "%d|%d|%d", &dexTypes, &games, &captures); err != nil {
-		return nil, fmt.Errorf("check for orphaned local data: %w", err)
+	if err == nil && len(output) == 1 {
+		_, err = fmt.Sscanf(output[0], "%d|%d|%d", &dexTypes, &games, &captures)
+	} else if err == nil {
+		err = fmt.Errorf("unexpected output %q", output)
+	}
+	if err != nil {
+		return []string{fmt.Sprintf("couldn't check local dexes and captures against the seed data: %v", err)}, nil
 	}
 	var warnings []string
 	if dexTypes > 0 {
-		warnings = append(warnings, fmt.Sprintf("%d local dexes use a dex type that isn't in the seed data", dexTypes))
+		warnings = append(warnings, plural(dexTypes, "local dex uses a dex type", "local dexes use dex types")+" that aren't in the seed data")
 	}
 	if games > 0 {
-		warnings = append(warnings, fmt.Sprintf("%d local dexes use a game that isn't in the seed data", games))
+		warnings = append(warnings, plural(games, "local dex uses a game", "local dexes use games")+" that aren't in the seed data")
 	}
 	if captures > 0 {
-		warnings = append(warnings, fmt.Sprintf("%d local captures are of Pokemon that aren't in the seed data", captures))
+		warnings = append(warnings, plural(captures, "local capture is of a Pokémon", "local captures are of Pokémon")+" that aren't in the seed data")
 	}
 	return warnings, nil
 }
 
-func (d *DockerDatabase) HasReferenceData(ctx context.Context, env Environment, name string) (bool, error) {
+func (d *DockerDatabase) ReferenceData(ctx context.Context, env Environment, name string) (ReferenceStatus, error) {
+	outdated, err := d.boxesKeyOutdated(ctx, env, name)
+	if err != nil {
+		return 0, err
+	}
+	if outdated {
+		return ReferenceOutdatedSchema, nil
+	}
 	output, err := d.queryLines(ctx, env, name, "SELECT EXISTS (SELECT 1 FROM pokemon)")
 	if err != nil {
-		return false, fmt.Errorf("check for reference data: %w", err)
+		return 0, fmt.Errorf("check for reference data: %w", err)
 	}
-	return len(output) == 1 && output[0] == "t", nil
+	if len(output) == 1 && output[0] == "t" {
+		return ReferenceSeeded, nil
+	}
+	return ReferenceEmpty, nil
 }
 
-// remote runs a psql script against the database at url, from inside the
-// local container so no PostgreSQL client is needed on the host. The URL is
-// passed through the environment, never on a command line, and the session
-// is read-only.
-func (d *DockerDatabase) remote(ctx context.Context, env Environment, url, script string, args ...string) (string, error) {
+// boxesKeyOutdated reports whether a database still has the boxes primary key
+// from before the fix, which can't hold rows that differ only in regional.
+func (d *DockerDatabase) boxesKeyOutdated(ctx context.Context, env Environment, name string) (bool, error) {
+	primaryKey, err := d.queryLines(ctx, env, name, primaryKeyQuery("boxes"))
+	if err != nil {
+		return false, fmt.Errorf("read primary key of boxes: %w", err)
+	}
+	for _, column := range primaryKey {
+		if column == "regional" {
+			return false, nil
+		}
+	}
+	return len(primaryKey) > 0, nil
+}
+
+// remote runs a psql script against another server from inside the local
+// container, so no PostgreSQL client is needed on the host. The connection
+// comes from libpq environment variables, never arguments, and the session is
+// read-only.
+func (d *DockerDatabase) remote(ctx context.Context, env Environment, connection []string, script string, args ...string) (string, error) {
 	port, err := readPostgresPort(env.MainRoot)
 	if err != nil {
 		return "", err
 	}
-	psql := "exec psql \"$" + productionDatabaseURLEnv + "\" -X -q -v ON_ERROR_STOP=1 " + strings.Join(args, " ") + " -f -"
-	command := d.composeCommand(ctx, env, port,
-		"exec", "-T",
-		"-e", productionDatabaseURLEnv, "-e", "PGOPTIONS", "-e", "PGCONNECT_TIMEOUT",
-		"postgres", "sh", "-c", psql)
-	command.Env = append(command.Env,
-		productionDatabaseURLEnv+"="+url,
+	environment := append(append([]string{}, connection...),
 		"PGOPTIONS=-c default_transaction_read_only=on",
 		"PGCONNECT_TIMEOUT=15",
 	)
+	commandArgs := []string{"exec", "-T"}
+	for _, value := range environment {
+		name, _, _ := strings.Cut(value, "=")
+		commandArgs = append(commandArgs, "-e", name)
+	}
+	commandArgs = append(commandArgs, "postgres", "psql", "-X", "-q", "-v", "ON_ERROR_STOP=1")
+	commandArgs = append(commandArgs, args...)
+	commandArgs = append(commandArgs, "-f", "-")
+	command := d.composeCommand(ctx, env, port, commandArgs...)
+	command.Env = append(command.Env, environment...)
 	return d.capture(ctx, command, strings.NewReader(script))
 }
 
@@ -599,8 +646,8 @@ func (d *DockerDatabase) queryLines(ctx context.Context, env Environment, name, 
 	return lines(output), nil
 }
 
-// capture runs a command with stdin, returning stdout. Stderr is included in
-// the error so psql's message is shown.
+// capture runs a command, optionally with stdin, and returns its stdout.
+// Stderr goes into the error so psql's message is shown.
 func (d *DockerDatabase) capture(ctx context.Context, command *exec.Cmd, stdin io.Reader) (string, error) {
 	var stdout, stderr bytes.Buffer
 	command.Stdin = stdin

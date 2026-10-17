@@ -259,9 +259,17 @@ func (a *App) database(ctx context.Context, env Environment, args []string) erro
 		return a.seedIfAvailable(ctx, env)
 	case "seed":
 		if !hasSeeds(seedsPath(env)) {
-			return fmt.Errorf("there are no seed files in %s; run mise db:pull first", seedsPath(env))
+			return fmt.Errorf("seed files are missing from %s; run mise db:pull first", seedsPath(env))
 		}
-		if err := a.ensureDevelopmentDatabase(ctx, env, port); err != nil {
+		how, err := a.createDevelopmentDatabase(ctx, env)
+		if err != nil {
+			return err
+		}
+		// A new empty database is seeded as part of setting it up.
+		if how == createdEmpty {
+			return a.setUpNewDatabase(ctx, env, port, how)
+		}
+		if err := a.Processes.Migrate(ctx, env, target, "migrate"); err != nil {
 			return err
 		}
 		return a.seed(ctx, env)
@@ -390,13 +398,10 @@ func (a *App) ensureDevelopmentDatabase(ctx context.Context, env Environment, po
 	if err != nil {
 		return err
 	}
-	if err := a.Processes.Migrate(ctx, env, developmentTarget(env, port), "migrate"); err != nil {
-		return err
+	if how == alreadyExisted {
+		return a.Processes.Migrate(ctx, env, developmentTarget(env, port), "migrate")
 	}
-	if how == createdEmpty {
-		return a.seedIfAvailable(ctx, env)
-	}
-	return nil
+	return a.setUpNewDatabase(ctx, env, port, how)
 }
 
 // creation says how createDevelopmentDatabase found or made a database.
@@ -515,11 +520,11 @@ func (a *App) pull(ctx context.Context, env Environment) error {
 		return err
 	}
 	for _, table := range tables {
-		if err := a.printf("  %-20s %d rows\n", table.Name, table.Rows); err != nil {
+		if err := a.printf("  %-20s %s\n", table.Name, plural(table.Rows, "row", "rows")); err != nil {
 			return err
 		}
 	}
-	return a.printf("Wrote %s. Review the changes with `git diff --stat seeds/`, then commit them.\n", seedsPath(env))
+	return a.printf("Wrote %s. Review the changes with git diff --stat seeds/, then commit them.\n", seedsPath(env))
 }
 
 // hintIfUnseeded points out a database without reference data instead of
@@ -528,11 +533,19 @@ func (a *App) hintIfUnseeded(ctx context.Context, env Environment) error {
 	if !hasSeeds(seedsPath(env)) {
 		return nil
 	}
-	seeded, err := a.Database.HasReferenceData(ctx, env, env.CurrentDatabase)
-	if err != nil || seeded {
+	status, err := a.Database.ReferenceData(ctx, env, env.CurrentDatabase)
+	if err != nil {
 		return err
 	}
-	return a.printf("This database has no Pokemon or games yet. Load them with mise db:seed.\n")
+	switch status {
+	case ReferenceEmpty:
+		return a.printf("This database has no Pokémon or games yet. Load them with mise db:seed.\n")
+	case ReferenceOutdatedSchema:
+		return a.printf("This database was created before the boxes primary key was fixed, so it can't hold the seed data. Rebuild it once with mise db:reset.\n")
+	case ReferenceSeeded:
+		return nil
+	}
+	return nil
 }
 
 func developmentTarget(env Environment, port int) DatabaseTarget {

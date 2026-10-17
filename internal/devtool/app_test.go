@@ -18,6 +18,7 @@ type fakeDatabase struct {
 	port      int
 	databases map[string]bool
 	seeded    map[string]bool
+	outdated  map[string]bool
 	calls     []string
 }
 
@@ -32,8 +33,14 @@ func (f *fakeDatabase) Seed(_ context.Context, _ Environment, name, dir string) 
 	return nil, nil
 }
 
-func (f *fakeDatabase) HasReferenceData(_ context.Context, _ Environment, name string) (bool, error) {
-	return f.seeded[name], nil
+func (f *fakeDatabase) ReferenceData(_ context.Context, _ Environment, name string) (ReferenceStatus, error) {
+	if f.outdated[name] {
+		return ReferenceOutdatedSchema, nil
+	}
+	if f.seeded[name] {
+		return ReferenceSeeded, nil
+	}
+	return ReferenceEmpty, nil
 }
 
 func (f *fakeDatabase) Ensure(context.Context, Environment) (int, error) {
@@ -133,7 +140,7 @@ func newHarness(t *testing.T, main bool) *harness {
 	}
 	h := &harness{
 		env:       env,
-		database:  &fakeDatabase{port: 9876, databases: map[string]bool{}, seeded: map[string]bool{}},
+		database:  &fakeDatabase{port: 9876, databases: map[string]bool{}, seeded: map[string]bool{}, outdated: map[string]bool{}},
 		processes: &fakeProcesses{},
 		stdout:    &bytes.Buffer{},
 		getenv:    map[string]string{},
@@ -367,7 +374,7 @@ func writeSeeds(t *testing.T, h *harness) {
 	dir := seedsPath(h.env)
 	require.NoError(t, os.MkdirAll(dir, 0o755))
 	for _, table := range seedTables {
-		require.NoError(t, os.WriteFile(seedFile(dir, table), []byte("id\n"), 0o644))
+		require.NoError(t, os.WriteFile(seedFile(dir, table), []byte("id\n"), 0o600))
 	}
 }
 
@@ -445,6 +452,28 @@ func TestSeedReloadsAnExistingDatabase(t *testing.T) {
 	assert.Equal(t, []string{"ensure", "seed pdt_worktree seeds"}, h.database.calls)
 }
 
+func TestSeedingAMissingDatabaseSeedsOnce(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"db", "seed"}))
+
+	assert.Equal(t, []string{"ensure", "create pdt_worktree", "seed pdt_worktree seeds"}, h.database.calls)
+	assert.Equal(t, 1, strings.Count(h.stdout.String(), "Seeding"))
+}
+
+func TestStartPointsAnOutdatedDatabaseAtReset(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	h.database.databases["pdt_worktree"] = true
+	h.database.outdated["pdt_worktree"] = true
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"start", "air"}))
+
+	assert.Contains(t, h.stdout.String(), "mise db:reset")
+	assert.NotContains(t, h.stdout.String(), "mise db:seed")
+}
+
 func TestSeedNeedsSeedFiles(t *testing.T) {
 	h := newHarness(t, false)
 
@@ -474,4 +503,5 @@ func TestPullWritesSeedsForThisWorktree(t *testing.T) {
 	assert.Contains(t, h.database.calls, "pull postgres://prod pdt_worktree seeds")
 	assert.Contains(t, h.stdout.String(), "pokemon")
 	assert.Contains(t, h.stdout.String(), "3 rows")
+	assert.NotContains(t, h.stdout.String(), "1 rows")
 }

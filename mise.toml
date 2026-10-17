@@ -136,7 +136,7 @@ description = "Stop the shared PostgreSQL container (its data is kept)"
 run = "go run ./cmd/dev db stop"
 
 [tasks."db:seed"]
-description = "Replace this worktree's Pokemon, games, and dex data with seeds/ (keeps local users and dexes)"
+description = "Replace this worktree's Pokémon, games, and dex data with seeds/ (keeps local users and dexes)"
 run = "go run ./cmd/dev db seed"
 
 [tasks."db:pull"]
@@ -179,7 +179,7 @@ run = "./scripts/deploy.sh"
 # === Other ===
 
 [tasks.setup]
-description = "Install tools and dependencies, start PostgreSQL, and create and migrate this worktree's databases"
+description = "Install tools and dependencies, start PostgreSQL, and create, migrate, and seed this worktree's databases"
 run = [
   "mise install",
   "mise install:go",

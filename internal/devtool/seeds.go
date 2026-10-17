@@ -6,7 +6,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
-	"io"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,25 +19,19 @@ const (
 	productionDatabaseURLEnv = "PRODUCTION_DATABASE_URL"
 )
 
-// seedTable is one reference table copied from production. Rows are ordered by
-// the table's primary key, read from the local schema, so every pull writes
-// rows in the same order and diffs stay clean.
-type seedTable struct {
-	Name string
-}
-
-// seedTables are the reference tables, parents before children. User data
-// (users, dexes, captures) is deliberately absent and is never pulled.
-// game_family_dex_numbers is left out because nothing reads it anymore.
-var seedTables = []seedTable{
-	{Name: "game_families"},
-	{Name: "games"},
-	{Name: "pokemon"},
-	{Name: "dex_types"},
-	{Name: "dex_types_pokemon"},
-	{Name: "boxes"},
-	{Name: "locations"},
-	{Name: "evolutions"},
+// seedTables are the reference tables copied from production, parents before
+// children. User data (users, dexes, captures) is deliberately absent and is
+// never pulled. game_family_dex_numbers is left out because nothing reads it
+// anymore.
+var seedTables = []string{
+	"game_families",
+	"games",
+	"pokemon",
+	"dex_types",
+	"dex_types_pokemon",
+	"boxes",
+	"locations",
+	"evolutions",
 }
 
 // seededSequences are reset after seeding so new local rows don't collide with
@@ -51,8 +45,8 @@ func seedsPath(env Environment) string {
 	return filepath.Join(env.CurrentRoot, seedsDirectory)
 }
 
-func seedFile(dir string, table seedTable) string {
-	return filepath.Join(dir, table.Name+".csv")
+func seedFile(dir, table string) string {
+	return filepath.Join(dir, table+".csv")
 }
 
 // hasSeeds reports whether every reference table has a seed file, so branches
@@ -66,15 +60,33 @@ func hasSeeds(dir string) bool {
 	return true
 }
 
-// pullScript exports one table as CSV. The session is read-only, and the time
-// zone and date style are pinned so the output doesn't depend on the server's
-// settings.
-func pullScript(table seedTable, columns, orderBy []string) string {
+// pullScript exports one table as CSV. The time zone and date style are pinned
+// so the output doesn't depend on the server's settings. The connection is
+// already read-only through PGOPTIONS; the SET here is a deliberate second
+// guard for production.
+func pullScript(table string, columns, orderBy []string) string {
 	return fmt.Sprintf(`SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;
 SET TimeZone = 'UTC';
 SET DateStyle = 'ISO, YMD';
 COPY (SELECT %s FROM %s ORDER BY %s) TO STDOUT WITH (FORMAT csv, HEADER);
-`, quoteIdentifiers(columns), quoteIdentifier(table.Name), quoteIdentifiers(orderBy))
+`, quoteIdentifiers(columns), quoteIdentifier(table), quoteIdentifiers(orderBy))
+}
+
+// pullOrder sorts by the primary key, then by every other column. The extra
+// columns make the order total even if the local key is narrower than
+// production's, so repeated pulls write rows in the same order.
+func pullOrder(primaryKey, columns []string) []string {
+	order := append([]string{}, primaryKey...)
+	inKey := map[string]bool{}
+	for _, column := range primaryKey {
+		inKey[column] = true
+	}
+	for _, column := range columns {
+		if !inKey[column] {
+			order = append(order, column)
+		}
+	}
+	return order
 }
 
 // primaryKeyQuery lists a table's primary key columns in key order. It avoids
@@ -101,7 +113,7 @@ func seedScript(dir string) (string, error) {
 	var script strings.Builder
 	script.WriteString("SET session_replication_role = replica;\n")
 	for i := len(seedTables) - 1; i >= 0; i-- {
-		fmt.Fprintf(&script, "DELETE FROM %s;\n", quoteIdentifier(seedTables[i].Name))
+		fmt.Fprintf(&script, "DELETE FROM %s;\n", quoteIdentifier(seedTables[i]))
 	}
 	for _, table := range seedTables {
 		contents, err := os.ReadFile(seedFile(dir, table))
@@ -112,7 +124,7 @@ func seedScript(dir string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("read header of %s: %w", seedFile(dir, table), err)
 		}
-		fmt.Fprintf(&script, "COPY %s (%s) FROM STDIN WITH (FORMAT csv, HEADER);\n", quoteIdentifier(table.Name), quoteIdentifiers(header))
+		fmt.Fprintf(&script, "COPY %s (%s) FROM STDIN WITH (FORMAT csv, HEADER);\n", quoteIdentifier(table), quoteIdentifiers(header))
 		script.Write(contents)
 		if len(contents) > 0 && contents[len(contents)-1] != '\n' {
 			script.WriteByte('\n')
@@ -145,14 +157,14 @@ func productionDatabaseURL(env Environment, getenv func(string) string) (string,
 		return "", err
 	}
 	if value == "" {
-		return "", fmt.Errorf("%s isn't set; add it to %s (see README.md)", productionDatabaseURLEnv, path)
+		return "", fmt.Errorf("%s isn't set; add it to %s (see the Data section of README.md)", productionDatabaseURLEnv, path)
 	}
 	return value, nil
 }
 
 // readEnvFile returns key's value from a dotenv file, or "" if the file or key
-// is missing. It handles KEY=value lines, optional "export", and quoted
-// values.
+// is missing. Like dotenv, a later line wins. It handles "export", quoted
+// values, and comments after unquoted values.
 func readEnvFile(path, key string) (string, error) {
 	file, err := os.Open(path)
 	if errors.Is(err, os.ErrNotExist) {
@@ -163,24 +175,75 @@ func readEnvFile(path, key string) (string, error) {
 	}
 	defer func() { _ = file.Close() }()
 
+	result := ""
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
-		line = strings.TrimPrefix(line, "export ")
+		if rest := strings.TrimPrefix(line, "export"); rest != line && rest != "" && (rest[0] == ' ' || rest[0] == '\t') {
+			line = strings.TrimSpace(rest)
+		}
 		name, value, found := strings.Cut(line, "=")
 		if !found || strings.TrimSpace(name) != key {
 			continue
 		}
-		value = strings.TrimSpace(value)
-		if len(value) >= 2 && (value[0] == '"' || value[0] == '\'') && value[len(value)-1] == value[0] {
-			value = value[1 : len(value)-1]
-		}
-		return value, nil
+		result = parseEnvValue(strings.TrimSpace(value))
 	}
-	if err := scanner.Err(); err != nil && !errors.Is(err, io.EOF) {
+	if err := scanner.Err(); err != nil {
 		return "", fmt.Errorf("read %s: %w", path, err)
 	}
-	return "", nil
+	return result, nil
+}
+
+func parseEnvValue(value string) string {
+	if value != "" && (value[0] == '"' || value[0] == '\'') {
+		if end := strings.IndexByte(value[1:], value[0]); end >= 0 {
+			return value[1 : end+1]
+		}
+		return value
+	}
+	if index := strings.Index(value, " #"); index >= 0 {
+		value = value[:index]
+	}
+	return strings.TrimSpace(value)
+}
+
+// connectionEnvironment turns a postgres:// URL into libpq environment
+// variables, so psql gets the connection without it appearing in any
+// process's arguments. Errors never include the URL, since it holds the
+// password.
+func connectionEnvironment(rawURL string) ([]string, error) {
+	invalid := fmt.Errorf("%s must look like postgres://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=disable, with special characters in the password percent-encoded", productionDatabaseURLEnv)
+	parsed, err := url.Parse(rawURL)
+	if err != nil || (parsed.Scheme != "postgres" && parsed.Scheme != "postgresql") || parsed.Hostname() == "" {
+		return nil, invalid
+	}
+	database := strings.TrimPrefix(parsed.Path, "/")
+	if database == "" || parsed.User == nil || parsed.User.Username() == "" {
+		return nil, invalid
+	}
+	values := []string{
+		"PGHOST=" + parsed.Hostname(),
+		"PGDATABASE=" + database,
+		"PGUSER=" + parsed.User.Username(),
+	}
+	if port := parsed.Port(); port != "" {
+		values = append(values, "PGPORT="+port)
+	}
+	if password, ok := parsed.User.Password(); ok {
+		values = append(values, "PGPASSWORD="+password)
+	}
+	if mode := parsed.Query().Get("sslmode"); mode != "" {
+		values = append(values, "PGSSLMODE="+mode)
+	}
+	return values, nil
+}
+
+// plural formats a count with the singular or plural form of a noun.
+func plural(count int, singular, pluralForm string) string {
+	if count == 1 {
+		return fmt.Sprintf("%d %s", count, singular)
+	}
+	return fmt.Sprintf("%d %s", count, pluralForm)
 }
 
 func quoteIdentifiers(names []string) string {
