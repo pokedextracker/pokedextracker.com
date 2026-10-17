@@ -117,7 +117,8 @@ jobs:
 
       # Builds the images without pushing them, to catch packaging breakage
       # before a deploy does. Dockerfile and Dockerfile.api are the old
-      # frontend and API apps, which go away after the cutover.
+      # frontend and API apps.
+      # TODO(cleanup): Remove the old image builds after the cutover.
       - name: Build the app image
         run: docker build --file Dockerfile.app --build-arg VERSION=ci .
 

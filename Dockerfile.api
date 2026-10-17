@@ -11,6 +11,7 @@ COPY internal internal
 COPY pkg pkg
 # The old backend apps don't serve the frontend, so the binary is built with
 # an empty frontend directory (the build output isn't in the Docker context).
+# TODO(cleanup): This whole file goes away after the cutover.
 RUN mkdir -p internal/webapp/dist && touch internal/webapp/dist/.gitkeep
 
 ARG VERSION

@@ -15,7 +15,7 @@ var Version = ""
 // application.
 type Config struct {
 	BcryptCost                int
-	BlogURL                   string // where /blog is forwarded; empty for no blog
+	BlogURL                   string
 	CORSAllowedOrigins        []string
 	DatabaseConnectRetryCount int
 	DatabaseConnectRetryDelay time.Duration
@@ -38,8 +38,7 @@ type Config struct {
 const environmentENV = "ENVIRONMENT"
 
 // envOrDefault returns the environment variable's value, or fallback when it's
-// unset or empty. The development and test configs use it so the dev launcher
-// can point each worktree at its own database.
+// unset or empty.
 func envOrDefault(key, fallback string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
@@ -65,7 +64,6 @@ func New() (*Config, error) {
 
 	cfg := &Config{
 		BcryptCost:                10,
-		BlogURL:                   os.Getenv("BLOG_URL"),
 		DatabaseConnectRetryCount: 10,
 		DatabaseConnectRetryDelay: 2 * time.Second,
 		DatabaseDebug:             os.Getenv("DATABASE_DEBUG") == "true",
@@ -77,6 +75,10 @@ func New() (*Config, error) {
 		RollbarToken:              os.Getenv("ROLLBAR_TOKEN"),
 		Version:                   Version,
 	}
+
+	// Where /blog is forwarded, or empty for no blog. BLOG_URL overrides the
+	// production default, for example to try the proxy locally.
+	cfg.BlogURL = os.Getenv("BLOG_URL")
 
 	switch os.Getenv(environmentENV) {
 	case "development", "":

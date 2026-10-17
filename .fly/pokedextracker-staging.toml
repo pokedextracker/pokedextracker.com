@@ -6,7 +6,9 @@ primary_region = "sjc"
 
 [deploy]
   release_command = "migrations migrate"
-  strategy = "rolling"
+  # New machines come up and pass their health check before traffic moves,
+  # so a deploy never takes the site down.
+  strategy = "bluegreen"
 
 [env]
   ENVIRONMENT = "staging"

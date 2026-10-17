@@ -10,17 +10,17 @@ yarn = "1.22.19"
 # which is gitignored. A missing .env is fine. Use names that don't collide with
 # the app's own config (DATABASE_*, PORT, etc.) so local dev never picks them up.
 _.file = ".env"
-# The frontend deploy script reads ROLLBAR_TOKEN from .env itself to upload
-# source maps. Blank it here so the local API (which reads the same variable)
-# doesn't report development errors to Rollbar.
+# The deploy scripts read ROLLBAR_TOKEN from .env themselves to upload source
+# maps. Blank it here so the local API (which reads the same variable) doesn't
+# report development errors to Rollbar.
 ROLLBAR_TOKEN = ""
 
 # === Build ===
 
 [tasks.build]
 description = "Build the frontend, then the API (which embeds it) and migrations"
-# The API binary embeds the frontend build, so it has to come second.
-run = ["mise run build:web", "mise run build:api"]
+depends = ["build:web"]
+run = "mise build:api"
 
 [tasks."build:api"]
 description = "Build the api and migrations binaries"
@@ -46,6 +46,8 @@ description = "Remove build artifacts"
 run = [
   "go clean",
   "rm -rf ./build coverage.out",
+  # The frontend build embedded into the binary; the placeholder stays.
+  "find internal/webapp/dist -mindepth 1 ! -name .gitkeep -delete",
 ]
 
 [tasks."install:go"]
@@ -83,7 +85,8 @@ description = "Start just the frontend dev server, using the staging API"
 run = "go run ./cmd/dev start web-staging"
 
 [tasks."start:preview"]
-description = "Build and run the production binary (API and frontend on one port) against this worktree's database"
+description = "Build the frontend for production, embed it in the API binary, and run that against this worktree's database"
+depends = ["install:web"]
 run = "go run ./cmd/dev start preview"
 
 # === Linting ===
@@ -174,9 +177,10 @@ run = "go run ./cmd/dev psql --test"
 # === Deploys ===
 
 [tasks."deploy:app"]
-description = "Deploy the single-binary app to the new Fly apps (staging, then production after a prompt)"
+description = "Deploy the site to pokedextracker-staging, then pokedextracker-production after a prompt"
 run = "./scripts/deploy-app.sh"
 
+# TODO(cleanup): Remove deploy:api and deploy:web after the cutover.
 [tasks."deploy:api"]
 description = "Deploy the API to Fly.io (staging, then production after a prompt)"
 run = "./scripts/deploy-api.sh"

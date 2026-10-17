@@ -1,8 +1,12 @@
 package webapp
 
 import (
+	"bytes"
+	"compress/gzip"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"testing/fstest"
 
@@ -12,17 +16,17 @@ import (
 
 func testHandler(t *testing.T) http.Handler {
 	t.Helper()
-	h, err := newHandler(fstest.MapFS{
+	h, ok, err := newHandler(fstest.MapFS{
 		".gitkeep":                         {},
-		"index.html":                       {Data: []byte("<html>app</html>")},
+		"index.html":                       {Data: []byte("<html>app</html>" + strings.Repeat(" ", 2048))},
 		"version":                          {Data: []byte("Sat Oct 17 2026\n")},
-		"main.0123456789abcdef0123.js":     {Data: []byte("console.log(1)")},
+		"main.0123456789abcdef0123.js":     {Data: []byte(strings.Repeat("console.log(1);\n", 200))},
 		"main.0123456789abcdef0123.js.map": {Data: []byte("{}")},
 		"pokesprite-v12.png":               {Data: []byte("png")},
 		"favicon/favicon-16x16.png":        {Data: []byte("icon")},
 	})
 	require.NoError(t, err)
-	require.NotNil(t, h)
+	require.True(t, ok)
 	return h
 }
 
@@ -60,7 +64,7 @@ func TestFrontendRoutesGetIndex(t *testing.T) {
 
 	w := get(h, http.MethodGet, "/u/ash/living-dex", nil)
 
-	assert.Equal(t, "<html>app</html>", w.Body.String())
+	assert.True(t, strings.HasPrefix(w.Body.String(), "<html>app</html>"))
 	assert.Contains(t, w.Header().Get("Content-Type"), "text/html")
 }
 
@@ -92,14 +96,53 @@ func TestHeadAndOtherMethods(t *testing.T) {
 func TestPathsCantEscapeTheBuild(t *testing.T) {
 	h := testHandler(t)
 
-	w := get(h, http.MethodGet, "/../../go.mod", nil)
-
-	assert.Equal(t, http.StatusNotFound, w.Code)
+	for _, target := range []string{"/../../go.mod", "/%2e%2e/%2e%2e/go.sum", "/..%2f..%2fwebapp.go"} {
+		w := get(h, http.MethodGet, target, nil)
+		// Files are only ever looked up in the build, so anything outside it is
+		// a frontend route at worst.
+		assert.True(t, strings.HasPrefix(w.Body.String(), "<html>app</html>") || w.Code == http.StatusNotFound, target)
+		assert.NotContains(t, w.Body.String(), "module", target)
+	}
 }
 
 func TestNoBuildMeansNoHandler(t *testing.T) {
-	h, err := newHandler(fstest.MapFS{".gitkeep": {}})
+	_, ok, err := newHandler(fstest.MapFS{".gitkeep": {}})
 
 	require.NoError(t, err)
-	assert.Nil(t, h)
+	assert.False(t, ok)
+}
+
+func TestDottedFrontendRoutesGetIndex(t *testing.T) {
+	h := testHandler(t)
+
+	w := get(h, http.MethodGet, "/u/ash/v1.2", nil)
+
+	assert.Equal(t, http.StatusOK, w.Code, "a dex slug with a dot is a frontend route, not a missing file")
+	assert.True(t, strings.HasPrefix(w.Body.String(), "<html>app</html>"))
+}
+
+func TestGzip(t *testing.T) {
+	h := testHandler(t)
+	plain := get(h, http.MethodGet, "/main.0123456789abcdef0123.js", nil)
+
+	w := get(h, http.MethodGet, "/main.0123456789abcdef0123.js", map[string]string{"Accept-Encoding": "br, gzip;q=0.8"})
+
+	assert.Equal(t, "gzip", w.Header().Get("Content-Encoding"))
+	assert.Equal(t, "Accept-Encoding", w.Header().Get("Vary"))
+	assert.Contains(t, w.Header().Get("Content-Type"), "javascript")
+	assert.NotEqual(t, plain.Header().Get("ETag"), w.Header().Get("ETag"), "each encoding has its own ETag")
+	reader, err := gzip.NewReader(bytes.NewReader(w.Body.Bytes()))
+	require.NoError(t, err)
+	body, err := io.ReadAll(reader)
+	require.NoError(t, err)
+	assert.Equal(t, plain.Body.String(), string(body))
+
+	// A range of the gzipped response is a range of the gzipped bytes.
+	ranged := get(h, http.MethodGet, "/main.0123456789abcdef0123.js", map[string]string{"Accept-Encoding": "gzip", "Range": "bytes=0-9"})
+	assert.Equal(t, http.StatusPartialContent, ranged.Code)
+	assert.Equal(t, w.Body.Bytes()[:10], ranged.Body.Bytes())
+
+	assert.Empty(t, get(h, http.MethodGet, "/main.0123456789abcdef0123.js", map[string]string{"Accept-Encoding": "gzip;q=0"}).Header().Get("Content-Encoding"))
+	assert.Empty(t, get(h, http.MethodGet, "/pokesprite-v12.png", map[string]string{"Accept-Encoding": "gzip"}).Header().Get("Content-Encoding"), "images aren't recompressed")
+	assert.Empty(t, get(h, http.MethodGet, "/version", map[string]string{"Accept-Encoding": "gzip"}).Header().Get("Content-Encoding"), "tiny files aren't worth it")
 }

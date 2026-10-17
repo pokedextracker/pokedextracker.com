@@ -6,7 +6,9 @@ primary_region = "sjc"
 
 [deploy]
   release_command = "migrations migrate"
-  strategy = "rolling"
+  # New machines come up and pass their health check before traffic moves,
+  # so a deploy never takes the site down.
+  strategy = "bluegreen"
 
 [env]
   ENVIRONMENT = "production"
@@ -25,6 +27,8 @@ primary_region = "sjc"
     path = "/health"
     timeout = "2s"
 
+# Production runs two of these (set once with `fly scale count 2`); staging
+# runs one.
 [[vm]]
   size = "shared-cpu-1x"
   memory = "256mb"

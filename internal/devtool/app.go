@@ -19,15 +19,15 @@ const (
 	defaultAPIPort = 8647
 	defaultWebPort = 9898
 
-	stagingAPIURL = "https://staging.pokedextracker.com"
+	stagingURL = "https://staging.pokedextracker.com"
 
 	startAll        = "all"
 	startAir        = "air"
 	startAPI        = "api"
 	startWeb        = "web"
 	startWebStaging = "web-staging"
-	// startPreview builds the frontend and the binary the way production does,
-	// and runs that binary, which serves both on one port.
+	// startPreview builds the frontend for production, embeds it in the API
+	// binary, and runs that binary, which serves both on one port.
 	startPreview = "preview"
 
 	// testDatabasePortEnv points the Go tests at an existing PostgreSQL server,
@@ -163,7 +163,7 @@ func (a *App) start(ctx context.Context, env Environment, args []string) error {
 
 		switch {
 		case mode == startWebStaging:
-			servers.APIURL = stagingAPIURL
+			servers.APIURL = stagingURL
 		case servers.APIPort != 0:
 			servers.APIURL = apiURL(servers.APIPort)
 		default:

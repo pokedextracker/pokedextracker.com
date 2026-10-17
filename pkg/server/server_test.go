@@ -8,8 +8,10 @@ import (
 	"testing"
 
 	"github.com/go-pg/pg/v10"
+	"github.com/labstack/echo/v4"
 	"github.com/pokedextracker/pokedextracker.com/pkg/config"
 	"github.com/pokedextracker/pokedextracker.com/pkg/database"
+	"github.com/robinjoseph08/golib/echo/v4/middleware/recovery"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -55,6 +57,7 @@ func TestNew(t *testing.T) {
 	assert.Equal(t, `{"healthy":true}`, w.Body.String(), "incorrect response")
 
 	// The API answers under /api, and at the root until the cutover.
+	// TODO(cleanup): Drop "/games" from this list after the cutover.
 	for _, target := range []string{"/api/games", "/games"} {
 		w = serve(t, srv.Handler, http.MethodGet, target, nil)
 		assert.Equal(t, http.StatusOK, w.Code, target)
@@ -98,14 +101,24 @@ func TestWithoutAFrontendUnknownPathsAreNotFound(t *testing.T) {
 	assert.Contains(t, w.Body.String(), "page not found")
 }
 
-func TestGzip(t *testing.T) {
+func TestGzipIsOnlyForTheAPI(t *testing.T) {
 	h := testServer(t, &config.Config{})
 
-	w := serve(t, h, http.MethodGet, "/u/ash", map[string]string{"Accept-Encoding": "gzip"})
+	w := serve(t, h, http.MethodGet, "/api/health", map[string]string{"Accept-Encoding": "gzip"})
 	assert.Equal(t, "gzip", w.Header().Get("Content-Encoding"))
 
-	w = serve(t, h, http.MethodGet, "/pokesprite-v12.png", map[string]string{"Accept-Encoding": "gzip"})
-	assert.Empty(t, w.Header().Get("Content-Encoding"), "images are already compressed")
+	w = serve(t, h, http.MethodGet, "/u/ash", map[string]string{"Accept-Encoding": "gzip"})
+	assert.Empty(t, w.Header().Get("Content-Encoding"), "the frontend handler compresses its own files")
+}
+
+func TestHeadHealth(t *testing.T) {
+	h := testServer(t, &config.Config{})
+
+	for _, target := range []string{"/health", "/api/health"} {
+		w := serve(t, h, http.MethodHead, target, nil)
+		assert.Equal(t, http.StatusOK, w.Code, target)
+		assert.Contains(t, w.Header().Get("Content-Type"), "application/json", target)
+	}
 }
 
 func TestWWWRedirect(t *testing.T) {
@@ -113,6 +126,7 @@ func TestWWWRedirect(t *testing.T) {
 
 	for host, want := range map[string]string{
 		"www.pokedextracker.com":         "https://pokedextracker.com/u/ash?x=1",
+		"WWW.PokedexTracker.com":         "https://pokedextracker.com/u/ash?x=1",
 		"www.staging.pokedextracker.com": "https://staging.pokedextracker.com/u/ash?x=1",
 		"www.localhost:8647":             "https://localhost/u/ash?x=1",
 	} {
@@ -124,9 +138,15 @@ func TestWWWRedirect(t *testing.T) {
 		assert.Equal(t, want, w.Header().Get("Location"), host)
 	}
 
-	req := httptest.NewRequest(http.MethodGet, "/u/ash", nil)
-	req.Host = "pokedextracker.com"
+	// An absolute-form request target redirects to the same path.
+	req := httptest.NewRequest(http.MethodGet, "http://www.pokedextracker.com/u/ash?x=1", nil)
 	w := httptest.NewRecorder()
+	h.ServeHTTP(w, req)
+	assert.Equal(t, "https://pokedextracker.com/u/ash?x=1", w.Header().Get("Location"))
+
+	req = httptest.NewRequest(http.MethodGet, "/u/ash", nil)
+	req.Host = "pokedextracker.com"
+	w = httptest.NewRecorder()
 	h.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code, "the bare domain isn't redirected")
 }
@@ -151,6 +171,48 @@ func TestBlogProxy(t *testing.T) {
 
 	serve(t, h, http.MethodGet, "/blog", nil)
 	assert.Equal(t, "/blog", seenPath)
+}
+
+func TestUnreachableBlogIsABadGateway(t *testing.T) {
+	upstream := httptest.NewServer(http.NotFoundHandler())
+	address := upstream.URL
+	upstream.Close()
+
+	h := testServer(t, &config.Config{BlogURL: address})
+
+	assert.Equal(t, http.StatusBadGateway, serve(t, h, http.MethodGet, "/blog/", nil).Code)
+}
+
+func TestBlogVisitorsLeavingMidResponseAreNotErrors(t *testing.T) {
+	// The upstream sends part of a body, then cuts the connection, so the
+	// proxy fails partway through copying, the same as when a visitor leaves.
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", "100000")
+		w.WriteHeader(http.StatusOK)
+		_, _ = io.WriteString(w, "partial")
+		w.(http.Flusher).Flush()
+		panic(http.ErrAbortHandler)
+	}))
+	defer upstream.Close()
+	blog, err := blogProxy(upstream.URL)
+	require.NoError(t, err)
+
+	// Errors reaching Echo's error handler are what get reported as 500s.
+	e := echo.New()
+	e.Use(recovery.Middleware())
+	var reported []error
+	e.HTTPErrorHandler = func(err error, c echo.Context) { reported = append(reported, err) }
+	e.Any("/blog/*", blog)
+	srv := httptest.NewServer(e)
+	defer srv.Close()
+
+	response, err := http.Get(srv.URL + "/blog/post/")
+	if err == nil {
+		_, _ = io.ReadAll(response.Body)
+		_ = response.Body.Close()
+	}
+
+	assert.Empty(t, reported, "an aborted blog response isn't reported as an error")
 }
 
 func TestNoBlogFallsThroughToTheFrontend(t *testing.T) {

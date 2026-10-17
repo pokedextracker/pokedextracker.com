@@ -2,10 +2,10 @@ package server
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"path"
 	"strings"
 	"time"
 
@@ -34,9 +34,12 @@ var healthResponse = []byte(`{"healthy":true}`)
 // New builds the server for the whole site: the API under /api, the /blog
 // proxy, and the embedded frontend for everything else.
 func New(cfg *config.Config, db *pg.DB) (*http.Server, error) {
-	frontend, err := webapp.Handler()
+	frontend, ok, err := webapp.Handler()
 	if err != nil {
 		return nil, errors.WithStack(err)
+	}
+	if !ok {
+		frontend = nil
 	}
 	return newServer(cfg, db, frontend)
 }
@@ -58,18 +61,24 @@ func newServer(cfg *config.Config, db *pg.DB, frontend http.Handler) (*http.Serv
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: cfg.CORSAllowedOrigins,
 	}))
-	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{Skipper: skipGzip}))
+	// The frontend handler compresses its own files once, and the blog's
+	// upstream compresses its own responses, so only the API is gzipped here.
+	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{Skipper: func(c echo.Context) bool {
+		return !strings.HasPrefix(c.Request().URL.Path, "/api/")
+	}}))
 
 	e.GET("/health", health)
+	e.HEAD("/health", health)
 
 	api := e.Group("/api", noStore)
 	api.GET("/health", health)
+	api.HEAD("/health", health)
 	registerAPI(api, cfg, db)
 	// Unknown API paths are a JSON 404, never the frontend.
 	api.Any("", notFoundHandler)
 	api.Any("/*", notFoundHandler)
 
-	// TODO(cleanup): remove after the cutover. The old Fly apps run this API
+	// TODO(cleanup): Remove after the cutover. The old Fly apps run this API
 	// behind an nginx proxy that strips /api, so until they're gone, the API
 	// also answers at the root. None of these paths collide with frontend
 	// routes.
@@ -131,17 +140,19 @@ func noStore(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 // redirectWWW sends www.pokedextracker.com (and www.staging...) to the bare
-// domain, keeping the path and query.
+// domain, keeping the path and query, like the old nginx proxy did.
 func redirectWWW(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		host := c.Request().Host
+		if name, _, err := net.SplitHostPort(host); err == nil {
+			host = name
+		}
+		host = strings.ToLower(host)
 		if !strings.HasPrefix(host, "www.") {
 			return next(c)
 		}
-		if index := strings.LastIndex(host, ":"); index >= 0 && !strings.Contains(host[index:], "]") {
-			host = host[:index]
-		}
-		return errors.WithStack(c.Redirect(http.StatusMovedPermanently, "https://"+strings.TrimPrefix(host, "www.")+c.Request().RequestURI))
+		target := "https://" + strings.TrimPrefix(host, "www.") + c.Request().URL.RequestURI()
+		return errors.WithStack(c.Redirect(http.StatusMovedPermanently, target))
 	}
 }
 
@@ -159,20 +170,25 @@ func blogProxy(rawURL string) (echo.HandlerFunc, error) {
 			r.URL.Host = target.Host
 			r.Host = target.Host
 		},
+		// An unreachable blog is the upstream's problem, not a server error.
+		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
+			http.Error(w, http.StatusText(http.StatusBadGateway), http.StatusBadGateway)
+		},
 	}
-	return echo.WrapHandler(proxy), nil
-}
-
-// skipGzip leaves out responses that are already compressed: images, and the
-// blog, whose upstream compresses its own responses.
-func skipGzip(c echo.Context) bool {
-	requestPath := c.Request().URL.Path
-	if requestPath == "/blog" || strings.HasPrefix(requestPath, "/blog/") {
-		return true
-	}
-	switch strings.ToLower(path.Ext(requestPath)) {
-	case ".png", ".jpg", ".jpeg", ".gif", ".ico", ".webp":
-		return true
-	}
-	return false
+	return func(c echo.Context) (err error) {
+		// ReverseProxy panics with http.ErrAbortHandler when the visitor
+		// disconnects partway through a response. That's routine (leaving a
+		// page mid-load), so it shouldn't reach the recovery middleware and be
+		// reported as a 500.
+		defer func() {
+			if recovered := recover(); recovered != nil {
+				if abort, ok := recovered.(error); !ok || !errors.Is(abort, http.ErrAbortHandler) {
+					panic(recovered)
+				}
+				err = nil
+			}
+		}()
+		proxy.ServeHTTP(c.Response(), c.Request())
+		return nil
+	}, nil
 }

@@ -31,6 +31,9 @@ echo
 echo -e "\033[1;32m==> Building and pushing ${IMAGE}:${TAG}...\033[0m"
 echo
 
+# When building for other architectures, we can't keep the image locally, so we
+# need to push it in the same command that we build it. We build and push for
+# x86_64 and ARM64v8, just so we have both just in case.
 DOCKER_BUILDKIT=1 docker buildx build \
   --push \
   --builder multiarch \
@@ -39,6 +42,18 @@ DOCKER_BUILDKIT=1 docker buildx build \
   --build-arg VERSION=${TAG} \
   --tag ${IMAGE}:${TAG} \
   .
+
+# Fly pulls the image without credentials, so the package has to be public.
+# New packages start out private; this only needs fixing once.
+visibility=$(gh api /orgs/pokedextracker/packages/container/pokedextracker.com --jq .visibility)
+if [ "${visibility}" != "public" ]; then
+  echo
+  echo -e "\033[1;31m==> ${IMAGE} is ${visibility}, so Fly can't pull it. Make it public at"
+  echo -e "==> https://github.com/orgs/pokedextracker/packages/container/pokedextracker.com/settings"
+  echo -e "==> (Danger Zone, Change visibility), then run this again.\033[0m"
+  echo
+  exit 1
+fi
 
 if [ -n "$ROLLBAR_TOKEN" ]; then
   echo
@@ -57,7 +72,13 @@ if [ -n "$ROLLBAR_TOKEN" ]; then
     --output type=local,dest="$WEB_DIR" \
     .
 
-  for main_path in "$WEB_DIR"/main.*.js; do
+  shopt -s nullglob
+  main_paths=("$WEB_DIR"/main.*.js)
+  if [ ${#main_paths[@]} -eq 0 ]; then
+    echo "No main.*.js in the frontend build; can't upload source maps." >&2
+    exit 1
+  fi
+  for main_path in "${main_paths[@]}"; do
     main_file=$(basename "$main_path")
     for host in staging.pokedextracker.com pokedextracker.com; do
       curl -sq https://api.rollbar.com/api/1/sourcemap \

@@ -25,7 +25,7 @@ mise start:web:staging  # Just the frontend, using the staging API
 mise start:preview      # The production build: one binary serving the API and frontend
 mise lint               # golangci-lint, ESLint, and TypeScript checks
 mise test:go            # Go tests
-mise build              # Build the frontend, then the API (which embeds it) and migrations into build/
+mise build              # Build the frontend, then the API (which embeds it) and migrations
 mise db:migrate         # Run pending migrations
 mise psql               # Open psql against this worktree's database
 mise db:seed            # Reload this worktree's Pokémon, games, and dexes from seeds/
@@ -83,7 +83,8 @@ Editing `seeds/` doesn't change production. See [`seeds/README.md`](seeds/README
 
 ## How it's served
 
-In production, one Go binary serves the whole site: the API under `/api`, the
+One Go binary serves the whole site (once the cutover to the new Fly apps is
+done; see Deployments): the API under `/api`, the
 frontend (embedded into the binary from `internal/webapp/dist`) for everything
 else, and `/blog`, which it forwards to the hosted Ghost blog. It also
 redirects `www.` to the bare domain. Hashed JavaScript is cached forever,

@@ -1,10 +1,12 @@
 // Package webapp serves the frontend build that's embedded into the API
-// binary. Webpack writes the build into dist/; source-only builds (tests, Air,
-// CI's Go job) only have dist/.gitkeep and serve no frontend.
+// binary. Webpack writes the build into dist/. When webpack hasn't run, dist/
+// only holds .gitkeep and there's no frontend to serve; development uses the
+// webpack dev server instead.
 package webapp
 
 import (
 	"bytes"
+	"compress/gzip"
 	"crypto/sha256"
 	"embed"
 	"encoding/hex"
@@ -13,6 +15,7 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -28,27 +31,49 @@ const indexFile = "index.html"
 // cached forever.
 var hashedAsset = regexp.MustCompile(`\.[0-9a-f]{16,}\.(js|css)(\.map)?$`)
 
+// assetExtensions are file types the build contains. A missing path with one
+// of these is a 404; any other path is a frontend route, even if it has a dot
+// in it (like a dex slug).
+var assetExtensions = map[string]bool{
+	".css": true, ".gif": true, ".ico": true, ".jpeg": true, ".jpg": true, ".js": true, ".json": true,
+	".map": true, ".png": true, ".svg": true, ".txt": true, ".webp": true, ".xml": true,
+}
+
+// compressible are the text types worth gzipping. Images are already
+// compressed.
+var compressible = map[string]bool{
+	"": true, ".css": true, ".html": true, ".js": true, ".json": true, ".map": true, ".svg": true, ".txt": true, ".xml": true,
+}
+
+// minimumGzipSize skips files too small to be worth compressing.
+const minimumGzipSize = 1024
+
 type file struct {
 	content []byte
 	etag    string
+
+	// The gzipped copy is made once per process: in the background at startup,
+	// or by the first request that wants it, whichever comes first.
+	gzipOnce sync.Once
+	gzipped  []byte
 }
 
 type handler struct {
-	files map[string]file
+	files map[string]*file
 }
 
-// Handler serves the embedded frontend build. It returns nil when the binary
-// was built without one.
-func Handler() (http.Handler, error) {
+// Handler serves the embedded frontend build. The boolean is false when the
+// binary was built without one.
+func Handler() (http.Handler, bool, error) {
 	root, err := fs.Sub(embedded, "dist")
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, false, errors.WithStack(err)
 	}
 	return newHandler(root)
 }
 
-func newHandler(root fs.FS) (http.Handler, error) {
-	files := map[string]file{}
+func newHandler(root fs.FS) (http.Handler, bool, error) {
+	files := map[string]*file{}
 	err := fs.WalkDir(root, ".", func(name string, entry fs.DirEntry, err error) error {
 		if err != nil || entry.IsDir() || path.Base(name) == ".gitkeep" {
 			return err
@@ -60,16 +85,23 @@ func newHandler(root fs.FS) (http.Handler, error) {
 		// Embedded files have no modification time, so caches revalidate with a
 		// fingerprint of the content instead.
 		sum := sha256.Sum256(content)
-		files[name] = file{content: content, etag: `"` + hex.EncodeToString(sum[:8]) + `"`}
+		files[name] = &file{content: content, etag: hex.EncodeToString(sum[:8])}
 		return nil
 	})
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, false, errors.WithStack(err)
 	}
 	if _, ok := files[indexFile]; !ok {
-		return nil, nil
+		return nil, false, nil
 	}
-	return &handler{files: files}, nil
+	go func() {
+		for name, f := range files {
+			if compressible[strings.ToLower(path.Ext(name))] && len(f.content) >= minimumGzipSize {
+				f.gzip()
+			}
+		}
+	}()
+	return &handler{files: files}, true, nil
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -85,9 +117,9 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	f, ok := h.files[name]
 	if !ok {
-		// A missing file is a 404. Anything else is a frontend route, which the
+		// A missing asset is a 404. Anything else is a frontend route, which the
 		// app renders from index.html, including its own not found page.
-		if path.Ext(name) != "" {
+		if assetExtensions[strings.ToLower(path.Ext(name))] {
 			w.Header().Set("Cache-Control", "no-cache")
 			http.NotFound(w, r)
 			return
@@ -96,10 +128,69 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		f = h.files[indexFile]
 	}
 
-	w.Header().Set("Cache-Control", cacheControl(name))
-	w.Header().Set("ETag", f.etag)
-	w.Header().Set("X-Content-Type-Options", "nosniff")
-	http.ServeContent(w, r, name, time.Time{}, bytes.NewReader(f.content))
+	header := w.Header()
+	header.Set("Cache-Control", cacheControl(name))
+	header.Set("X-Content-Type-Options", "nosniff")
+
+	content, etag := f.content, f.etag
+	if compressible[strings.ToLower(path.Ext(name))] && len(f.content) >= minimumGzipSize {
+		header.Add("Vary", "Accept-Encoding")
+		if acceptsGzip(r) {
+			content, etag = f.gzip(), f.etag+"-gzip"
+			header.Set("Content-Encoding", "gzip")
+			// The extension of the requested name still decides the type.
+			if contentType := typeByName(name); contentType != "" {
+				header.Set("Content-Type", contentType)
+			}
+		}
+	}
+	// Each encoding is a different set of bytes, so each gets its own ETag.
+	// Ranges then apply to the bytes actually sent.
+	header.Set("ETag", `"`+etag+`"`)
+	http.ServeContent(w, r, name, time.Time{}, bytes.NewReader(content))
+}
+
+func (f *file) gzip() []byte {
+	f.gzipOnce.Do(func() {
+		var buffer bytes.Buffer
+		writer := gzip.NewWriter(&buffer)
+		_, _ = writer.Write(f.content)
+		_ = writer.Close()
+		f.gzipped = buffer.Bytes()
+	})
+	return f.gzipped
+}
+
+func acceptsGzip(r *http.Request) bool {
+	for _, part := range strings.Split(r.Header.Get("Accept-Encoding"), ",") {
+		encoding, params, _ := strings.Cut(strings.TrimSpace(part), ";")
+		if strings.EqualFold(strings.TrimSpace(encoding), "gzip") {
+			return strings.ReplaceAll(strings.TrimSpace(params), " ", "") != "q=0"
+		}
+	}
+	return false
+}
+
+// typeByName mirrors the content types ServeContent would pick, so a gzipped
+// body isn't sniffed as application/x-gzip.
+func typeByName(name string) string {
+	switch strings.ToLower(path.Ext(name)) {
+	case ".html":
+		return "text/html; charset=utf-8"
+	case ".js":
+		return "text/javascript; charset=utf-8"
+	case ".css":
+		return "text/css; charset=utf-8"
+	case ".json", ".map":
+		return "application/json"
+	case ".svg":
+		return "image/svg+xml"
+	case ".xml":
+		return "text/xml; charset=utf-8"
+	case ".txt", "":
+		return "text/plain; charset=utf-8"
+	}
+	return ""
 }
 
 // cacheControl decides how long browsers keep a file. index.html and /version

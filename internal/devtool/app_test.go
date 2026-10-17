@@ -286,7 +286,7 @@ func TestStartWebStagingUsesTheStagingAPI(t *testing.T) {
 	require.NoError(t, h.app.Run(context.Background(), []string{"start", "web-staging"}))
 
 	assert.Empty(t, h.database.calls)
-	assert.Equal(t, stagingAPIURL, h.processes.servers.APIURL)
+	assert.Equal(t, stagingURL, h.processes.servers.APIURL)
 }
 
 func TestStartPreviewRunsOnlyTheBinary(t *testing.T) {
