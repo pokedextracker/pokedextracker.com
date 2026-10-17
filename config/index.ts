@@ -10,13 +10,11 @@ const ENVIRONMENTS: Record<string, Environment> = {
   'staging.pokedextracker.com': Environment.Staging,
 };
 
-// A production build running on this machine (mise start:preview) is still
-// development, so it doesn't report to production's analytics or Rollbar.
-const LOCAL_HOSTS = ['localhost', '127.0.0.1'];
-
-const environment = ENVIRONMENTS[window.location.hostname] ||
-  (LOCAL_HOSTS.includes(window.location.hostname) ? Environment.Development : process.env.NODE_ENV) ||
-  Environment.Development;
+// Only the real domains get the production and staging configs. Anything else
+// (localhost, mise start:preview, a *.fly.dev address before the DNS
+// cutover) is development, so it doesn't report to production's analytics or
+// Rollbar.
+const environment = ENVIRONMENTS[window.location.hostname] || Environment.Development;
 
 const Configs: Record<Environment, ConfigType> = {
   [Environment.Development]: Development,

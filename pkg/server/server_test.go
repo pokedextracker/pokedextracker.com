@@ -1,11 +1,14 @@
 package server
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/go-pg/pg/v10"
 	"github.com/labstack/echo/v4"
@@ -183,9 +186,58 @@ func TestUnreachableBlogIsABadGateway(t *testing.T) {
 	assert.Equal(t, http.StatusBadGateway, serve(t, h, http.MethodGet, "/blog/", nil).Code)
 }
 
+// blogServer runs the blog proxy behind the recovery middleware, recording
+// errors that reach Echo's error handler, which is what reports 500s.
+func blogServer(t *testing.T, upstream string) (*httptest.Server, func() []error) {
+	t.Helper()
+	blog, err := blogProxy(upstream)
+	require.NoError(t, err)
+	e := echo.New()
+	e.Use(recovery.Middleware())
+	var mutex sync.Mutex
+	var reported []error
+	e.HTTPErrorHandler = func(err error, c echo.Context) {
+		mutex.Lock()
+		defer mutex.Unlock()
+		reported = append(reported, err)
+	}
+	e.Any("/blog/*", blog)
+	srv := httptest.NewServer(e)
+	t.Cleanup(srv.Close)
+	return srv, func() []error {
+		mutex.Lock()
+		defer mutex.Unlock()
+		return append([]error{}, reported...)
+	}
+}
+
 func TestBlogVisitorsLeavingMidResponseAreNotErrors(t *testing.T) {
-	// The upstream sends part of a body, then cuts the connection, so the
-	// proxy fails partway through copying, the same as when a visitor leaves.
+	// The upstream streams slowly until the visitor goes away.
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		for i := 0; i < 100 && r.Context().Err() == nil; i++ {
+			_, _ = io.WriteString(w, strings.Repeat("x", 1024))
+			w.(http.Flusher).Flush()
+			time.Sleep(10 * time.Millisecond)
+		}
+	}))
+	defer upstream.Close()
+	srv, reported := blogServer(t, upstream.URL)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, srv.URL+"/blog/post/", nil)
+	require.NoError(t, err)
+	response, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	_, _ = response.Body.Read(make([]byte, 512))
+	cancel()
+	_ = response.Body.Close()
+	time.Sleep(300 * time.Millisecond)
+
+	assert.Empty(t, reported(), "a visitor leaving a blog page isn't reported as an error")
+}
+
+func TestBlogUpstreamBreakingMidResponseIsReported(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Length", "100000")
 		w.WriteHeader(http.StatusOK)
@@ -194,25 +246,16 @@ func TestBlogVisitorsLeavingMidResponseAreNotErrors(t *testing.T) {
 		panic(http.ErrAbortHandler)
 	}))
 	defer upstream.Close()
-	blog, err := blogProxy(upstream.URL)
-	require.NoError(t, err)
-
-	// Errors reaching Echo's error handler are what get reported as 500s.
-	e := echo.New()
-	e.Use(recovery.Middleware())
-	var reported []error
-	e.HTTPErrorHandler = func(err error, c echo.Context) { reported = append(reported, err) }
-	e.Any("/blog/*", blog)
-	srv := httptest.NewServer(e)
-	defer srv.Close()
+	srv, reported := blogServer(t, upstream.URL)
 
 	response, err := http.Get(srv.URL + "/blog/post/")
 	if err == nil {
 		_, _ = io.ReadAll(response.Body)
 		_ = response.Body.Close()
 	}
+	time.Sleep(100 * time.Millisecond)
 
-	assert.Empty(t, reported, "an aborted blog response isn't reported as an error")
+	assert.NotEmpty(t, reported(), "a broken upstream is still reported")
 }
 
 func TestNoBlogFallsThroughToTheFrontend(t *testing.T) {

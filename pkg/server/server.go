@@ -27,6 +27,7 @@ import (
 	"github.com/pokedextracker/pokedextracker.com/pkg/users"
 	"github.com/robinjoseph08/golib/echo/v4/middleware/logger"
 	"github.com/robinjoseph08/golib/echo/v4/middleware/recovery"
+	glogger "github.com/robinjoseph08/golib/logger"
 )
 
 var healthResponse = []byte(`{"healthy":true}`)
@@ -170,19 +171,22 @@ func blogProxy(rawURL string) (echo.HandlerFunc, error) {
 			r.URL.Host = target.Host
 			r.Host = target.Host
 		},
-		// An unreachable blog is the upstream's problem, not a server error.
+		// An unreachable blog is the upstream's problem, not a server error,
+		// so it's logged rather than reported.
 		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
+			glogger.FromContext(r.Context()).Err(err).Warn("blog proxy error")
 			http.Error(w, http.StatusText(http.StatusBadGateway), http.StatusBadGateway)
 		},
 	}
 	return func(c echo.Context) (err error) {
-		// ReverseProxy panics with http.ErrAbortHandler when the visitor
-		// disconnects partway through a response. That's routine (leaving a
-		// page mid-load), so it shouldn't reach the recovery middleware and be
-		// reported as a 500.
+		// ReverseProxy panics with http.ErrAbortHandler when copying a response
+		// fails partway through. When that's because the visitor left (the
+		// request is canceled), it's routine and shouldn't reach the recovery
+		// middleware as a 500. A broken upstream still does.
 		defer func() {
 			if recovered := recover(); recovered != nil {
-				if abort, ok := recovered.(error); !ok || !errors.Is(abort, http.ErrAbortHandler) {
+				abort, ok := recovered.(error)
+				if !ok || !errors.Is(abort, http.ErrAbortHandler) || c.Request().Context().Err() == nil {
 					panic(recovered)
 				}
 				err = nil

@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -132,16 +133,23 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	header.Set("Cache-Control", cacheControl(name))
 	header.Set("X-Content-Type-Options", "nosniff")
 
+	// Set the type from the name for every file we know, so it's the same
+	// gzipped or not, and doesn't depend on the host's MIME table.
+	if contentType := typeByName(name); contentType != "" {
+		header.Set("Content-Type", contentType)
+	}
+
 	content, etag := f.content, f.etag
 	if compressible[strings.ToLower(path.Ext(name))] && len(f.content) >= minimumGzipSize {
 		header.Add("Vary", "Accept-Encoding")
 		if acceptsGzip(r) {
 			content, etag = f.gzip(), f.etag+"-gzip"
 			header.Set("Content-Encoding", "gzip")
-			// The extension of the requested name still decides the type.
-			if contentType := typeByName(name); contentType != "" {
-				header.Set("Content-Type", contentType)
-			}
+			// Compressed responses are always whole. Browsers don't ask for
+			// ranges of these files, and an error for a bad range would
+			// otherwise go out labeled as gzip.
+			r.Header.Del("Range")
+			r.Header.Del("If-Range")
 		}
 	}
 	// Each encoding is a different set of bytes, so each gets its own ETag.
@@ -161,12 +169,22 @@ func (f *file) gzip() []byte {
 	return f.gzipped
 }
 
+// acceptsGzip reports whether the request's Accept-Encoding lists gzip with a
+// nonzero quality (gzip;q=0 means "not gzip").
 func acceptsGzip(r *http.Request) bool {
 	for _, part := range strings.Split(r.Header.Get("Accept-Encoding"), ",") {
 		encoding, params, _ := strings.Cut(strings.TrimSpace(part), ";")
-		if strings.EqualFold(strings.TrimSpace(encoding), "gzip") {
-			return strings.ReplaceAll(strings.TrimSpace(params), " ", "") != "q=0"
+		if !strings.EqualFold(strings.TrimSpace(encoding), "gzip") {
+			continue
 		}
+		for _, param := range strings.Split(params, ";") {
+			key, value, _ := strings.Cut(strings.TrimSpace(param), "=")
+			if strings.EqualFold(strings.TrimSpace(key), "q") {
+				quality, err := strconv.ParseFloat(strings.TrimSpace(value), 64)
+				return err == nil && quality > 0
+			}
+		}
+		return true
 	}
 	return false
 }
@@ -189,6 +207,10 @@ func typeByName(name string) string {
 		return "text/xml; charset=utf-8"
 	case ".txt", "":
 		return "text/plain; charset=utf-8"
+	case ".png":
+		return "image/png"
+	case ".ico":
+		return "image/x-icon"
 	}
 	return ""
 }

@@ -137,12 +137,21 @@ func TestGzip(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, plain.Body.String(), string(body))
 
-	// A range of the gzipped response is a range of the gzipped bytes.
-	ranged := get(h, http.MethodGet, "/main.0123456789abcdef0123.js", map[string]string{"Accept-Encoding": "gzip", "Range": "bytes=0-9"})
-	assert.Equal(t, http.StatusPartialContent, ranged.Code)
-	assert.Equal(t, w.Body.Bytes()[:10], ranged.Body.Bytes())
+	// Gzipped responses are always whole, even when a range is asked for, so
+	// a bad range can't produce an error body labeled as gzip.
+	for _, byteRange := range []string{"bytes=0-9", "bytes=99999999-"} {
+		ranged := get(h, http.MethodGet, "/main.0123456789abcdef0123.js", map[string]string{"Accept-Encoding": "gzip", "Range": byteRange})
+		assert.Equal(t, http.StatusOK, ranged.Code, byteRange)
+		assert.Equal(t, w.Body.Bytes(), ranged.Body.Bytes(), byteRange)
+	}
 
-	assert.Empty(t, get(h, http.MethodGet, "/main.0123456789abcdef0123.js", map[string]string{"Accept-Encoding": "gzip;q=0"}).Header().Get("Content-Encoding"))
+	// The type is the same either way.
+	assert.Equal(t, plain.Header().Get("Content-Type"), w.Header().Get("Content-Type"))
+
+	for _, refused := range []string{"gzip;q=0", "gzip; q=0.0", "GZIP;Q=0.000", "br"} {
+		assert.Empty(t, get(h, http.MethodGet, "/main.0123456789abcdef0123.js", map[string]string{"Accept-Encoding": refused}).Header().Get("Content-Encoding"), refused)
+	}
+	assert.Equal(t, "gzip", get(h, http.MethodGet, "/main.0123456789abcdef0123.js", map[string]string{"Accept-Encoding": "GZIP;q=0.5"}).Header().Get("Content-Encoding"))
 	assert.Empty(t, get(h, http.MethodGet, "/pokesprite-v12.png", map[string]string{"Accept-Encoding": "gzip"}).Header().Get("Content-Encoding"), "images aren't recompressed")
 	assert.Empty(t, get(h, http.MethodGet, "/version", map[string]string{"Accept-Encoding": "gzip"}).Header().Get("Content-Encoding"), "tiny files aren't worth it")
 }

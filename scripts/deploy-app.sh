@@ -45,7 +45,13 @@ DOCKER_BUILDKIT=1 docker buildx build \
 
 # Fly pulls the image without credentials, so the package has to be public.
 # New packages start out private; this only needs fixing once.
-visibility=$(gh api /orgs/pokedextracker/packages/container/pokedextracker.com --jq .visibility)
+if ! visibility=$(gh api /orgs/pokedextracker/packages/container/pokedextracker.com --jq .visibility); then
+  echo
+  echo -e "\033[1;31m==> Couldn't check whether ${IMAGE} is public (see the error above). Your gh"
+  echo -e "==> login needs the write:packages scope: gh auth refresh -s write:packages\033[0m"
+  echo
+  exit 1
+fi
 if [ "${visibility}" != "public" ]; then
   echo
   echo -e "\033[1;31m==> ${IMAGE} is ${visibility}, so Fly can't pull it. Make it public at"
