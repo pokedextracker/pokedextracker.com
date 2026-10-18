@@ -93,11 +93,15 @@ if [ -n "$ROLLBAR_TOKEN" ]; then
   for main_path in "${main_paths[@]}"; do
     main_file=$(basename "$main_path")
     for host in staging.pokedextracker.com pokedextracker.com; do
-      curl -sq https://api.rollbar.com/api/1/sourcemap \
+      # The site works without source maps, so a failed upload is a warning
+      # rather than a reason to stop the deploy.
+      if ! curl -sSq --fail-with-body --retry 3 --retry-all-errors https://api.rollbar.com/api/1/sourcemap \
         -F access_token=$ROLLBAR_TOKEN \
         -F version=$TAG \
         -F minified_url=//$host/$main_file \
-        -F source_map=@$main_path.map
+        -F source_map=@$main_path.map; then
+        echo -e "\n\033[1;33m==> Couldn't upload the source map for //$host/$main_file; continuing\033[0m"
+      fi
       echo
     done
   done
