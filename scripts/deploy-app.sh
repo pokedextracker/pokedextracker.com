@@ -33,13 +33,16 @@ echo
 
 # When building for other architectures, we can't keep the image locally, so we
 # need to push it in the same command that we build it. We build and push for
-# x86_64 and ARM64v8, just so we have both just in case.
+# x86_64 and ARM64v8, just so we have both just in case. The annotation links
+# the package to this repository on GitHub (the Dockerfile's label only does
+# that for single-architecture images).
 DOCKER_BUILDKIT=1 docker buildx build \
   --push \
   --builder multiarch \
   --file Dockerfile.app \
   --platform linux/arm64,linux/amd64 \
   --build-arg VERSION=${TAG} \
+  --annotation "index:org.opencontainers.image.source=https://github.com/pokedextracker/pokedextracker.com" \
   --tag ${IMAGE}:${TAG} \
   .
 
