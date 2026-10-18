@@ -367,3 +367,5 @@ cmd/scratch
 !internal/webapp/dist/
 internal/webapp/dist/*
 !internal/webapp/dist/.gitkeep
+# Logs from the Playwright browser tool used during QA
+.playwright-mcp/
