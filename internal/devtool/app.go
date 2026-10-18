@@ -19,13 +19,16 @@ const (
 	defaultAPIPort = 8647
 	defaultWebPort = 9898
 
-	stagingAPIURL = "https://staging.pokedextracker.com/api"
+	stagingURL = "https://staging.pokedextracker.com"
 
 	startAll        = "all"
 	startAir        = "air"
 	startAPI        = "api"
 	startWeb        = "web"
 	startWebStaging = "web-staging"
+	// startPreview builds the frontend for production, embeds it in the API
+	// binary, and runs that binary, which serves both on one port.
+	startPreview = "preview"
 
 	// testDatabasePortEnv points the Go tests at an existing PostgreSQL server,
 	// as CI does, instead of the shared Docker container.
@@ -111,13 +114,13 @@ func (a *App) start(ctx context.Context, env Environment, args []string) error {
 		mode = args[0]
 	}
 	switch mode {
-	case startAll, startAir, startAPI, startWeb, startWebStaging:
+	case startAll, startAir, startAPI, startWeb, startWebStaging, startPreview:
 	default:
 		return fmt.Errorf("unknown start mode %q", mode)
 	}
 
 	var servers Servers
-	runsAPI := mode == startAll || mode == startAir || mode == startAPI
+	runsAPI := mode == startAll || mode == startAir || mode == startAPI || mode == startPreview
 	runsWeb := mode == startAll || mode == startWeb || mode == startWebStaging
 	ports := a.Ports(env)
 
@@ -160,7 +163,7 @@ func (a *App) start(ctx context.Context, env Environment, args []string) error {
 
 		switch {
 		case mode == startWebStaging:
-			servers.APIURL = stagingAPIURL
+			servers.APIURL = stagingURL
 		case servers.APIPort != 0:
 			servers.APIURL = apiURL(servers.APIPort)
 		default:
@@ -183,7 +186,11 @@ func (a *App) start(ctx context.Context, env Environment, args []string) error {
 			return err
 		}
 	}
-	if servers.APIPort != 0 {
+	if mode == startPreview {
+		if err := a.printf("Preview (production build of the frontend and API): http://localhost:%d\n", servers.APIPort); err != nil {
+			return err
+		}
+	} else if servers.APIPort != 0 {
 		if err := a.printf("API: http://localhost:%d\n", servers.APIPort); err != nil {
 			return err
 		}

@@ -108,3 +108,22 @@ jobs:
 
       - name: Test
         run: mise test:go
+
+  image:
+    name: Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # Builds the images without pushing them, to catch packaging breakage
+      # before a deploy does. Dockerfile and Dockerfile.api are the old
+      # frontend and API apps.
+      # TODO(cleanup): Remove the old image builds after the cutover.
+      - name: Build the app image
+        run: docker build --file Dockerfile.app --build-arg VERSION=ci .
+
+      - name: Build the old frontend image
+        run: docker build --file Dockerfile --build-arg VERSION=ci .
+
+      - name: Build the old API image
+        run: docker build --file Dockerfile.api --build-arg VERSION=ci .

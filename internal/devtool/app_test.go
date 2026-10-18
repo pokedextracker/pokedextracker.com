@@ -286,7 +286,20 @@ func TestStartWebStagingUsesTheStagingAPI(t *testing.T) {
 	require.NoError(t, h.app.Run(context.Background(), []string{"start", "web-staging"}))
 
 	assert.Empty(t, h.database.calls)
-	assert.Equal(t, stagingAPIURL, h.processes.servers.APIURL)
+	assert.Equal(t, stagingURL, h.processes.servers.APIURL)
+}
+
+func TestStartPreviewRunsOnlyTheBinary(t *testing.T) {
+	h := newHarness(t, false)
+	h.database.databases["pdt_worktree"] = true
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"start", "preview"}))
+
+	assert.Equal(t, startPreview, h.processes.mode)
+	assert.Equal(t, defaultAPIPort, h.processes.servers.APIPort)
+	assert.Zero(t, h.processes.servers.WebPort, "the binary serves the frontend itself")
+	assert.Equal(t, "pdt_worktree", h.processes.servers.Database.Name)
+	assert.Contains(t, h.stdout.String(), "Preview (production build of the frontend and API): http://localhost:8647")
 }
 
 func TestStartRejectsUnknownModes(t *testing.T) {

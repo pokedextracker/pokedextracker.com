@@ -12,4 +12,9 @@ func loadProductionConfig(cfg *Config) {
 	cfg.DatabaseSSLMode = os.Getenv("DATABASE_SSL_MODE")
 	cfg.DatabaseUser = os.Getenv("DATABASE_USER")
 	cfg.Environment = "production"
+	cfg.GoogleAnalyticsID = "UA-45307701-4"
+	// The blog is hosted on Ghost and served from pokedextracker.com/blog.
+	if cfg.BlogURL == "" {
+		cfg.BlogURL = "https://pokedextracker.mymidnight.blog"
+	}
 }

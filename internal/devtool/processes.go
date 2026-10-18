@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"syscall"
 	"time"
@@ -56,6 +57,8 @@ func (p *OSProcesses) Start(ctx context.Context, env Environment, mode string, s
 		err = runSingleProcess(ctx, env.CurrentRoot, environment, "go", "run", "./cmd/api")
 	case startWeb, startWebStaging:
 		err = runSingleProcess(ctx, env.CurrentRoot, environment, "yarn", "start")
+	case startPreview:
+		err = runPreview(ctx, env.CurrentRoot, environment)
 	default:
 		return fmt.Errorf("unknown start mode %q", mode)
 	}
@@ -114,6 +117,20 @@ func serverEnvironment(servers Servers) []string {
 		values = append(values, "API_URL="+servers.APIURL)
 	}
 	return values
+}
+
+// runPreview builds the frontend into internal/webapp/dist, builds the binary
+// that embeds it, and runs that binary.
+func runPreview(ctx context.Context, root string, environment []string) error {
+	build := append(append([]string{}, environment...), "NODE_ENV=production", "VERSION=preview")
+	if err := runSingleProcess(ctx, root, build, "yarn", "build"); err != nil {
+		return err
+	}
+	binary := filepath.Join(root, "build", "preview", "api")
+	if err := runSingleProcess(ctx, root, environment, "go", "build", "-o", binary, "./cmd/api"); err != nil {
+		return err
+	}
+	return runSingleProcess(ctx, root, environment, binary)
 }
 
 // runDevelopmentProcesses starts the API under Air, waits for it to answer its

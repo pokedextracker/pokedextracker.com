@@ -29,4 +29,4 @@ COPY nginx.conf /etc/nginx/conf.d/dashboard.conf
 COPY scripts/upload-source-maps.sh /usr/local/bin/upload-source-maps
 
 RUN rm -rf /usr/share/nginx/html
-COPY --from=build /app/build/web /usr/share/nginx/html
+COPY --from=build /app/internal/webapp/dist /usr/share/nginx/html

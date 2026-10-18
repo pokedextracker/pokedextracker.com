@@ -361,3 +361,11 @@ tags
 build
 tmp
 cmd/scratch
+# The frontend build embedded into the Go binary; only the placeholder is
+# tracked. The directory has to be un-ignored first, since the template above
+# ignores every directory named dist.
+!internal/webapp/dist/
+internal/webapp/dist/*
+!internal/webapp/dist/.gitkeep
+# Logs from the Playwright browser tool used during QA
+.playwright-mcp/

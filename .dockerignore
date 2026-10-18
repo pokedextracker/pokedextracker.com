@@ -363,3 +363,4 @@ tags
 build
 cmd/scratch
 tmp
+internal/webapp/dist

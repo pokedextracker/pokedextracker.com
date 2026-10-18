@@ -15,6 +15,7 @@ var Version = ""
 // application.
 type Config struct {
 	BcryptCost                int
+	BlogURL                   string
 	CORSAllowedOrigins        []string
 	DatabaseConnectRetryCount int
 	DatabaseConnectRetryDelay time.Duration
@@ -27,9 +28,11 @@ type Config struct {
 	DatabaseSSLMode           string
 	DatabaseUser              string
 	Environment               string
+	GoogleAnalyticsID         string
 	Hostname                  string
 	JWTSecret                 []byte
 	Port                      int
+	RollbarClientToken        string
 	RollbarToken              string
 	Version                   string
 }
@@ -37,8 +40,7 @@ type Config struct {
 const environmentENV = "ENVIRONMENT"
 
 // envOrDefault returns the environment variable's value, or fallback when it's
-// unset or empty. The development and test configs use it so the dev launcher
-// can point each worktree at its own database.
+// unset or empty.
 func envOrDefault(key, fallback string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
@@ -75,6 +77,15 @@ func New() (*Config, error) {
 		RollbarToken:              os.Getenv("ROLLBAR_TOKEN"),
 		Version:                   Version,
 	}
+
+	// The frontend's settings, handed to it with index.html (see
+	// server.frontendConfig). Both are public: they're in every page anyway.
+	cfg.GoogleAnalyticsID = "UA-45307701-5"
+	cfg.RollbarClientToken = "19ffd96c890b422287ce3a06a917678e"
+
+	// Where /blog is forwarded, or empty for no blog. BLOG_URL overrides the
+	// production default, for example to try the proxy locally.
+	cfg.BlogURL = os.Getenv("BLOG_URL")
 
 	switch os.Getenv(environmentENV) {
 	case "development", "":
