@@ -200,17 +200,8 @@ run = "go run ./cmd/dev psql --test"
 
 # === Deploys ===
 
-[tasks."deploy:app"]
+[tasks.deploy]
 description = "Deploy the site to pokedextracker-staging, then pokedextracker-production after a prompt"
-run = "./scripts/deploy-app.sh"
-
-# TODO(cleanup): Remove deploy:api and deploy:web after the cutover.
-[tasks."deploy:api"]
-description = "Deploy the API to Fly.io (staging, then production after a prompt)"
-run = "./scripts/deploy-api.sh"
-
-[tasks."deploy:web"]
-description = "Deploy the frontend to Fly.io (staging, then production after a prompt)"
 run = "./scripts/deploy.sh"
 
 # === Other ===

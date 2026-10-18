@@ -84,12 +84,6 @@ func newServer(cfg *config.Config, db *pg.DB, frontend http.Handler) (*http.Serv
 	api.Any("", notFoundHandler)
 	api.Any("/*", notFoundHandler)
 
-	// TODO(cleanup): Remove after the cutover. The old Fly apps run this API
-	// behind an nginx proxy that strips /api, so until they're gone, the API
-	// also answers at the root. None of these paths collide with frontend
-	// routes.
-	registerAPI(e.Group(""), cfg, db)
-
 	if cfg.BlogURL != "" {
 		blog, err := blogProxy(cfg.BlogURL)
 		if err != nil {
@@ -174,7 +168,7 @@ func noStore(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 // redirectWWW sends www.pokedextracker.com (and www.staging...) to the bare
-// domain, keeping the path and query, like the old nginx proxy did.
+// domain, keeping the path and query.
 func redirectWWW(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		host := c.Request().Host

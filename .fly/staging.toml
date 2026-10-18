@@ -1,28 +1,32 @@
+# The site: API, frontend, and blog proxy in one binary.
 # Docs: https://fly.io/docs/reference/configuration/
 
-app = "pokedextracker-staging-frontend"
+app = "pokedextracker-staging"
 primary_region = "sjc"
 
 [deploy]
-  strategy = "rolling"
+  release_command = "migrations migrate"
+  # New machines come up and pass their health check before traffic moves,
+  # so a deploy never takes the site down.
+  strategy = "bluegreen"
 
-[[services]]
-  processes = ["web"]
-  internal_port = 4939
-  protocol = "tcp"
-  auto_stop_machines = false
+[env]
+  ENVIRONMENT = "staging"
+
+[http_service]
+  internal_port = 8647
+  force_https = true
+  auto_stop_machines = "off"
   auto_start_machines = false
   min_machines_running = 1
-  [[services.ports]]
-    handlers = ["http"]
-    port = 80
-  [[services.http_checks]]
-    interval = 10000
-    grace_period = "5s"
-    method = "get"
-    path = "/health"
-    protocol = "http"
-    timeout = 2000
 
-[processes]
-  web = "nginx -g 'daemon off;'"
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "10s"
+    method = "GET"
+    path = "/health"
+    timeout = "2s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

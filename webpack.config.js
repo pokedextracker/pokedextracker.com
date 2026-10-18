@@ -4,7 +4,7 @@ const { hostname } = require('os');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Webpack = require('webpack');
 
-const PRODUCTION = process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'production';
+const PRODUCTION = process.env.NODE_ENV === 'production';
 const machine = hostname().toLowerCase();
 
 module.exports = {
