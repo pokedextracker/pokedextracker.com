@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    // Playwright's types use Symbol.asyncDispose, which TypeScript 5.0 doesn't
+    // know. Only the e2e code is checked until TypeScript is upgraded.
+    "skipLibCheck": true
+  },
+  // config declares window.POKEDEXTRACKER_CONFIG, which the tests read.
+  "include": ["config", "e2e", "playwright.config.ts"]
+}

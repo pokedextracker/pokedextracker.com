@@ -18,6 +18,9 @@ import (
 const (
 	defaultAPIPort = 8647
 	defaultWebPort = 9898
+	// The e2e server starts from its own port, so a running dev API keeps its
+	// usual one.
+	defaultE2EPort = 8700
 
 	stagingURL = "https://staging.pokedextracker.com"
 
@@ -34,7 +37,13 @@ const (
 	// as CI does, instead of the shared Docker container.
 	testDatabasePortEnv = "TEST_DATABASE_PORT"
 	ciTestDatabase      = "pokedex_tracker_test"
+
+	// e2eAll runs every browser in playwright.config.ts.
+	e2eAll = "all"
 )
+
+// e2eBrowsers are the Playwright projects in playwright.config.ts.
+var e2eBrowsers = []string{"chromium", "firefox", "webkit"}
 
 var defaultTestArgs = []string{"-race", "./...", "-coverprofile", "coverage.out"}
 
@@ -86,6 +95,8 @@ func (a *App) Run(ctx context.Context, args []string) error {
 		return a.test(ctx, env, args[1:])
 	case "psql":
 		return a.psql(ctx, env, args[1:])
+	case "e2e":
+		return a.e2e(ctx, env, args[1:])
 	default:
 		return fmt.Errorf("unknown command %q", args[0])
 	}
@@ -279,7 +290,7 @@ func (a *App) database(ctx context.Context, env Environment, args []string) erro
 		if err := a.Processes.Migrate(ctx, env, target, "migrate"); err != nil {
 			return err
 		}
-		return a.seed(ctx, env)
+		return a.seed(ctx, env, env.CurrentDatabase)
 	default:
 		return fmt.Errorf("unknown database command %q", args[0])
 	}
@@ -398,6 +409,78 @@ func (a *App) psql(ctx context.Context, env Environment, args []string) error {
 	return a.Database.Psql(ctx, env, env.CurrentDatabase)
 }
 
+// e2e runs the Playwright tests against the production build of the site,
+// served by the binary, the way it's deployed. The binary uses its own
+// database, rebuilt from the seeds on every run, so tests start from the same
+// data and never touch the development database. Arguments after the browser
+// go to Playwright, like a spec file or --headed.
+func (a *App) e2e(ctx context.Context, env Environment, args []string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("usage: e2e <%s|%s> [playwright arguments]", strings.Join(e2eBrowsers, "|"), e2eAll)
+	}
+	browser, playwrightArgs := args[0], args[1:]
+	if browser != e2eAll {
+		if !isE2EBrowser(browser) {
+			return fmt.Errorf("unknown e2e browser %q; use %s or %s", browser, strings.Join(e2eBrowsers, ", "), e2eAll)
+		}
+		playwrightArgs = append([]string{"--project=" + browser}, playwrightArgs...)
+	}
+	if !hasSeeds(seedsPath(env)) {
+		return fmt.Errorf("seed files are missing from %s; run mise db:pull first", seedsPath(env))
+	}
+
+	// A second run in this worktree would rebuild the database and the
+	// frontend under the first one.
+	unlock, err := lockFile(ctx, filepath.Join(env.CurrentRoot, "tmp", "e2e.lock"), func() {
+		_ = a.printf("Waiting for another e2e run in this worktree to finish...\n")
+	})
+	if err != nil {
+		return err
+	}
+	defer unlock()
+
+	port, err := a.Database.Ensure(ctx, env)
+	if err != nil {
+		return err
+	}
+	target := e2eTarget(env, port)
+	if err := a.printf("Rebuilding database %s...\n", target.Name); err != nil {
+		return err
+	}
+	if err := a.Database.Reset(ctx, env, target.Name); err != nil {
+		return err
+	}
+	if err := a.Processes.Migrate(ctx, env, target, "migrate"); err != nil {
+		return err
+	}
+	if err := a.seed(ctx, env, target.Name); err != nil {
+		return err
+	}
+
+	lease, err := a.Ports(env).Acquire(defaultE2EPort)
+	if err != nil {
+		return fmt.Errorf("reserve e2e server port: %w", err)
+	}
+	defer func() { _ = lease.Close() }()
+	rel, err := filepath.Rel(env.CurrentRoot, e2eServerLog(env))
+	if err != nil {
+		return err
+	}
+	if err := a.printf("E2E server: %s (log in %s)\n", apiURL(lease.Port()), rel); err != nil {
+		return err
+	}
+	return a.Processes.E2E(ctx, env, target, lease.Port(), playwrightArgs...)
+}
+
+func isE2EBrowser(name string) bool {
+	for _, browser := range e2eBrowsers {
+		if name == browser {
+			return true
+		}
+	}
+	return false
+}
+
 // ensureDevelopmentDatabase creates this worktree's database if needed and
 // brings it up to date.
 func (a *App) ensureDevelopmentDatabase(ctx context.Context, env Environment, port int) error {
@@ -468,14 +551,14 @@ func (a *App) seedIfAvailable(ctx context.Context, env Environment) error {
 	if !hasSeeds(seedsPath(env)) {
 		return nil
 	}
-	return a.seed(ctx, env)
+	return a.seed(ctx, env, env.CurrentDatabase)
 }
 
-func (a *App) seed(ctx context.Context, env Environment) error {
-	if err := a.printf("Seeding reference data into %s...\n", env.CurrentDatabase); err != nil {
+func (a *App) seed(ctx context.Context, env Environment, name string) error {
+	if err := a.printf("Seeding reference data into %s...\n", name); err != nil {
 		return err
 	}
-	warnings, err := a.Database.Seed(ctx, env, env.CurrentDatabase, seedsPath(env))
+	warnings, err := a.Database.Seed(ctx, env, name, seedsPath(env))
 	if err != nil {
 		return err
 	}
@@ -561,6 +644,12 @@ func developmentTarget(env Environment, port int) DatabaseTarget {
 
 func testTarget(env Environment, port int) DatabaseTarget {
 	return DatabaseTarget{Environment: "test", Name: env.TestDatabase(), Port: port}
+}
+
+// e2eTarget is the database the e2e server runs against. The server runs as
+// development, which turns off Rollbar and the blog proxy.
+func e2eTarget(env Environment, port int) DatabaseTarget {
+	return DatabaseTarget{Environment: "development", Name: env.E2EDatabase(), Port: port}
 }
 
 func apiURL(port int) string {

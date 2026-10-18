@@ -32,6 +32,12 @@ func (h *handler) create(c echo.Context) error {
 		return errors.WithStack(err)
 	}
 
+	// The frontend generates the slug from the title, so it can be missing or empty when the title has no alphanumeric
+	// characters, or when the API is called directly.
+	if params.Slug == "" {
+		return errcodes.EmptySlug()
+	}
+
 	// Make sure a user with this username doesn't already exist. This doesn't really matter since we have a unique
 	// constraint, but it's to prevent blowing through our user ID sequence.
 	existing, err := h.userService.RetrieveUser(ctx, RetrieveUserOptions{
