@@ -3,7 +3,10 @@
 # Deploys the single-binary app (API and frontend in one image) to Fly.io:
 # staging first, then production after a prompt.
 
-# Load any secrets (ROLLBAR_TOKEN for source maps).
+# Load any secrets (ROLLBAR_TOKEN for source maps): the main checkout's .env,
+# so deploys from other worktrees get it too, then this worktree's own.
+MAIN_ROOT=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
+test -f "$MAIN_ROOT/.env" && . "$MAIN_ROOT/.env"
 test -f .env && . .env
 
 NOW=$(date +'%s')
