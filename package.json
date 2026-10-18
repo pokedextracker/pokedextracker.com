@@ -7,12 +7,12 @@
     "test": "test"
   },
   "scripts": {
-    "build": "npm run build:bundle && npm run build:public && npm run build:version",
+    "build": "pnpm build:bundle && pnpm build:public && pnpm build:version",
     "build:bundle": "webpack",
     "build:public": "cp -R public/* internal/webapp/dist/",
     "build:version": "date > internal/webapp/dist/version",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx --max-warnings 0 .",
-    "lint:all": "yarn lint && yarn lint:types",
+    "lint:all": "pnpm lint && pnpm lint:types",
     "lint:types": "tsc --noEmit && tsc --noEmit -p tsconfig.e2e.json",
     "start": "webpack serve"
   },
@@ -29,15 +29,21 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@rollbar/react": "^0.11.2",
     "@tanstack/react-query": "^4.29.19",
+    "@types/history": "^4.7.11",
     "@types/lodash": "^4.14.195",
+    "@types/node": "^20.2.5",
+    "@types/qs": "^6.9.7",
+    "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",
     "@types/react-modal": "^3.16.0",
+    "@types/react-router": "^5.1.20",
     "@types/react-router-dom": "^5.3.3",
     "@types/slug": "^5.0.3",
     "babel-loader": "^9.1.2",
     "classnames": "^2.3.2",
     "core-js": "^3.30.2",
     "css-loader": "^6.8.1",
+    "history": "^4.10.1",
     "html-webpack-plugin": "^5.5.1",
     "lodash": "^4.17.21",
     "qs": "^6.11.2",
@@ -45,6 +51,7 @@
     "react-dom": "^17.0.2",
     "react-ga": "^3.3.1",
     "react-modal": "^3.16.1",
+    "react-router": "^5.3.4",
     "react-router-dom": "^5.3.4",
     "rollbar": "^2.26.2",
     "sass": "^1.62.1",
@@ -57,7 +64,7 @@
     "whatwg-fetch": "^3.0.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.60.0",
+    "@playwright/test": "1.64.1",
     "@tanstack/eslint-plugin-query": "^4.29.9",
     "@typescript-eslint/eslint-plugin": "^5.60.1",
     "@typescript-eslint/parser": "^5.60.1",
@@ -74,5 +81,8 @@
   "bugs": {
     "url": "https://github.com/robinjoseph08/pokedextracker.com/issues"
   },
-  "homepage": "https://github.com/robinjoseph08/pokedextracker.com#readme"
+  "homepage": "https://github.com/robinjoseph08/pokedextracker.com#readme",
+  "engines": {
+    "node": ">=26"
+  }
 }

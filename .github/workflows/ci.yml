@@ -19,24 +19,24 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # Installs the Node.js and Yarn versions pinned in mise.toml.
+      # Installs the Node.js and pnpm versions pinned in mise.toml.
       - uses: jdx/mise-action@v5
         with:
-          install_args: node yarn
+          install_args: node pnpm
 
       - uses: actions/cache@v6
         with:
           path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('mise.toml', 'yarn.lock') }}
+          key: node-modules-${{ runner.os }}-${{ hashFiles('mise.toml', 'pnpm-lock.yaml', 'pnpm-workspace.yaml') }}
 
       - name: Install dependencies
         run: mise install:web
 
       - name: Lint
-        run: yarn lint
+        run: pnpm lint
 
       - name: Type check
-        run: yarn lint:types
+        run: pnpm lint:types
 
       - name: Build
         run: mise build:web
@@ -116,15 +116,15 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # Installs the Go, Node.js, and Yarn versions pinned in mise.toml.
+      # Installs the Go, Node.js, and pnpm versions pinned in mise.toml.
       - uses: jdx/mise-action@v5
         with:
-          install_args: go node yarn
+          install_args: go node pnpm
 
       - uses: actions/cache@v6
         with:
           path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('mise.toml', 'yarn.lock') }}
+          key: node-modules-${{ runner.os }}-${{ hashFiles('mise.toml', 'pnpm-lock.yaml', 'pnpm-workspace.yaml') }}
 
       # Its own key, since this job builds ./cmd/api, which the Backend job's
       # cache doesn't hold.
@@ -153,7 +153,7 @@ jobs:
       - name: Install browsers
         run: |
           if [ "${{ steps.browsers.outputs.cache-hit }}" = "true" ]; then
-            yarn playwright install-deps chromium firefox webkit
+            pnpm exec playwright install-deps chromium firefox webkit
           else
             mise install:browsers -- --with-deps
           fi
