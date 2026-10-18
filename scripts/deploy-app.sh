@@ -95,7 +95,7 @@ if [ -n "$ROLLBAR_TOKEN" ]; then
     for host in staging.pokedextracker.com pokedextracker.com; do
       # The site works without source maps, so a failed upload is a warning
       # rather than a reason to stop the deploy.
-      if ! curl -sSq --fail-with-body --retry 3 --retry-all-errors https://api.rollbar.com/api/1/sourcemap \
+      if ! curl -q -sS --fail-with-body --retry 3 --retry-all-errors https://api.rollbar.com/api/1/sourcemap \
         -F access_token=$ROLLBAR_TOKEN \
         -F version=$TAG \
         -F minified_url=//$host/$main_file \

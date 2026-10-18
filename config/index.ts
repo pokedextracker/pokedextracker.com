@@ -35,13 +35,14 @@ const Configs: Record<Environment, ConfigType> = {
   [Environment.Staging]: Staging,
 };
 
-function fromServer (server: ServerConfig): ConfigType {
+// Any field the server leaves out falls back to the development value.
+function fromServer (server: Partial<ServerConfig>): ConfigType {
   return {
     API_HOST: '/api',
-    ENVIRONMENT: server.environment,
-    GA_ID: server.googleAnalyticsId,
-    ROLLBAR_TOKEN: server.rollbarToken,
-    VERSION: server.version,
+    ENVIRONMENT: server.environment || Development.ENVIRONMENT,
+    GA_ID: server.googleAnalyticsId || Development.GA_ID,
+    ROLLBAR_TOKEN: server.rollbarToken || Development.ROLLBAR_TOKEN,
+    VERSION: server.version || Development.VERSION,
   };
 }
 

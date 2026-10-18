@@ -15,7 +15,6 @@ import (
 )
 
 func testHandler(t *testing.T) http.Handler {
-	t.Helper()
 	return testHandlerWithScript(t, "")
 }
 
