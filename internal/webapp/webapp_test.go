@@ -16,15 +16,20 @@ import (
 
 func testHandler(t *testing.T) http.Handler {
 	t.Helper()
+	return testHandlerWithScript(t, "")
+}
+
+func testHandlerWithScript(t *testing.T, script string) http.Handler {
+	t.Helper()
 	h, ok, err := newHandler(fstest.MapFS{
 		".gitkeep":                         {},
-		"index.html":                       {Data: []byte("<html>app</html>" + strings.Repeat(" ", 2048))},
+		"index.html":                       {Data: []byte("<html><head></head>app</html>" + strings.Repeat(" ", 2048))},
 		"version":                          {Data: []byte("Sat Oct 17 2026\n")},
 		"main.0123456789abcdef0123.js":     {Data: []byte(strings.Repeat("console.log(1);\n", 200))},
 		"main.0123456789abcdef0123.js.map": {Data: []byte("{}")},
 		"pokesprite-v12.png":               {Data: []byte("png")},
 		"favicon/favicon-16x16.png":        {Data: []byte("icon")},
-	})
+	}, script)
 	require.NoError(t, err)
 	require.True(t, ok)
 	return h
@@ -64,7 +69,7 @@ func TestFrontendRoutesGetIndex(t *testing.T) {
 
 	w := get(h, http.MethodGet, "/u/ash/living-dex", nil)
 
-	assert.True(t, strings.HasPrefix(w.Body.String(), "<html>app</html>"))
+	assert.True(t, strings.HasPrefix(w.Body.String(), "<html><head></head>app</html>"))
 	assert.Contains(t, w.Header().Get("Content-Type"), "text/html")
 }
 
@@ -100,13 +105,13 @@ func TestPathsCantEscapeTheBuild(t *testing.T) {
 		w := get(h, http.MethodGet, target, nil)
 		// Files are only ever looked up in the build, so anything outside it is
 		// a frontend route at worst.
-		assert.True(t, strings.HasPrefix(w.Body.String(), "<html>app</html>") || w.Code == http.StatusNotFound, target)
+		assert.True(t, strings.HasPrefix(w.Body.String(), "<html><head></head>app</html>") || w.Code == http.StatusNotFound, target)
 		assert.NotContains(t, w.Body.String(), "module", target)
 	}
 }
 
 func TestNoBuildMeansNoHandler(t *testing.T) {
-	_, ok, err := newHandler(fstest.MapFS{".gitkeep": {}})
+	_, ok, err := newHandler(fstest.MapFS{".gitkeep": {}}, "")
 
 	require.NoError(t, err)
 	assert.False(t, ok)
@@ -118,7 +123,7 @@ func TestDottedFrontendRoutesGetIndex(t *testing.T) {
 	w := get(h, http.MethodGet, "/u/ash/v1.2", nil)
 
 	assert.Equal(t, http.StatusOK, w.Code, "a dex slug with a dot is a frontend route, not a missing file")
-	assert.True(t, strings.HasPrefix(w.Body.String(), "<html>app</html>"))
+	assert.True(t, strings.HasPrefix(w.Body.String(), "<html><head></head>app</html>"))
 }
 
 func TestGzip(t *testing.T) {
@@ -154,4 +159,22 @@ func TestGzip(t *testing.T) {
 	assert.Equal(t, "gzip", get(h, http.MethodGet, "/main.0123456789abcdef0123.js", map[string]string{"Accept-Encoding": "GZIP;q=0.5"}).Header().Get("Content-Encoding"))
 	assert.Empty(t, get(h, http.MethodGet, "/pokesprite-v12.png", map[string]string{"Accept-Encoding": "gzip"}).Header().Get("Content-Encoding"), "images aren't recompressed")
 	assert.Empty(t, get(h, http.MethodGet, "/version", map[string]string{"Accept-Encoding": "gzip"}).Header().Get("Content-Encoding"), "tiny files aren't worth it")
+}
+
+func TestHeadScriptIsAddedToIndexOnly(t *testing.T) {
+	plain := testHandler(t)
+	h := testHandlerWithScript(t, "<script>window.X = 1;</script>")
+
+	for _, target := range []string{"/", "/u/ash/living-dex"} {
+		w := get(h, http.MethodGet, target, nil)
+		assert.True(t, strings.HasPrefix(w.Body.String(), "<html><head><script>window.X = 1;</script></head>app</html>"), target)
+	}
+	assert.NotEqual(t, get(plain, http.MethodGet, "/", nil).Header().Get("ETag"), get(h, http.MethodGet, "/", nil).Header().Get("ETag"), "the ETag covers the added script")
+	assert.NotContains(t, get(h, http.MethodGet, "/main.0123456789abcdef0123.js", nil).Body.String(), "window.X")
+}
+
+func TestHeadScriptNeedsAHead(t *testing.T) {
+	_, _, err := newHandler(fstest.MapFS{"index.html": {Data: []byte("<html>no head</html>")}}, "<script></script>")
+
+	assert.Error(t, err)
 }

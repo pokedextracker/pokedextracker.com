@@ -63,17 +63,19 @@ type handler struct {
 	files map[string]*file
 }
 
-// Handler serves the embedded frontend build. The boolean is false when the
-// binary was built without one.
-func Handler() (http.Handler, bool, error) {
+// Handler serves the embedded frontend build. headScript, when given, is
+// added to the end of index.html's <head>; the server uses it to hand the
+// frontend its configuration. The boolean is false when the binary was built
+// without a frontend.
+func Handler(headScript string) (http.Handler, bool, error) {
 	root, err := fs.Sub(embedded, "dist")
 	if err != nil {
 		return nil, false, errors.WithStack(err)
 	}
-	return newHandler(root)
+	return newHandler(root, headScript)
 }
 
-func newHandler(root fs.FS) (http.Handler, bool, error) {
+func newHandler(root fs.FS, headScript string) (http.Handler, bool, error) {
 	files := map[string]*file{}
 	err := fs.WalkDir(root, ".", func(name string, entry fs.DirEntry, err error) error {
 		if err != nil || entry.IsDir() || path.Base(name) == ".gitkeep" {
@@ -82,6 +84,12 @@ func newHandler(root fs.FS) (http.Handler, bool, error) {
 		content, err := fs.ReadFile(root, name)
 		if err != nil {
 			return err
+		}
+		if name == indexFile && headScript != "" {
+			if !bytes.Contains(content, []byte("</head>")) {
+				return errors.New("index.html has no </head> to add the config before")
+			}
+			content = bytes.Replace(content, []byte("</head>"), []byte(headScript+"</head>"), 1)
 		}
 		// Embedded files have no modification time, so caches revalidate with a
 		// fingerprint of the content instead.

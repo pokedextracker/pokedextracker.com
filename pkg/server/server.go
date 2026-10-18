@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -35,7 +36,11 @@ var healthResponse = []byte(`{"healthy":true}`)
 // New builds the server for the whole site: the API under /api, the /blog
 // proxy, and the embedded frontend for everything else.
 func New(cfg *config.Config, db *pg.DB) (*http.Server, error) {
-	frontend, ok, err := webapp.Handler()
+	script, err := frontendConfigScript(cfg)
+	if err != nil {
+		return nil, err
+	}
+	frontend, ok, err := webapp.Handler(script)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -109,6 +114,34 @@ func newServer(cfg *config.Config, db *pg.DB, frontend http.Handler) (*http.Serv
 	}
 
 	return srv, nil
+}
+
+// frontendConfig is what the frontend reads from window.POKEDEXTRACKER_CONFIG
+// (config/index.ts). It comes from the server so the same build reports the
+// right environment wherever it runs, without guessing from the hostname.
+type frontendConfig struct {
+	Environment       string `json:"environment"`
+	GoogleAnalyticsID string `json:"googleAnalyticsId"`
+	RollbarToken      string `json:"rollbarToken"`
+	Version           string `json:"version"`
+}
+
+func frontendConfigScript(cfg *config.Config) (string, error) {
+	version := cfg.Version
+	if version == "" {
+		version = "unknown"
+	}
+	// json.Marshal escapes <, >, and &, so the values can't close the script.
+	value, err := json.Marshal(frontendConfig{
+		Environment:       cfg.Environment,
+		GoogleAnalyticsID: cfg.GoogleAnalyticsID,
+		RollbarToken:      cfg.RollbarClientToken,
+		Version:           version,
+	})
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+	return "<script>window.POKEDEXTRACKER_CONFIG = " + string(value) + ";</script>", nil
 }
 
 func registerAPI(g *echo.Group, cfg *config.Config, db *pg.DB) {

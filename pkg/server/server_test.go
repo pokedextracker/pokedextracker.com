@@ -265,3 +265,36 @@ func TestNoBlogFallsThroughToTheFrontend(t *testing.T) {
 
 	assert.Contains(t, w.Body.String(), "frontend /blog/", "staging has no blog, like today")
 }
+
+func TestFrontendConfigScript(t *testing.T) {
+	script, err := frontendConfigScript(&config.Config{
+		Environment:        "production",
+		GoogleAnalyticsID:  "UA-1",
+		RollbarClientToken: "token</script><script>alert(1)",
+		Version:            "abc1234",
+	})
+	require.NoError(t, err)
+
+	assert.True(t, strings.HasPrefix(script, "<script>window.POKEDEXTRACKER_CONFIG = {"))
+	assert.Contains(t, script, `"environment":"production"`)
+	assert.Contains(t, script, `"googleAnalyticsId":"UA-1"`)
+	assert.Contains(t, script, `"version":"abc1234"`)
+	assert.Equal(t, 1, strings.Count(script, "</script>"), "values can't close the script tag")
+
+	script, err = frontendConfigScript(&config.Config{Environment: "development"})
+	require.NoError(t, err)
+	assert.Contains(t, script, `"version":"unknown"`)
+}
+
+func TestEnvironmentsGetTheirOwnFrontendConfig(t *testing.T) {
+	for env, analytics := range map[string]string{"development": "UA-45307701-5", "staging": "UA-45307701-5", "production": "UA-45307701-4"} {
+		t.Setenv("ENVIRONMENT", env)
+		cfg, err := config.New()
+		require.NoError(t, err)
+		script, err := frontendConfigScript(cfg)
+		require.NoError(t, err)
+		assert.Contains(t, script, `"environment":"`+env+`"`, env)
+		assert.Contains(t, script, `"googleAnalyticsId":"`+analytics+`"`, env)
+		assert.Contains(t, script, `"rollbarToken":"19ffd96c890b422287ce3a06a917678e"`, env)
+	}
+}

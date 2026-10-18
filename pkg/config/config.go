@@ -28,9 +28,11 @@ type Config struct {
 	DatabaseSSLMode           string
 	DatabaseUser              string
 	Environment               string
+	GoogleAnalyticsID         string
 	Hostname                  string
 	JWTSecret                 []byte
 	Port                      int
+	RollbarClientToken        string
 	RollbarToken              string
 	Version                   string
 }
@@ -75,6 +77,11 @@ func New() (*Config, error) {
 		RollbarToken:              os.Getenv("ROLLBAR_TOKEN"),
 		Version:                   Version,
 	}
+
+	// The frontend's settings, handed to it with index.html (see
+	// server.frontendConfig). Both are public: they're in every page anyway.
+	cfg.GoogleAnalyticsID = "UA-45307701-5"
+	cfg.RollbarClientToken = "19ffd96c890b422287ce3a06a917678e"
 
 	// Where /blog is forwarded, or empty for no blog. BLOG_URL overrides the
 	// production default, for example to try the proxy locally.
