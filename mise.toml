@@ -54,6 +54,10 @@ run = [
 description = "Download Go module dependencies"
 run = "go mod download"
 
+[tasks."install:browsers"]
+description = "Download the browsers the end-to-end tests use"
+run = "yarn playwright install chromium firefox webkit"
+
 [tasks."install:web"]
 description = "Install frontend dependencies"
 run = "yarn install --frozen-lockfile"
@@ -111,6 +115,26 @@ run = "yarn lint:all"
 [tasks."test:go"]
 description = "Run Go tests against this worktree's test database (extra args replace the default go test args)"
 run = "go run ./cmd/dev test"
+
+# The e2e tasks build the site, serve it from the binary against a freshly
+# seeded database, and run Playwright against it. Extra args go to Playwright,
+# like a spec file or --headed. CI runs every browser.
+
+[tasks."test:e2e"]
+description = "Run the end-to-end tests in Chromium"
+run = "go run ./cmd/dev e2e chromium"
+
+[tasks."test:e2e:all"]
+description = "Run the end-to-end tests in Chromium, Firefox, and WebKit"
+run = "go run ./cmd/dev e2e all"
+
+[tasks."test:e2e:firefox"]
+description = "Run the end-to-end tests in Firefox"
+run = "go run ./cmd/dev e2e firefox"
+
+[tasks."test:e2e:webkit"]
+description = "Run the end-to-end tests in WebKit"
+run = "go run ./cmd/dev e2e webkit"
 
 [tasks."test:cover"]
 description = "Open coverage report in browser"
@@ -192,10 +216,11 @@ run = "./scripts/deploy.sh"
 # === Other ===
 
 [tasks.setup]
-description = "Install tools and dependencies, start PostgreSQL, and create, migrate, and seed this worktree's databases"
+description = "Install tools, dependencies, and test browsers, start PostgreSQL, and create, migrate, and seed this worktree's databases"
 run = [
   "mise install",
   "mise install:go",
   "mise install:web",
+  "mise install:browsers",
   "go run ./cmd/dev setup",
 ]

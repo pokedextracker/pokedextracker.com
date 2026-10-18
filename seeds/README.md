@@ -22,3 +22,5 @@ into these files.
   columns), so `git diff seeds/` shows exactly what changed in production
   since the last pull.
 - User data (users, dexes, captures) is never pulled.
+- The end-to-end tests in `e2e/` use the Legends: Z-A regional dex (dex type
+  23, 237 Pokémon). If a pull changes it, update the tests to match.

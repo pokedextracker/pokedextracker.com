@@ -19,6 +19,9 @@ const (
 	// PostgreSQL truncates identifiers longer than 63 bytes.
 	maxIdentifierLength = 63
 	testDatabaseSuffix  = "_test"
+	// The e2e database's suffix is no longer than the test database's, so
+	// names leave room for both.
+	e2eDatabaseSuffix = "_e2e"
 )
 
 // Environment describes the repository and worktree resources used by a
@@ -40,6 +43,12 @@ func (e Environment) IsMain() bool {
 // TestDatabase is the database this worktree's Go tests run against.
 func (e Environment) TestDatabase() string {
 	return e.CurrentDatabase + testDatabaseSuffix
+}
+
+// E2EDatabase is the database the e2e tests run against. It's rebuilt on every
+// run.
+func (e Environment) E2EDatabase() string {
+	return e.CurrentDatabase + e2eDatabaseSuffix
 }
 
 // ResolveEnvironment finds the main checkout and current worktree from git.

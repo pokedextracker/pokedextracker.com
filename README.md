@@ -14,8 +14,9 @@ Yarn, Air, golangci-lint) and tasks, and Docker to run PostgreSQL.
 mise setup
 ```
 
-That installs the tools and dependencies, starts PostgreSQL in the background,
-and creates and migrates this worktree's development and test databases.
+That installs the tools and dependencies, downloads the browsers the
+end-to-end tests use, starts PostgreSQL in the background, and creates and
+migrates this worktree's development and test databases.
 
 ## Development
 
@@ -25,6 +26,7 @@ mise start:web:staging  # Just the frontend, using the staging API
 mise start:preview      # The production build: one binary serving the API and frontend
 mise lint               # golangci-lint, ESLint, and TypeScript checks
 mise test:go            # Go tests
+mise test:e2e           # End-to-end tests in Chromium (test:e2e:all for every browser)
 mise build              # Build the frontend, then the API (which embeds it) and migrations
 mise db:migrate         # Run pending migrations
 mise psql               # Open psql against this worktree's database
@@ -54,6 +56,34 @@ Because the database and ports are chosen by the launcher, running the API or
 `go test` directly (for example from an editor) won't find the database. Use
 `mise start:api` and `mise test:go`, which also accepts `go test` arguments,
 like `mise test:go -run TestNew ./pkg/config`.
+
+### End-to-end tests
+
+The end-to-end tests in `e2e/` use [Playwright](https://playwright.dev) to run
+through the site in a real browser. `mise test:e2e` builds the site the way
+it's deployed (one binary serving the API and the production frontend), starts
+it against a separate `_e2e` database rebuilt from `seeds/` on every run, and
+runs the tests in Chromium. Your development database isn't touched.
+`mise setup` downloads the browsers; after a Playwright upgrade, get the new
+ones with `mise install:browsers`.
+
+```sh
+mise test:e2e                     # Chromium, the quick check
+mise test:e2e:all                 # Chromium, Firefox, and WebKit, like CI
+mise test:e2e:webkit              # One browser (also test:e2e:firefox)
+mise test:e2e -- e2e/auth.spec.ts # Arguments after -- go to Playwright
+mise test:e2e -- --headed         # Watch the browser while it runs
+```
+
+Each test makes its own users through the API, so tests run in parallel and
+don't depend on each other. Everything the site loads from other domains
+(fonts, analytics) is blocked, and an uncaught error on the page fails the
+test. When a test fails, `yarn playwright show-trace` on the trace in
+`test-results/` replays it step by step, and the server's log is in
+`build/e2e/server.log`.
+
+The tests use the Legends: Z-A regional dex from `seeds/`, so a `mise db:pull`
+that changes that dex may mean updating them too.
 
 If you used this repo before the launcher existed, the old setup's container
 (named after the checkout, like `pokedextracker-com-postgres-1`) and its

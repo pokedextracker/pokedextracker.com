@@ -13,7 +13,7 @@
     "build:version": "date > internal/webapp/dist/version",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx --max-warnings 0 .",
     "lint:all": "yarn lint && yarn lint:types",
-    "lint:types": "tsc --noEmit",
+    "lint:types": "tsc --noEmit && tsc --noEmit -p tsconfig.e2e.json",
     "start": "webpack serve"
   },
   "dependencies": {
@@ -57,6 +57,7 @@
     "whatwg-fetch": "^3.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.60.0",
     "@tanstack/eslint-plugin-query": "^4.29.9",
     "@typescript-eslint/eslint-plugin": "^5.60.1",
     "@typescript-eslint/parser": "^5.60.1",
