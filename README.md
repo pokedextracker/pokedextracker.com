@@ -113,20 +113,19 @@ Editing `seeds/` doesn't change production. See [`seeds/README.md`](seeds/README
 
 ## How it's served
 
-One Go binary serves the whole site (once the cutover to the new Fly apps is
-done; see Deployments): the API under `/api`, the
-frontend (embedded into the binary from `internal/webapp/dist`) for everything
-else, and `/blog`, which it forwards to the hosted Ghost blog. It also
-redirects `www.` to the bare domain. Hashed JavaScript is cached forever,
-`index.html` and `/version` are always revalidated, and other static files are
-cached for an hour. `mise start:preview` runs this same build locally.
+One Go binary serves the whole site: the API under `/api`, the frontend
+(embedded into the binary from `internal/webapp/dist`) for everything else,
+and `/blog`, which it forwards to the hosted Ghost blog. It also redirects
+`www.` to the bare domain. Hashed JavaScript is cached forever, `index.html`
+and `/version` are always revalidated, and other static files are cached for
+an hour. `mise start:preview` runs this same build locally.
 
 ## Deployments
 
 > Note: you need the necessary permissions to be able to deploy.
 
-`mise deploy:app` builds a multi-arch image (`linux/amd64` and `linux/arm64`)
-from `Dockerfile.app`, pushes it to the GitHub Container Registry
+`mise deploy` builds a multi-arch image (`linux/amd64` and `linux/arm64`)
+from the `Dockerfile`, pushes it to the GitHub Container Registry
 (`ghcr.io/pokedextracker/pokedextracker.com`), uploads source maps to Rollbar,
 and deploys it to the `pokedextracker-staging` app on [Fly.io](https://fly.io/).
 Once you've checked staging, type `yes` at the prompt to deploy the same image
@@ -135,13 +134,5 @@ your `gh` login, which needs the `write:packages` scope once:
 
 ```sh
 gh auth refresh -s write:packages
-mise deploy:app
-```
-
-Until the cutover to those apps, the current site still runs as separate
-frontend and API apps behind an nginx proxy, deployed with:
-
-```sh
-mise deploy:web     # Frontend (Dockerfile, Docker Hub)
-mise deploy:api     # API (Dockerfile.api, Docker Hub)
+mise deploy
 ```

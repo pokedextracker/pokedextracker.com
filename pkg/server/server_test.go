@@ -59,14 +59,10 @@ func TestNew(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code, "incorrect status code")
 	assert.Equal(t, `{"healthy":true}`, w.Body.String(), "incorrect response")
 
-	// The API answers under /api, and at the root until the cutover.
-	// TODO(cleanup): Drop "/games" from this list after the cutover.
-	for _, target := range []string{"/api/games", "/games"} {
-		w = serve(t, srv.Handler, http.MethodGet, target, nil)
-		assert.Equal(t, http.StatusOK, w.Code, target)
-		assert.True(t, strings.HasPrefix(w.Body.String(), "["), target)
-	}
-	assert.Equal(t, "no-store", serve(t, srv.Handler, http.MethodGet, "/api/games", nil).Header().Get("Cache-Control"))
+	w = serve(t, srv.Handler, http.MethodGet, "/api/games", nil)
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.True(t, strings.HasPrefix(w.Body.String(), "["))
+	assert.Equal(t, "no-store", w.Header().Get("Cache-Control"))
 }
 
 func TestAPIHealthAndNotFound(t *testing.T) {
@@ -84,7 +80,9 @@ func TestAPIHealthAndNotFound(t *testing.T) {
 func TestFrontendServesEverythingElse(t *testing.T) {
 	h := testServer(t, &config.Config{})
 
-	for _, target := range []string{"/", "/u/ash/living-dex", "/register"} {
+	// The API only answers under /api, so its paths at the root are frontend
+	// routes too.
+	for _, target := range []string{"/", "/u/ash/living-dex", "/register", "/games"} {
 		w := serve(t, h, http.MethodGet, target, nil)
 		assert.Equal(t, http.StatusOK, w.Code, target)
 		assert.Contains(t, w.Body.String(), "frontend "+target, target)
