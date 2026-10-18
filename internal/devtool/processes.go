@@ -59,7 +59,7 @@ func (p *OSProcesses) Start(ctx context.Context, env Environment, mode string, s
 	case startAPI:
 		err = runSingleProcess(ctx, env.CurrentRoot, environment, "go", "run", "./cmd/api")
 	case startWeb, startWebStaging:
-		err = runSingleProcess(ctx, env.CurrentRoot, environment, "yarn", "start")
+		err = runSingleProcess(ctx, env.CurrentRoot, environment, "pnpm", "start")
 	case startPreview:
 		err = runPreview(ctx, env.CurrentRoot, environment)
 	default:
@@ -129,7 +129,7 @@ func (p *OSProcesses) E2E(ctx context.Context, env Environment, target DatabaseT
 	}()
 
 	tests := append(os.Environ(), "E2E_BASE_URL="+apiURL(port))
-	err = runSingleProcess(testsCtx, root, tests, "yarn", append([]string{"playwright", "test"}, args...)...)
+	err = runSingleProcess(testsCtx, root, tests, "pnpm", append([]string{"exec", "playwright", "test"}, args...)...)
 	select {
 	case <-serverExited:
 		if ctx.Err() == nil {
@@ -197,7 +197,7 @@ func runPreview(ctx context.Context, root string, environment []string) error {
 // version the frontend reports and the build directory.
 func buildSite(ctx context.Context, root string, environment []string, name string) (string, error) {
 	build := append(append([]string{}, environment...), "NODE_ENV=production", "VERSION="+name)
-	if err := runSingleProcess(ctx, root, build, "yarn", "build"); err != nil {
+	if err := runSingleProcess(ctx, root, build, "pnpm", "build"); err != nil {
 		return "", err
 	}
 	binary := filepath.Join(root, "build", name, "api")
@@ -228,7 +228,7 @@ func runDevelopmentProcesses(ctx context.Context, root string, environment []str
 		return err
 	}
 
-	web := newProcess(root, environment, "yarn", "start")
+	web := newProcess(root, environment, "pnpm", "start")
 	if err := web.Start(); err != nil {
 		terminateProcess(api)
 		awaitTermination(api, apiDone)

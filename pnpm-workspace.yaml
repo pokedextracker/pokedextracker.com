@@ -1,0 +1,4 @@
+# pnpm runs dependencies' install scripts only when they're listed here.
+allowBuilds:
+  # Its script only prints a funding message.
+  core-js: false

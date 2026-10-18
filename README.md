@@ -8,7 +8,7 @@ the React frontend (`app/`) and the Go API (`cmd/` and `pkg/`).
 ## Setup
 
 This repo uses [mise](https://mise.jdx.dev/) to manage tools (Go, Node.js,
-Yarn, Air, golangci-lint) and tasks, and Docker to run PostgreSQL.
+pnpm, Air, golangci-lint) and tasks, and Docker to run PostgreSQL.
 
 ```sh
 mise setup
@@ -78,7 +78,7 @@ mise test:e2e -- --headed         # Watch the browser while it runs
 Each test makes its own users through the API, so tests run in parallel and
 don't depend on each other. Everything the site loads from other domains
 (fonts, analytics) is blocked, and an uncaught error on the page fails the
-test. When a test fails, `yarn playwright show-trace` on the trace in
+test. When a test fails, `pnpm exec playwright show-trace` on the trace in
 `test-results/` replays it step by step, and the server's log is in
 `build/e2e/server.log`.
 

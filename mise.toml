@@ -1,7 +1,7 @@
 [tools]
 go = "1.20.5"
-node = "18.16.0"
-yarn = "1.22.19"
+node = "26.12.0"
+pnpm = "12.14.0"
 "github:air-verse/air" = "1.67.4"
 "github:golangci/golangci-lint" = "1.53.3"
 
@@ -39,7 +39,7 @@ run = "go build -o ./build/api/api-air ./cmd/api"
 description = "Build the frontend into internal/webapp/dist"
 depends = ["install:web"]
 env = { NODE_ENV = "production" }
-run = "yarn build"
+run = "pnpm build"
 
 [tasks.clean]
 description = "Remove build artifacts"
@@ -56,11 +56,11 @@ run = "go mod download"
 
 [tasks."install:browsers"]
 description = "Download the browsers the end-to-end tests use"
-run = "yarn playwright install chromium firefox webkit"
+run = "pnpm exec playwright install chromium firefox webkit"
 
 [tasks."install:web"]
 description = "Install frontend dependencies"
-run = "yarn install --frozen-lockfile"
+run = "pnpm install --frozen-lockfile"
 
 # === Dev Server ===
 #
@@ -108,7 +108,7 @@ run = "golangci-lint run"
 
 [tasks."lint:web"]
 description = "Run ESLint and TypeScript checks"
-run = "yarn lint:all"
+run = "pnpm lint:all"
 
 # === Testing ===
 

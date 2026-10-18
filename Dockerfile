@@ -1,17 +1,28 @@
 # The whole site in one image: the Go API with the frontend embedded, plus
 # the migrations binary Fly runs before each deploy.
 
-FROM --platform=$BUILDPLATFORM node:18.16.0 AS web
+# The pnpm version pinned in mise.toml, so local and image builds match. It's
+# read in its own stage so that other edits to mise.toml don't redo the
+# dependency install below.
+FROM --platform=$BUILDPLATFORM node:26.12.0 AS pnpm-version
+COPY mise.toml /
+RUN version=$(sed -n 's/^pnpm = "\(.*\)"$/\1/p' /mise.toml) \
+ && test -n "$version" \
+ && echo "$version" > /pnpm-version
+
+FROM --platform=$BUILDPLATFORM node:26.12.0 AS web
 WORKDIR /src
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --silent
+COPY --from=pnpm-version /pnpm-version /tmp/pnpm-version
+RUN npm install --global --silent "pnpm@$(cat /tmp/pnpm-version)"
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile --reporter=append-only
 COPY babel.config.js tsconfig.json webpack.config.js ./
 COPY config config
 COPY public public
 COPY app app
 ARG VERSION=development
 ENV NODE_ENV=production VERSION=$VERSION
-RUN mkdir -p internal/webapp/dist && yarn build \
+RUN mkdir -p internal/webapp/dist && pnpm build \
  && test -f internal/webapp/dist/index.html
 
 # Just the frontend build, which the deploy script exports to upload source
