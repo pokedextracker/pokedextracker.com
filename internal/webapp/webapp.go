@@ -1,7 +1,7 @@
 // Package webapp serves the frontend build that's embedded into the API
-// binary. Webpack writes the build into dist/. When webpack hasn't run, dist/
+// binary. Vite writes the build into dist/. When Vite hasn't built it, dist/
 // only holds .gitkeep and there's no frontend to serve; development uses the
-// webpack dev server instead.
+// Vite dev server instead.
 package webapp
 
 import (
@@ -13,7 +13,6 @@ import (
 	"io/fs"
 	"net/http"
 	"path"
-	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -27,10 +26,12 @@ var embedded embed.FS
 
 const indexFile = "index.html"
 
-// hashedAsset matches files whose names contain webpack's content hash, like
-// main.0123456789abcdef0123.js. A new build gets a new name, so they can be
-// cached forever.
-var hashedAsset = regexp.MustCompile(`\.[0-9a-f]{16,}\.(js|css)(\.map)?$`)
+// hashedAssets is where Vite puts the files whose names contain a hash of
+// their content, like assets/index-B80ZTyZ2.js. A new build gets new names, so
+// they can be cached forever. Files from public/ keep their names and go at
+// the top level, so public/ must never have an assets/ folder: its files would
+// be cached forever too.
+const hashedAssets = "assets/"
 
 // assetExtensions are file types the build contains. A missing path with one
 // of these is a 404; any other path is a frontend route, even if it has a dot
@@ -231,7 +232,7 @@ func cacheControl(name string) string {
 	switch {
 	case name == indexFile || name == "version":
 		return "no-cache"
-	case hashedAsset.MatchString(name):
+	case strings.HasPrefix(name, hashedAssets):
 		return "public, max-age=31536000, immutable"
 	default:
 		return "public, max-age=3600"

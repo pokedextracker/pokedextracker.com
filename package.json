@@ -7,22 +7,14 @@
     "test": "test"
   },
   "scripts": {
-    "build": "pnpm build:bundle && pnpm build:public && pnpm build:version",
-    "build:bundle": "webpack",
-    "build:public": "cp -R public/* internal/webapp/dist/",
+    "build": "vite build; result=$?; touch internal/webapp/dist/.gitkeep; [ $result -eq 0 ] && pnpm build:version",
     "build:version": "date > internal/webapp/dist/version",
-    "lint": "eslint --ext .js,.jsx,.ts,.tsx --max-warnings 0 .",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx,.mts --max-warnings 0 .",
     "lint:all": "pnpm lint && pnpm lint:types",
     "lint:types": "tsc --noEmit && tsc --noEmit -p tsconfig.e2e.json",
-    "start": "webpack serve"
+    "start": "vite"
   },
   "dependencies": {
-    "@babel/core": "^7.22.6",
-    "@babel/plugin-proposal-class-properties": "^7.18.6",
-    "@babel/plugin-proposal-optional-chaining": "^7.21.0",
-    "@babel/preset-env": "^7.22.4",
-    "@babel/preset-react": "^7.22.5",
-    "@babel/preset-typescript": "^7.22.5",
     "@fortawesome/fontawesome-svg-core": "^1.2.27",
     "@fortawesome/free-brands-svg-icons": "^5.12.1",
     "@fortawesome/free-solid-svg-icons": "^5.12.1",
@@ -39,12 +31,8 @@
     "@types/react-router": "^5.1.20",
     "@types/react-router-dom": "^5.3.3",
     "@types/slug": "^5.0.3",
-    "babel-loader": "^9.1.2",
     "classnames": "^2.3.2",
-    "core-js": "^3.30.2",
-    "css-loader": "^6.8.1",
     "history": "^4.10.1",
-    "html-webpack-plugin": "^5.5.1",
     "lodash": "^4.17.21",
     "qs": "^6.11.2",
     "react": "^17.0.2",
@@ -53,23 +41,19 @@
     "react-router": "^5.3.4",
     "react-router-dom": "^5.3.4",
     "rollbar": "^2.26.2",
-    "sass": "^1.62.1",
-    "sass-loader": "^13.3.1",
+    "sass": "^1.105.2",
     "slug": "^2.1.1",
-    "style-loader": "^3.3.3",
-    "typescript": "5.0.4",
-    "webpack": "^5.85.0",
-    "webpack-cli": "^5.1.1",
-    "whatwg-fetch": "^3.0.0"
+    "typescript": "5.0.4"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",
     "@tanstack/eslint-plugin-query": "^4.29.9",
     "@typescript-eslint/eslint-plugin": "^5.60.1",
     "@typescript-eslint/parser": "^5.60.1",
+    "@vitejs/plugin-react": "^6.1.2",
     "eslint": "^8.44.0",
     "eslint-plugin-react": "^7.32.2",
-    "webpack-dev-server": "^4.15.0"
+    "vite": "^8.3.4"
   },
   "repository": {
     "type": "git",

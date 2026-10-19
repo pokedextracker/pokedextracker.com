@@ -28,6 +28,6 @@ function fromServer (server: Partial<ServerConfig>): ConfigType {
 
 const server = window.POKEDEXTRACKER_CONFIG;
 
-// Without the server's config (the webpack dev server), the app uses the
+// Without the server's config (the Vite dev server), the app uses the
 // development config.
 export const Config: ConfigType = server ? fromServer(server) : Development;

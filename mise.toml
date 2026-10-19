@@ -38,7 +38,6 @@ run = "go build -o ./build/api/api-air ./cmd/api"
 [tasks."build:web"]
 description = "Build the frontend into internal/webapp/dist"
 depends = ["install:web"]
-env = { NODE_ENV = "production" }
 run = "pnpm build"
 
 [tasks.clean]

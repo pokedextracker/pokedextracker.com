@@ -16,12 +16,12 @@ COPY --from=pnpm-version /pnpm-version /tmp/pnpm-version
 RUN npm install --global --silent "pnpm@$(cat /tmp/pnpm-version)"
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile --reporter=append-only
-COPY babel.config.js tsconfig.json webpack.config.js ./
+COPY tsconfig.json vite.config.mts ./
 COPY config config
 COPY public public
 COPY app app
-ARG VERSION=development
-ENV NODE_ENV=production VERSION=$VERSION
+# The frontend doesn't depend on the version (the server tells it at runtime),
+# so a deploy that doesn't change it reuses this cached build.
 RUN mkdir -p internal/webapp/dist && pnpm build \
  && test -f internal/webapp/dist/index.html
 
