@@ -6,7 +6,7 @@ import { useHistory } from 'react-router';
 import { Alert } from '../library/Alert';
 import { Footer } from '../library/Footer';
 import { Nav } from '../library/Nav';
-import { ReactGA } from '../../utils/analytics';
+import { trackEvent } from '../../utils/analytics';
 import { Reload } from '../library/Reload';
 import { friendCode3dsFormatter, friendCodeSwitchFormatter } from '../../utils/formatting';
 import { useSession } from '../../hooks/contexts/use-session';
@@ -70,7 +70,7 @@ export function Account () {
         },
       });
       setToken(token);
-      ReactGA.event({ action: 'update', category: 'User' });
+      trackEvent('User', 'update');
     } catch (_) {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
       // error besides prevent it from bubbling up.

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { useParams } from 'react-router';
 
-import { ReactGA } from '../../utils/analytics';
+import { trackEvent } from '../../utils/analytics';
 import { useSession } from '../../hooks/contexts/use-session';
 import { useUser } from '../../hooks/queries/users';
 
@@ -20,7 +20,7 @@ export function FriendCode () {
   let editAccountBtn: ReactNode = null;
 
   if (ownPage) {
-    const handleClick = () => ReactGA.event({ action: 'click edit friend code', category: 'User' });
+    const handleClick = () => trackEvent('User', 'click edit friend code');
 
     editAccountBtn = (
       <Link onClick={handleClick} to="/account"><FontAwesomeIcon icon={faPencilAlt} /></Link>

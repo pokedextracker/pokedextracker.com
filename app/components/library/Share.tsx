@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useParams } from 'react-router';
 
-import { ReactGA } from '../../utils/analytics';
+import { trackEvent } from '../../utils/analytics';
 
 interface Props {
   profile: boolean;
@@ -13,7 +13,7 @@ export function Share ({ profile }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleClick = () => {
-    ReactGA.event({ action: 'select link', category: 'Share' });
+    trackEvent('Share', 'select link');
     inputRef.current && inputRef.current.select();
   };
 

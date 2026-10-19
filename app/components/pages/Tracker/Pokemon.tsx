@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { useParams } from 'react-router';
 
 import { PokemonName } from '../../library/PokemonName';
-import { ReactGA } from '../../../utils/analytics';
+import { trackEvent } from '../../../utils/analytics';
 import { iconClass } from '../../../utils/pokemon';
 import { nationalId, padding } from '../../../utils/formatting';
 import { useCreateCapture, useDeleteCapture } from '../../../hooks/queries/captures';
@@ -83,12 +83,12 @@ export function Pokemon ({ capture, delay = 0, setSelectedPokemon }: Props) {
       };
     }));
 
+    // Marking isn't sent to analytics: it's the most frequent thing visitors
+    // do, and the captures themselves are already in the database.
     if (capture.captured) {
       await deleteCapturesMutation.mutateAsync({ username: user.username, slug, payload });
-      ReactGA.event({ category: 'Pokemon', label: capture.pokemon.name, action: 'unmark' });
     } else {
       await createCapturesMutation.mutateAsync({ username: user.username, slug, payload });
-      ReactGA.event({ category: 'Pokemon', label: capture.pokemon.name, action: 'mark' });
     }
 
     setCaptures((prev) => prev.map((cap) => {
@@ -105,7 +105,7 @@ export function Pokemon ({ capture, delay = 0, setSelectedPokemon }: Props) {
   };
 
   const handleSetInfoClick = () => {
-    ReactGA.event({ action: 'show info', category: 'Pokemon', label: capture.pokemon.name });
+    trackEvent('Pokemon', 'show info', capture.pokemon.name);
 
     setSelectedPokemon(capture.pokemon.id);
     setShowInfo(true);

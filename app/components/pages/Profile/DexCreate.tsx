@@ -11,7 +11,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory } from 'react-router';
 
 import { Alert } from '../../library/Alert';
-import { ReactGA } from '../../../utils/analytics';
+import { trackEvent } from '../../../utils/analytics';
 import { useCreateDex } from '../../../hooks/queries/dexes';
 import { useDexTypes } from '../../../hooks/queries/dex-types';
 import { useGames } from '../../../hooks/queries/games';
@@ -152,7 +152,7 @@ export function DexCreate ({ isOpen, onRequestClose }: Props) {
           dex_type: resolvedDexType,
         },
       });
-      ReactGA.event({ action: 'create', category: 'Dex' });
+      trackEvent('Dex', 'create');
       history.push(`/u/${session!.username}/${dex.slug}`);
     } catch (_) {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this

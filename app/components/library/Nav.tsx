@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import { faCaretDown, faCog, faMoon, faSignOutAlt, faSun, faTh, faUser } from '@fortawesome/free-solid-svg-icons';
 
-import { ReactGA } from '../../utils/analytics';
+import { trackEvent } from '../../utils/analytics';
 import { useLocalStorageContext } from '../../hooks/contexts/use-local-storage-context';
 import { useSession } from '../../hooks/contexts/use-session';
 
@@ -13,7 +13,7 @@ export function Nav () {
   const handleNightModeClick = () => setIsNightMode(!isNightMode);
 
   const handleSignOutClick = () => {
-    ReactGA.event({ action: 'sign out', category: 'Session' });
+    trackEvent('Session', 'sign out');
     setToken(null);
   };
 

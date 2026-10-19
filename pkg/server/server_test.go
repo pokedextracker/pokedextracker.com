@@ -267,7 +267,6 @@ func TestNoBlogFallsThroughToTheFrontend(t *testing.T) {
 func TestFrontendConfigScript(t *testing.T) {
 	script, err := frontendConfigScript(&config.Config{
 		Environment:        "production",
-		GoogleAnalyticsID:  "UA-1",
 		RollbarClientToken: "token</script><script>alert(1)",
 		Version:            "abc1234",
 	})
@@ -275,7 +274,6 @@ func TestFrontendConfigScript(t *testing.T) {
 
 	assert.True(t, strings.HasPrefix(script, "<script>window.POKEDEXTRACKER_CONFIG = {"))
 	assert.Contains(t, script, `"environment":"production"`)
-	assert.Contains(t, script, `"googleAnalyticsId":"UA-1"`)
 	assert.Contains(t, script, `"version":"abc1234"`)
 	assert.Equal(t, 1, strings.Count(script, "</script>"), "values can't close the script tag")
 
@@ -285,14 +283,13 @@ func TestFrontendConfigScript(t *testing.T) {
 }
 
 func TestEnvironmentsGetTheirOwnFrontendConfig(t *testing.T) {
-	for env, analytics := range map[string]string{"development": "UA-45307701-5", "staging": "UA-45307701-5", "production": "UA-45307701-4"} {
+	for _, env := range []string{"development", "staging", "production"} {
 		t.Setenv("ENVIRONMENT", env)
 		cfg, err := config.New()
 		require.NoError(t, err)
 		script, err := frontendConfigScript(cfg)
 		require.NoError(t, err)
 		assert.Contains(t, script, `"environment":"`+env+`"`, env)
-		assert.Contains(t, script, `"googleAnalyticsId":"`+analytics+`"`, env)
 		assert.Contains(t, script, `"rollbarToken":"19ffd96c890b422287ce3a06a917678e"`, env)
 	}
 }

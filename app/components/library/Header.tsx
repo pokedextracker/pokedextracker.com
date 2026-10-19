@@ -7,7 +7,7 @@ import { useParams } from 'react-router';
 
 import { DexIndicator } from './DexIndicator';
 import { DonatedFlair } from './DonatedFlair';
-import { ReactGA } from '../../utils/analytics';
+import { trackEvent } from '../../utils/analytics';
 import { Share } from './Share';
 import { useSession } from '../../hooks/contexts/use-session';
 import { useUser } from '../../hooks/queries/users';
@@ -39,12 +39,12 @@ export function Header ({ profile = false }: Props) {
   const handleShareClick = (e: MouseEvent<HTMLAnchorElement>) => {
     e.stopPropagation();
 
-    ReactGA.event({ action: showShare ? 'close' : 'open', category: 'Share' });
+    trackEvent('Share', showShare ? 'close' : 'open');
 
     setShowShare((prev) => !prev);
   };
 
-  const handleTweetClick = () => ReactGA.event({ action: 'click tweet', category: 'Share' });
+  const handleTweetClick = () => trackEvent('Share', 'click tweet');
 
   const ownPage = session?.id === user.id;
 
