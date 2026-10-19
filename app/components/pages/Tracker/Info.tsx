@@ -110,26 +110,42 @@ export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
 
   if (!pokemon) {
     return (
-      <div className={`info ${showInfo ? "" : "collapsed"}`}>
-        <div className="info-collapse" onClick={handleInfoClick}>
+      <div
+        className={`info ${showInfo ? "" : "collapsed"}`}
+        data-collapsed={!showInfo}
+        data-testid="info"
+      >
+        <div
+          className="info-collapse"
+          data-testid="info-toggle"
+          onClick={handleInfoClick}
+        >
           <FontAwesomeIcon icon={showInfo ? faCaretRight : faCaretLeft} />
         </div>
 
-        <div className="info-main" />
+        <div className="info-main" data-testid="info-main" />
       </div>
     );
   }
 
   return (
-    <div className={`info ${showInfo ? "" : "collapsed"}`}>
-      <div className="info-collapse" onClick={handleInfoClick}>
+    <div
+      className={`info ${showInfo ? "" : "collapsed"}`}
+      data-collapsed={!showInfo}
+      data-testid="info"
+    >
+      <div
+        className="info-collapse"
+        data-testid="info-toggle"
+        onClick={handleInfoClick}
+      >
         <FontAwesomeIcon icon={showInfo ? faCaretRight : faCaretLeft} />
       </div>
 
-      <div className="info-main">
+      <div className="info-main" data-testid="info-main">
         <div className="info-header">
           <i className={iconClass(pokemon, dex)} />
-          <h1>
+          <h1 data-testid="info-name">
             <PokemonName name={pokemon.name} />
           </h1>
           <h2>

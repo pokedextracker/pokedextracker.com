@@ -13,7 +13,10 @@ export function Alert({ className, message, type }: Props) {
   }
 
   return (
-    <div className={classNames("alert", `alert-${type}`, className)}>
+    <div
+      className={classNames("alert", `alert-${type}`, className)}
+      data-testid={`alert-${type}`}
+    >
       {message}
     </div>
   );

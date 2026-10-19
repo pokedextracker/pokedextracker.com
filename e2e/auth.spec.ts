@@ -12,10 +12,10 @@ test("registering creates the first dex and signs in", async ({ page }) => {
   await page.getByRole("button", { name: "Let's go!" }).click();
 
   await expect(page).toHaveURL(`/u/${username}/lumiose-dex`);
-  await expect(page.locator(".percentage h3")).toHaveText(
+  await expect(page.getByTestId("progress-count")).toHaveText(
     "(0 caught, 237 to go)",
   );
-  await expect(page.locator("nav .dropdown")).toContainText(username);
+  await expect(page.getByTestId("nav-dropdown")).toContainText(username);
 });
 
 test("signing in and out", async ({ page, request }) => {
@@ -27,7 +27,7 @@ test("signing in and out", async ({ page, request }) => {
   await page.getByRole("button", { name: "Let's go!" }).click();
 
   await expect(page).toHaveURL(`/u/${user.username}`);
-  await page.locator("nav .dropdown").hover();
+  await page.getByTestId("nav-dropdown").hover();
   await page.getByText("Sign Out").click();
 
   await expect(
@@ -46,6 +46,8 @@ test("a wrong password is turned away", async ({ page, request }) => {
   await page.locator("#password").fill("not-the-password");
   await page.getByRole("button", { name: "Let's go!" }).click();
 
-  await expect(page.locator(".alert-error")).toHaveText("password is invalid");
+  await expect(page.getByTestId("alert-error")).toHaveText(
+    "password is invalid",
+  );
   await expect(page).toHaveURL("/login");
 });

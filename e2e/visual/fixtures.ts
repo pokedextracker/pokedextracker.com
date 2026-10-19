@@ -148,6 +148,14 @@ export async function settle(page: Page): Promise<void> {
   });
 }
 
+// byTestId finds an element by its data-testid, or by the selector it was
+// found by before the app had test ids. Both sides of the comparison run these
+// specs, and master doesn't have the ids until this change merges; then the
+// fallback goes.
+export function byTestId(page: Page, testId: string, oldSelector: string) {
+  return page.locator(`[data-testid="${testId}"], ${oldSelector}`);
+}
+
 // scrollToTop puts the page behind a modal back at the top. Opening a modal
 // focuses its first field, which some browsers scroll the page for,
 // depending on timing.

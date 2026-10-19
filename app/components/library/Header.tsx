@@ -54,7 +54,7 @@ export function Header({ profile = false }: Props) {
       <h1>
         {dex?.title || `${user.username}'s Profile`}
         <div className="share-container">
-          <a onClick={handleShareClick}>
+          <a data-testid="share-toggle" onClick={handleShareClick}>
             <FontAwesomeIcon icon={faLink} />
             {showShare && <Share profile={profile} />}
           </a>

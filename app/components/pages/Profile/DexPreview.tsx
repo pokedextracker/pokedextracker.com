@@ -33,7 +33,7 @@ export function DexPreview({ dex }: Props) {
   const ownPage = session?.id === user.id;
 
   return (
-    <div className="dex-preview">
+    <div className="dex-preview" data-testid="dex-preview">
       <div className="dex-preview-header">
         <h3>
           <Link className="link" to={`/u/${user.username}/${dex.slug}`}>
@@ -42,7 +42,11 @@ export function DexPreview({ dex }: Props) {
         </h3>
         {ownPage && (
           <div className="dex-edit">
-            <a className="link" onClick={handleEditClick}>
+            <a
+              className="link"
+              data-testid="dex-edit-toggle"
+              onClick={handleEditClick}
+            >
               <FontAwesomeIcon icon={faPencilAlt} />
             </a>
             <DexEdit

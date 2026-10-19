@@ -60,7 +60,7 @@ export function Box({
   }
 
   return (
-    <div className="box">
+    <div className="box" data-testid="box">
       <div className="box-header">
         <h1>{title}</h1>
         <MarkAllButton captures={captures} />

@@ -20,7 +20,7 @@ export function Progress({ caught, total }: Props) {
         </div>
         <div className="progress-inner" style={{ width: `${percent}%` }} />
       </div>
-      <h3>
+      <h3 data-testid="progress-count">
         (<b>{caught}</b> caught, <b>{total - caught}</b> to go)
       </h3>
     </div>
