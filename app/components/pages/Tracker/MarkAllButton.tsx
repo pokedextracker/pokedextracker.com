@@ -4,7 +4,7 @@ import { faCircleNotch } from '@fortawesome/free-solid-svg-icons';
 import { useMemo } from 'react';
 import { useParams } from 'react-router';
 
-import { ReactGA } from '../../../utils/analytics';
+import { trackEvent } from '../../../utils/analytics';
 import { padding } from '../../../utils/formatting';
 import { useCreateCapture, useDeleteCapture } from '../../../hooks/queries/captures';
 import { useSession } from '../../../hooks/contexts/use-session';
@@ -80,11 +80,7 @@ export function MarkAllButton ({ captures }: Props) {
       };
     }));
 
-    ReactGA.event({
-      category: 'Box',
-      label: `${padding(captures[0].pokemon.national_id, 3)} - ${padding(captures[captures.length - 1].pokemon.national_id, 3)}`,
-      action: deleting ? 'unmark all' : 'mark all',
-    });
+    trackEvent('Box', deleting ? 'unmark all' : 'mark all', `${padding(captures[0].pokemon.national_id, 3)} - ${padding(captures[captures.length - 1].pokemon.national_id, 3)}`);
   };
 
   const isLoading = createCapturesMutation.isLoading || deleteCapturesMutation.isLoading;

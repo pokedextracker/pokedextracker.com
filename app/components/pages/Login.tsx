@@ -7,7 +7,7 @@ import { useHistory } from 'react-router';
 import { Alert } from '../library/Alert';
 import { Footer } from '../library/Footer';
 import { Nav } from '../library/Nav';
-import { ReactGA } from '../../utils/analytics';
+import { trackEvent } from '../../utils/analytics';
 import { Reload } from '../library/Reload';
 import { useLogin } from '../../hooks/queries/sessions';
 import { useSession } from '../../hooks/contexts/use-session';
@@ -44,7 +44,7 @@ export function Login () {
     try {
       const { token } = await loginMutation.mutateAsync({ payload });
       setToken(token);
-      ReactGA.event({ action: 'login', category: 'Session' });
+      trackEvent('Session', 'login');
       history.push(`/u/${username}`);
     } catch (_) {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this

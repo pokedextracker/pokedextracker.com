@@ -9,7 +9,7 @@ import { useParams } from 'react-router';
 import { EvolutionFamily } from './EvolutionFamily';
 import { InfoLocations } from './InfoLocations';
 import { PokemonName } from '../../library/PokemonName';
-import { ReactGA } from '../../../utils/analytics';
+import { trackEvent } from '../../../utils/analytics';
 import { iconClass } from '../../../utils/pokemon';
 import { nationalId, padding, serebiiLink } from '../../../utils/formatting';
 import { useLocalStorageContext } from '../../../hooks/contexts/use-local-storage-context';
@@ -85,7 +85,7 @@ export function Info ({ selectedPokemon, setSelectedPokemon }: Props) {
   }, [dex, pokemon]);
 
   const handleInfoClick = () => {
-    ReactGA.event({ action: showInfo ? 'collapse' : 'uncollapse', category: 'Info' });
+    trackEvent('Info', showInfo ? 'collapse' : 'uncollapse');
     setShowInfo(!showInfo);
   };
 
@@ -121,7 +121,7 @@ export function Info ({ selectedPokemon, setSelectedPokemon }: Props) {
         <div className="info-footer">
           <a
             href={`http://bulbapedia.bulbagarden.net/wiki/${encodeURI(pokemon.name)}_(Pok%C3%A9mon)`}
-            onClick={() => ReactGA.event({ action: 'open Bulbapedia link', category: 'Info', label: pokemon.name })}
+            onClick={() => trackEvent('Info', 'open Bulbapedia link', pokemon.name)}
             rel="noopener noreferrer"
             target="_blank"
           >
@@ -129,7 +129,7 @@ export function Info ({ selectedPokemon, setSelectedPokemon }: Props) {
           </a>
           <a
             href={serebiiLink(serebiiPath, pokemon.national_id)}
-            onClick={() => ReactGA.event({ action: 'open Serebii link', category: 'Info', label: pokemon.name })}
+            onClick={() => trackEvent('Info', 'open Serebii link', pokemon.name)}
             rel="noopener noreferrer"
             target="_blank"
           >

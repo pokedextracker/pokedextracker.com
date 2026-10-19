@@ -6,7 +6,6 @@ import type { Config as ConfigType } from './types';
 // same build reports the right environment wherever it runs.
 interface ServerConfig {
   environment: string;
-  googleAnalyticsId: string;
   rollbarToken: string;
   version: string;
 }
@@ -22,7 +21,6 @@ function fromServer (server: Partial<ServerConfig>): ConfigType {
   return {
     API_HOST: '/api',
     ENVIRONMENT: server.environment || Development.ENVIRONMENT,
-    GA_ID: server.googleAnalyticsId || Development.GA_ID,
     ROLLBAR_TOKEN: server.rollbarToken || Development.ROLLBAR_TOKEN,
     VERSION: server.version || Development.VERSION,
   };

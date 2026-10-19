@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useRef } from 'react';
 
-import { ReactGA } from '../../../utils/analytics';
+import { trackEvent } from '../../../utils/analytics';
 
 import type { ChangeEvent, Dispatch, SetStateAction } from 'react';
 
@@ -19,7 +19,7 @@ export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }: Props
   useEffect(() => {
     const handleKeyup = (e: KeyboardEvent) => {
       if (e.target instanceof Element && e.target.tagName.toLowerCase() !== 'input' && e.key === '/') {
-        ReactGA.event({ action: 'used shortcut', category: 'Search' });
+        trackEvent('Search', 'used shortcut');
         inputRef.current?.focus();
       }
     };

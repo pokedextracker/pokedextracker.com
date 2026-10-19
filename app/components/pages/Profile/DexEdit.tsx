@@ -11,7 +11,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Alert } from '../../library/Alert';
 import { FormWarning } from './FormWarning';
-import { ReactGA } from '../../../utils/analytics';
+import { trackEvent } from '../../../utils/analytics';
 import { useDeleteDex, useUpdateDex } from '../../../hooks/queries/dexes';
 import { useDexTypes } from '../../../hooks/queries/dex-types';
 import { useGames } from '../../../hooks/queries/games';
@@ -191,7 +191,7 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
 
     try {
       await deleteDexMutation.mutateAsync({ username: session!.username, slug: dex.slug });
-      ReactGA.event({ action: 'delete', category: 'Dex' });
+      trackEvent('Dex', 'delete');
       handleRequestClose();
     } catch (_) {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
@@ -225,7 +225,7 @@ export function DexEdit ({ dex, isOpen, onRequestClose }: Props) {
           dex_type: resolvedDexType,
         },
       });
-      ReactGA.event({ action: 'update', category: 'Dex' });
+      trackEvent('Dex', 'update');
       handleRequestClose();
     } catch (_) {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this

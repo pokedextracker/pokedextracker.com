@@ -11,14 +11,11 @@ import { ProfileRedirect } from './ProfileRedirect';
 import { Register } from './Register';
 import { Rollbar } from '../../utils/rollbar';
 import { Tracker } from './Tracker';
-import { logPageView } from '../../utils/analytics';
 import { useLocalStorageContext } from '../../hooks/contexts/use-local-storage-context';
 
 const history = createBrowserHistory();
-history.listen(() => logPageView());
 // @ts-ignore Rollbar's types are wrong. See https://github.com/rollbar/rollbar-react/issues/69
 history.listen(historyContext(Rollbar));
-logPageView();
 
 export function App () {
   const { isNightMode } = useLocalStorageContext();

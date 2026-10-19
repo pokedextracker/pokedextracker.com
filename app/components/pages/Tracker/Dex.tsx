@@ -9,7 +9,7 @@ import { FriendCode } from '../../library/FriendCode';
 import { Header } from '../../library/Header';
 import { Notification } from '../../library/Notification';
 import { Progress } from '../../library/Progress';
-import { ReactGA } from '../../../utils/analytics';
+import { trackEvent } from '../../../utils/analytics';
 import { Scroll } from './Scroll';
 import { SearchResults } from './SearchResults';
 import { groupBoxes } from '../../../utils/pokemon';
@@ -70,7 +70,7 @@ export function Dex ({
         <header>
           <Header />
           <h3>
-            <Link onClick={() => ReactGA.event({ action: 'click view profile', category: 'User' })} to={`/u/${username}`}>/u/{username}</Link>
+            <Link onClick={() => trackEvent('User', 'click view profile')} to={`/u/${username}`}>/u/{username}</Link>
             <DonatedFlair user={user} />
           </h3>
           <FriendCode />

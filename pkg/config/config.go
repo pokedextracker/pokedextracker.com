@@ -28,12 +28,13 @@ type Config struct {
 	DatabaseSSLMode           string
 	DatabaseUser              string
 	Environment               string
-	GoogleAnalyticsID         string
 	Hostname                  string
 	JWTSecret                 []byte
 	Port                      int
 	RollbarClientToken        string
 	RollbarToken              string
+	UmamiURL                  string
+	UmamiWebsiteID            string
 	Version                   string
 }
 
@@ -78,10 +79,15 @@ func New() (*Config, error) {
 		Version:                   Version,
 	}
 
-	// The frontend's settings, handed to it with index.html (see
-	// server.frontendConfig). Both are public: they're in every page anyway.
-	cfg.GoogleAnalyticsID = "UA-45307701-5"
+	// The frontend's Rollbar token, handed to it with index.html (see
+	// server.frontendConfig). It's public: it's in every page anyway.
 	cfg.RollbarClientToken = "19ffd96c890b422287ce3a06a917678e"
+
+	// Web analytics, sent to a self-hosted Umami through /stats (see
+	// server.registerAnalytics). They're on only when both are set, which is
+	// done outside this repository, so other copies of the site send nothing.
+	cfg.UmamiURL = os.Getenv("UMAMI_URL")
+	cfg.UmamiWebsiteID = os.Getenv("UMAMI_WEBSITE_ID")
 
 	// Where /blog is forwarded, or empty for no blog. BLOG_URL overrides the
 	// production default, for example to try the proxy locally.

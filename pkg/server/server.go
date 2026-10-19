@@ -33,14 +33,14 @@ import (
 
 var healthResponse = []byte(`{"healthy":true}`)
 
-// New builds the server for the whole site: the API under /api, the /blog
-// proxy, and the embedded frontend for everything else.
+// New builds the server for the whole site: the API under /api, the /blog and
+// /stats proxies, and the embedded frontend for everything else.
 func New(cfg *config.Config, db *pg.DB) (*http.Server, error) {
 	script, err := frontendConfigScript(cfg)
 	if err != nil {
 		return nil, err
 	}
-	frontend, ok, err := webapp.Handler(script)
+	frontend, ok, err := webapp.Handler(script + analyticsScript(cfg))
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -93,6 +93,12 @@ func newServer(cfg *config.Config, db *pg.DB, frontend http.Handler) (*http.Serv
 		e.Any("/blog/*", blog)
 	}
 
+	if analyticsEnabled(cfg) {
+		if err := registerAnalytics(e, cfg.UmamiURL); err != nil {
+			return nil, err
+		}
+	}
+
 	if frontend != nil {
 		e.GET("/*", echo.WrapHandler(frontend))
 		e.HEAD("/*", echo.WrapHandler(frontend))
@@ -114,10 +120,9 @@ func newServer(cfg *config.Config, db *pg.DB, frontend http.Handler) (*http.Serv
 // (config/index.ts). It comes from the server so the same build reports the
 // right environment wherever it runs, without guessing from the hostname.
 type frontendConfig struct {
-	Environment       string `json:"environment"`
-	GoogleAnalyticsID string `json:"googleAnalyticsId"`
-	RollbarToken      string `json:"rollbarToken"`
-	Version           string `json:"version"`
+	Environment  string `json:"environment"`
+	RollbarToken string `json:"rollbarToken"`
+	Version      string `json:"version"`
 }
 
 func frontendConfigScript(cfg *config.Config) (string, error) {
@@ -127,10 +132,9 @@ func frontendConfigScript(cfg *config.Config) (string, error) {
 	}
 	// json.Marshal escapes <, >, and &, so the values can't close the script.
 	value, err := json.Marshal(frontendConfig{
-		Environment:       cfg.Environment,
-		GoogleAnalyticsID: cfg.GoogleAnalyticsID,
-		RollbarToken:      cfg.RollbarClientToken,
-		Version:           version,
+		Environment:  cfg.Environment,
+		RollbarToken: cfg.RollbarClientToken,
+		Version:      version,
 	})
 	if err != nil {
 		return "", errors.WithStack(err)
@@ -205,6 +209,11 @@ func blogProxy(rawURL string) (echo.HandlerFunc, error) {
 			http.Error(w, http.StatusText(http.StatusBadGateway), http.StatusBadGateway)
 		},
 	}
+	return serveProxy(proxy), nil
+}
+
+// serveProxy runs a reverse proxy as an Echo handler.
+func serveProxy(proxy *httputil.ReverseProxy) echo.HandlerFunc {
 	return func(c echo.Context) (err error) {
 		// ReverseProxy panics with http.ErrAbortHandler when copying a response
 		// fails partway through. When that's because the visitor left (the
@@ -221,5 +230,5 @@ func blogProxy(rawURL string) (echo.HandlerFunc, error) {
 		}()
 		proxy.ServeHTTP(c.Response(), c.Request())
 		return nil
-	}, nil
+	}
 }

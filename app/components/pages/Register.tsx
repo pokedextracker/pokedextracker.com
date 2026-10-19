@@ -13,7 +13,7 @@ import { useHistory } from 'react-router';
 import { Alert } from '../library/Alert';
 import { Footer } from '../library/Footer';
 import { Nav } from '../library/Nav';
-import { ReactGA } from '../../utils/analytics';
+import { trackEvent } from '../../utils/analytics';
 import { Reload } from '../library/Reload';
 import { friendCode3dsFormatter, friendCodeSwitchFormatter } from '../../utils/formatting';
 import { useCreateUser } from '../../hooks/queries/users';
@@ -141,7 +141,7 @@ export function Register () {
     try {
       const { token } = await createUserMutation.mutateAsync({ payload });
       setToken(token);
-      ReactGA.event({ action: 'register', category: 'Session' });
+      trackEvent('Session', 'register');
       setHideNotification(true);
       history.push(`/u/${username}/${payload.slug}`);
     } catch (_) {
