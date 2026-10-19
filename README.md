@@ -24,7 +24,8 @@ migrates this worktree's development and test databases.
 mise start              # API with hot reload, plus the frontend dev server using it
 mise start:web:staging  # Just the frontend, using the staging API
 mise start:preview      # The production build: one binary serving the API and frontend
-mise lint               # golangci-lint, ESLint, and TypeScript checks
+mise lint               # golangci-lint, ESLint, Prettier, and TypeScript checks
+mise format             # Format the code, config, and docs with Prettier
 mise test:go            # Go tests
 mise test:e2e           # End-to-end tests in Chromium (test:e2e:all for every browser)
 mise build              # Build the frontend, then the API (which embeds it) and migrations

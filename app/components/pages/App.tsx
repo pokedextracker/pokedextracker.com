@@ -1,28 +1,28 @@
-import { Route, Router, Switch } from 'react-router-dom';
-import { createBrowserHistory } from 'history';
-import { historyContext } from '@rollbar/react';
+import { historyContext } from "@rollbar/react";
+import { createBrowserHistory } from "history";
+import { Route, Router, Switch } from "react-router-dom";
 
-import { Account } from './Account';
-import { Home } from './Home';
-import { Login } from './Login';
-import { NotFound } from './NotFound';
-import { Profile } from './Profile';
-import { ProfileRedirect } from './ProfileRedirect';
-import { Register } from './Register';
-import { Rollbar } from '../../utils/rollbar';
-import { Tracker } from './Tracker';
-import { useLocalStorageContext } from '../../hooks/contexts/use-local-storage-context';
+import { useLocalStorageContext } from "../../hooks/contexts/use-local-storage-context";
+import { Rollbar } from "../../utils/rollbar";
+import { Account } from "./Account";
+import { Home } from "./Home";
+import { Login } from "./Login";
+import { NotFound } from "./NotFound";
+import { Profile } from "./Profile";
+import { ProfileRedirect } from "./ProfileRedirect";
+import { Register } from "./Register";
+import { Tracker } from "./Tracker";
 
 const history = createBrowserHistory();
 // @ts-ignore Rollbar's types are wrong. See https://github.com/rollbar/rollbar-react/issues/69
 history.listen(historyContext(Rollbar));
 
-export function App () {
+export function App() {
   const { isNightMode } = useLocalStorageContext();
 
   return (
     <Router history={history}>
-      <div className={`root ${isNightMode ? 'night-mode' : ''}`}>
+      <div className={`root ${isNightMode ? "night-mode" : ""}`}>
         <Switch>
           <Route component={Home} exact path="/" />
           <Route component={Login} exact path="/login" />

@@ -1,18 +1,24 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseQueryOptions,
+} from "@tanstack/react-query";
 
-import { API } from '../../utils/api';
-
-import type { Capture } from '../../types';
-import type { PokedexTrackerError } from '../../utils/api';
-import type { UseQueryOptions } from '@tanstack/react-query';
+import type { Capture } from "../../types";
+import { API, type PokedexTrackerError } from "../../utils/api";
 
 export enum QueryKey {
-  ListCaptures = 'ListCaptures',
+  ListCaptures = "ListCaptures",
 }
 
 type ListCapturesData = Capture[];
 
-export const useCaptures = (username: string, slug: string, options: UseQueryOptions<ListCapturesData, PokedexTrackerError> = {}) => {
+export const useCaptures = (
+  username: string,
+  slug: string,
+  options: UseQueryOptions<ListCapturesData, PokedexTrackerError> = {},
+) => {
   return useQuery<ListCapturesData, PokedexTrackerError, ListCapturesData>({
     ...options,
     queryKey: [QueryKey.ListCaptures, username, slug],
@@ -36,12 +42,19 @@ interface CreateCaptureMutationVariables {
 export const useCreateCapture = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<Capture[], PokedexTrackerError, CreateCaptureMutationVariables>({
+  return useMutation<
+    Capture[],
+    PokedexTrackerError,
+    CreateCaptureMutationVariables
+  >({
     mutationFn: ({ payload }) => {
-      return API.post('/captures', payload);
+      return API.post("/captures", payload);
     },
     onSuccess: (_data, { username, slug }) => {
-      queryClient.invalidateQueries([QueryKey.ListCaptures, { username, slug }]);
+      queryClient.invalidateQueries([
+        QueryKey.ListCaptures,
+        { username, slug },
+      ]);
     },
   });
 };
@@ -60,12 +73,19 @@ interface DeleteCaptureMutationVariables {
 export const useDeleteCapture = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<Capture[], PokedexTrackerError, DeleteCaptureMutationVariables>({
+  return useMutation<
+    Capture[],
+    PokedexTrackerError,
+    DeleteCaptureMutationVariables
+  >({
     mutationFn: ({ payload }) => {
-      return API.delete('/captures', payload);
+      return API.delete("/captures", payload);
     },
     onSuccess: (_data, { username, slug }) => {
-      queryClient.invalidateQueries([QueryKey.ListCaptures, { username, slug }]);
+      queryClient.invalidateQueries([
+        QueryKey.ListCaptures,
+        { username, slug },
+      ]);
     },
   });
 };

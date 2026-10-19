@@ -1,31 +1,32 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Link } from 'react-router-dom';
-import { faAsterisk, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
-import { useEffect, useState } from 'react';
-import { useHistory } from 'react-router';
+import {
+  faAsterisk,
+  faLongArrowAltRight,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import { useHistory } from "react-router";
+import { Link } from "react-router-dom";
 
-import { Alert } from '../library/Alert';
-import { Footer } from '../library/Footer';
-import { Nav } from '../library/Nav';
-import { trackEvent } from '../../utils/analytics';
-import { Reload } from '../library/Reload';
-import { useLogin } from '../../hooks/queries/sessions';
-import { useSession } from '../../hooks/contexts/use-session';
+import { useSession } from "../../hooks/contexts/use-session";
+import { useLogin } from "../../hooks/queries/sessions";
+import { trackEvent } from "../../utils/analytics";
+import { Alert } from "../library/Alert";
+import { Footer } from "../library/Footer";
+import { Nav } from "../library/Nav";
+import { Reload } from "../library/Reload";
 
-import type { ChangeEvent, FormEvent } from 'react';
-
-export function Login () {
+export function Login() {
   const history = useHistory();
 
   const { session, setToken } = useSession();
 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   const loginMutation = useLogin();
 
   useEffect(() => {
-    document.title = 'Login | Pokédex Tracker';
+    document.title = "Login | Pokédex Tracker";
   }, []);
 
   useEffect(() => {
@@ -44,7 +45,7 @@ export function Login () {
     try {
       const { token } = await loginMutation.mutateAsync({ payload });
       setToken(token);
-      trackEvent('Session', 'login');
+      trackEvent("Session", "login");
       history.push(`/u/${username}`);
     } catch (_) {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
@@ -53,8 +54,10 @@ export function Login () {
     }
   };
 
-  const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value);
-  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value);
+  const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) =>
+    setUsername(e.target.value);
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) =>
+    setPassword(e.target.value);
 
   return (
     <div className="login-container">
@@ -98,8 +101,20 @@ export function Login () {
             />
             <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
           </div>
-          <button className="btn btn-blue" disabled={loginMutation.isLoading} type="submit">Let&apos;s go! <FontAwesomeIcon icon={faLongArrowAltRight} /></button>
-          <p>Don&apos;t have an account yet? <Link className="link" to="/register">Register here</Link>!</p>
+          <button
+            className="btn btn-blue"
+            disabled={loginMutation.isLoading}
+            type="submit"
+          >
+            Let&apos;s go! <FontAwesomeIcon icon={faLongArrowAltRight} />
+          </button>
+          <p>
+            Don&apos;t have an account yet?{" "}
+            <Link className="link" to="/register">
+              Register here
+            </Link>
+            !
+          </p>
         </form>
       </div>
       <Footer />

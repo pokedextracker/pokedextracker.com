@@ -1,27 +1,24 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router';
+import { faLongArrowAltRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router";
 
-import { DexCreate } from './DexCreate';
-import { DexPreview } from './DexPreview';
-import { Footer } from '../../library/Footer';
-import { FriendCode } from '../../library/FriendCode';
-import { Header } from '../../library/Header';
-import { Nav } from '../../library/Nav';
-import { NotFound } from '../NotFound';
-import { Notification } from '../../library/Notification';
-import { Reload } from '../../library/Reload';
-import { useSession } from '../../../hooks/contexts/use-session';
-import { useUser } from '../../../hooks/queries/users';
+import { useSession } from "../../../hooks/contexts/use-session";
+import { useUser } from "../../../hooks/queries/users";
+import { Footer } from "../../library/Footer";
+import { FriendCode } from "../../library/FriendCode";
+import { Header } from "../../library/Header";
+import { Nav } from "../../library/Nav";
+import { Notification } from "../../library/Notification";
+import { Reload } from "../../library/Reload";
+import { NotFound } from "../NotFound";
+import { DexCreate } from "./DexCreate";
+import { DexPreview } from "./DexPreview";
 
-export function Profile () {
+export function Profile() {
   const { username } = useParams<{ username: string }>();
 
-  const {
-    data: user,
-    isLoading: userIsLoading,
-  } = useUser(username);
+  const { data: user, isLoading: userIsLoading } = useUser(username);
 
   const { session } = useSession();
 
@@ -56,14 +53,21 @@ export function Profile () {
             <FriendCode />
           </header>
 
-          {user.dexes.map((dex) => <DexPreview dex={dex} key={dex.id} />)}
+          {user.dexes.map((dex) => (
+            <DexPreview dex={dex} key={dex.id} />
+          ))}
 
-          {ownPage &&
+          {ownPage && (
             <div className="dex-create">
-              <div className="btn btn-blue" onClick={handleCreateNewDexClick}>Create a New Dex <FontAwesomeIcon icon={faLongArrowAltRight} /></div>
-              <DexCreate isOpen={showDexCreate} onRequestClose={handleDexCreateRequestClose} />
+              <div className="btn btn-blue" onClick={handleCreateNewDexClick}>
+                Create a New Dex <FontAwesomeIcon icon={faLongArrowAltRight} />
+              </div>
+              <DexCreate
+                isOpen={showDexCreate}
+                onRequestClose={handleDexCreateRequestClose}
+              />
             </div>
-          }
+          )}
         </div>
       </div>
       <Footer />

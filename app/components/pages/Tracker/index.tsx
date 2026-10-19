@@ -1,23 +1,23 @@
-import keyBy from 'lodash/keyBy';
-import throttle from 'lodash/throttle';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router';
+import keyBy from "lodash/keyBy";
+import throttle from "lodash/throttle";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useParams } from "react-router";
 
-import { Dex } from './Dex';
-import { Footer } from '../../library/Footer';
-import { Info } from './Info';
-import { Nav } from '../../library/Nav';
-import { NotFound } from '../NotFound';
-import { Reload } from '../../library/Reload';
-import { SCROLL_DEBOUNCE, SHOW_SCROLL_THRESHOLD } from './Scroll';
-import { SearchBar } from './SearchBar';
-import { TrackerContextProvider, useTrackerContext } from './use-tracker';
-import { useCaptures } from '../../../hooks/queries/captures';
-import { useUser } from '../../../hooks/queries/users';
+import { useCaptures } from "../../../hooks/queries/captures";
+import { useUser } from "../../../hooks/queries/users";
+import { Footer } from "../../library/Footer";
+import { Nav } from "../../library/Nav";
+import { Reload } from "../../library/Reload";
+import { NotFound } from "../NotFound";
+import { Dex } from "./Dex";
+import { Info } from "./Info";
+import { SCROLL_DEBOUNCE, SHOW_SCROLL_THRESHOLD } from "./Scroll";
+import { SearchBar } from "./SearchBar";
+import { TrackerContextProvider, useTrackerContext } from "./use-tracker";
 
 // To enable the inner component to access the context value, it needs to be nested under the provider, so we need this
 // wrapper component to add that nesting.
-export function Tracker () {
+export function Tracker() {
   return (
     <TrackerContextProvider>
       <TrackerInner />
@@ -25,7 +25,7 @@ export function Tracker () {
   );
 }
 
-export function TrackerInner () {
+export function TrackerInner() {
   const { username, slug } = useParams<{ username: string; slug: string }>();
 
   const trackerRef = useRef<HTMLDivElement>(null);
@@ -33,11 +33,12 @@ export function TrackerInner () {
   const { setCaptures } = useTrackerContext();
 
   const { data: user, isLoading: userIsLoading } = useUser(username);
-  const { data: capturesFromServer, isLoading: capturesIsLoading } = useCaptures(username, slug);
+  const { data: capturesFromServer, isLoading: capturesIsLoading } =
+    useCaptures(username, slug);
 
-  const dex = useMemo(() => keyBy(user?.dexes, 'slug')[slug], [user, slug]);
+  const dex = useMemo(() => keyBy(user?.dexes, "slug")[slug], [user, slug]);
 
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [hideCaught, setHideCaught] = useState(false);
   const [showScroll, setShowScroll] = useState(false);
   const [selectedPokemon, setSelectedPokemon] = useState(0);
@@ -60,9 +61,17 @@ export function TrackerInner () {
   }, [capturesFromServer]);
 
   const handleScroll = throttle(() => {
-    if (!showScroll && trackerRef.current && trackerRef.current.scrollTop >= SHOW_SCROLL_THRESHOLD) {
+    if (
+      !showScroll &&
+      trackerRef.current &&
+      trackerRef.current.scrollTop >= SHOW_SCROLL_THRESHOLD
+    ) {
       setShowScroll(true);
-    } else if (showScroll && trackerRef.current && trackerRef.current.scrollTop < SHOW_SCROLL_THRESHOLD) {
+    } else if (
+      showScroll &&
+      trackerRef.current &&
+      trackerRef.current.scrollTop < SHOW_SCROLL_THRESHOLD
+    ) {
       setShowScroll(false);
     }
   }, SCROLL_DEBOUNCE);
@@ -106,7 +115,10 @@ export function TrackerInner () {
             <Footer />
           </div>
         </div>
-        <Info selectedPokemon={selectedPokemon} setSelectedPokemon={setSelectedPokemon} />
+        <Info
+          selectedPokemon={selectedPokemon}
+          setSelectedPokemon={setSelectedPokemon}
+        />
       </div>
     </div>
   );

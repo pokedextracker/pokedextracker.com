@@ -1,5 +1,5 @@
 .profile {
-  @include animation(slide .5s ease-out forwards);
+  @include animation(slide 0.5s ease-out forwards);
   @include flex(1 0 auto);
   @include overflow-y-scroll;
 

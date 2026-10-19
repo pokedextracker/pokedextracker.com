@@ -1,10 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, type Dispatch, type SetStateAction } from "react";
 
-import { Pokemon } from './Pokemon';
-import { nationalId, padding } from '../../../utils/formatting';
-
-import type { Dispatch, SetStateAction } from 'react';
-import type { UICapture } from './use-tracker';
+import { nationalId, padding } from "../../../utils/formatting";
+import { Pokemon } from "./Pokemon";
+import type { UICapture } from "./use-tracker";
 
 const DEFER_CUTOFF = 120;
 
@@ -17,9 +15,16 @@ interface Props {
   setSelectedPokemon: Dispatch<SetStateAction<number>>;
 }
 
-export function SearchResults ({ captures, hideCaught, query, setHideCaught, setQuery, setSelectedPokemon }: Props) {
+export function SearchResults({
+  captures,
+  hideCaught,
+  query,
+  setHideCaught,
+  setQuery,
+  setSelectedPokemon,
+}: Props) {
   const handleClearCaughtFilter = () => setHideCaught(false);
-  const handleClearClick = () => setQuery('');
+  const handleClearClick = () => setQuery("");
 
   const filteredCaptures = useMemo(() => {
     return captures.filter((capture) => {
@@ -48,21 +53,43 @@ export function SearchResults ({ captures, hideCaught, query, setHideCaught, set
   }, [captures, hideCaught, query]);
 
   if (filteredCaptures.length === 0) {
-    let message = <p>No results. <a className="link" onClick={handleClearClick}>Clear your search?</a></p>;
+    let message = (
+      <p>
+        No results.{" "}
+        <a className="link" onClick={handleClearClick}>
+          Clear your search?
+        </a>
+      </p>
+    );
 
     if (hideCaught) {
       if (query) {
-        message = <p>No results in uncaught Pokémon. <a className="link" onClick={handleClearCaughtFilter}>Include caught Pokémon</a> or <a className="link" onClick={handleClearClick}>clear your search</a>?</p>;
+        message = (
+          <p>
+            No results in uncaught Pokémon.{" "}
+            <a className="link" onClick={handleClearCaughtFilter}>
+              Include caught Pokémon
+            </a>{" "}
+            or{" "}
+            <a className="link" onClick={handleClearClick}>
+              clear your search
+            </a>
+            ?
+          </p>
+        );
       } else {
-        message = <p>No uncaught Pokémon. <a className="link" onClick={handleClearCaughtFilter}>Show all Pokémon?</a></p>;
+        message = (
+          <p>
+            No uncaught Pokémon.{" "}
+            <a className="link" onClick={handleClearCaughtFilter}>
+              Show all Pokémon?
+            </a>
+          </p>
+        );
       }
     }
 
-    return (
-      <div className="search-results search-results-empty">
-        {message}
-      </div>
-    );
+    return <div className="search-results search-results-empty">{message}</div>;
   }
 
   return (

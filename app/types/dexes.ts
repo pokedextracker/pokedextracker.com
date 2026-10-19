@@ -1,5 +1,5 @@
-import type { DexType } from './dex-types';
-import type { Game } from './games';
+import type { DexType } from "./dex-types";
+import type { Game } from "./games";
 
 export interface Dex {
   id: number;

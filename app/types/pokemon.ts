@@ -1,4 +1,4 @@
-import type { Game, GameFamily } from './games';
+import type { Game, GameFamily } from "./games";
 
 export interface Pokemon {
   id: number;

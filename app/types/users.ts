@@ -1,4 +1,4 @@
-import type { Dex } from './dexes';
+import type { Dex } from "./dexes";
 
 export interface User {
   id: number;

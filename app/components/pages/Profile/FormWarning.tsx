@@ -1,13 +1,12 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
-
-import type { ReactNode } from 'react';
+import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import type { ReactNode } from "react";
 
 interface Props {
   message: ReactNode;
 }
 
-export function FormWarning ({ message }: Props) {
+export function FormWarning({ message }: Props) {
   if (!message) {
     return null;
   }

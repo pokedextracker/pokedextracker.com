@@ -106,8 +106,12 @@ env = { GOLANGCI_LINT_CACHE = "{{config_root}}/tmp/golangci-lint-cache" }
 run = "golangci-lint run"
 
 [tasks."lint:web"]
-description = "Run ESLint and TypeScript checks"
+description = "Run ESLint, Prettier, and TypeScript checks"
 run = "pnpm lint:all"
+
+[tasks.format]
+description = "Format the code with Prettier"
+run = "pnpm format"
 
 # === Testing ===
 

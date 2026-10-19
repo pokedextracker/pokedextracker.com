@@ -1,46 +1,127 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <title>Pokédex Tracker | Track the Progress of Your Living Dex Completion</title>
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Alegreya+Sans:400,900italic,900,800italic,800,700italic,700,500italic,500,400italic,300italic,300,100italic,100" rel="stylesheet" type="text/css">
-    <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-touch-icon-57x57.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="/favicon/apple-touch-icon-60x60.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="/favicon/apple-touch-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="/favicon/apple-touch-icon-76x76.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="/favicon/apple-touch-icon-114x114.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/favicon/apple-touch-icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="/favicon/apple-touch-icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/favicon/apple-touch-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon-180x180.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-chrome-192x192.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
-    <link rel="manifest" href="/manifest.json">
-    <meta name="msapplication-config" content="/browserconfig.xml">
-    <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-TileImage" content="/favicon/mstile-144x144.png">
-    <meta name="theme-color" content="#ffffff">
-    <meta name="description" content="A tool for tracking your Living Dex progress. Easily toggle between and track your captured Pokémon, find the locations of those left to be captured, and share a public link with others to see how you can help each other out.">
-    <meta name="keywords" content="pokemon,pokedex,track,tracker,checklist,livingdex,progress,completion,pokedex tracker,living dex">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <meta name="og:url" content="https://pokedextracker.com">
-    <meta name="og:image" content="https://pokedextracker.com/og.png">
-    <meta name="og:title" content="Pokédex Tracker">
-    <meta name="og:description" content="A tool for tracking your Living Dex progress. Easily toggle between and track your captured Pokémon, find the locations of those left to be captured, and share a public link with others to see how you can help each other out.">
+    <title>
+      Pokédex Tracker | Track the Progress of Your Living Dex Completion
+    </title>
+    <link
+      href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Alegreya+Sans:400,900italic,900,800italic,800,700italic,700,500italic,500,400italic,300italic,300,100italic,100"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="57x57"
+      href="/favicon/apple-touch-icon-57x57.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="60x60"
+      href="/favicon/apple-touch-icon-60x60.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="72x72"
+      href="/favicon/apple-touch-icon-72x72.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="76x76"
+      href="/favicon/apple-touch-icon-76x76.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="114x114"
+      href="/favicon/apple-touch-icon-114x114.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="120x120"
+      href="/favicon/apple-touch-icon-120x120.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="144x144"
+      href="/favicon/apple-touch-icon-144x144.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="/favicon/apple-touch-icon-152x152.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/favicon/apple-touch-icon-180x180.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/favicon/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="/favicon/android-chrome-192x192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="96x96"
+      href="/favicon/favicon-96x96.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/favicon/favicon-16x16.png"
+    />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+    <meta name="msapplication-TileColor" content="#ffffff" />
+    <meta
+      name="msapplication-TileImage"
+      content="/favicon/mstile-144x144.png"
+    />
+    <meta name="theme-color" content="#ffffff" />
+    <meta
+      name="description"
+      content="A tool for tracking your Living Dex progress. Easily toggle between and track your captured Pokémon, find the locations of those left to be captured, and share a public link with others to see how you can help each other out."
+    />
+    <meta
+      name="keywords"
+      content="pokemon,pokedex,track,tracker,checklist,livingdex,progress,completion,pokedex tracker,living dex"
+    />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+    />
+    <meta name="og:url" content="https://pokedextracker.com" />
+    <meta name="og:image" content="https://pokedextracker.com/og.png" />
+    <meta name="og:title" content="Pokédex Tracker" />
+    <meta
+      name="og:description"
+      content="A tool for tracking your Living Dex progress. Easily toggle between and track your captured Pokémon, find the locations of those left to be captured, and share a public link with others to see how you can help each other out."
+    />
     <script type="application/ld+json">
-    {
-      "@context" : "http://schema.org",
-      "@type" : "WebSite",
-      "name" : "Pokédex Tracker",
-      "alternateName" : "A tool for tracking your Living Dex progress",
-      "url" : "https://pokedextracker.com"
-    }
+      {
+        "@context": "http://schema.org",
+        "@type": "WebSite",
+        "name": "Pokédex Tracker",
+        "alternateName": "A tool for tracking your Living Dex progress",
+        "url": "https://pokedextracker.com"
+      }
     </script>
     <script>
-      if (!('ontouchstart' in window)) {
-        document.documentElement.className += ' no-touch';
+      if (!("ontouchstart" in window)) {
+        document.documentElement.className += " no-touch";
       }
     </script>
   </head>

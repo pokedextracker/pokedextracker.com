@@ -1,24 +1,24 @@
-import classNames from 'classnames';
-import keyBy from 'lodash/keyBy';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faInfo } from '@fortawesome/free-solid-svg-icons';
-import { useMemo } from 'react';
-import { useParams } from 'react-router';
+import { faInfo } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
+import keyBy from "lodash/keyBy";
+import { useMemo, type Dispatch, type SetStateAction } from "react";
+import { useParams } from "react-router";
 
-import { PokemonName } from '../../library/PokemonName';
-import { trackEvent } from '../../../utils/analytics';
-import { iconClass } from '../../../utils/pokemon';
-import { nationalId, padding } from '../../../utils/formatting';
-import { useCreateCapture, useDeleteCapture } from '../../../hooks/queries/captures';
-import { useDelayedRender } from '../../../hooks/use-delayed-render';
-import { useLocalStorageContext } from '../../../hooks/contexts/use-local-storage-context';
-import { useSession } from '../../../hooks/contexts/use-session';
-import { useTrackerContext } from './use-tracker';
-import { useUser } from '../../../hooks/queries/users';
-
-import type { Dex } from '../../../types';
-import type { Dispatch, SetStateAction } from 'react';
-import type { UICapture } from './use-tracker';
+import { useLocalStorageContext } from "../../../hooks/contexts/use-local-storage-context";
+import { useSession } from "../../../hooks/contexts/use-session";
+import {
+  useCreateCapture,
+  useDeleteCapture,
+} from "../../../hooks/queries/captures";
+import { useUser } from "../../../hooks/queries/users";
+import { useDelayedRender } from "../../../hooks/use-delayed-render";
+import type { Dex } from "../../../types";
+import { trackEvent } from "../../../utils/analytics";
+import { nationalId, padding } from "../../../utils/formatting";
+import { iconClass } from "../../../utils/pokemon";
+import { PokemonName } from "../../library/PokemonName";
+import { useTrackerContext, type UICapture } from "./use-tracker";
 
 interface Props {
   capture: UICapture | null;
@@ -26,7 +26,7 @@ interface Props {
   setSelectedPokemon: Dispatch<SetStateAction<number>>;
 }
 
-export function Pokemon ({ capture, delay = 0, setSelectedPokemon }: Props) {
+export function Pokemon({ capture, delay = 0, setSelectedPokemon }: Props) {
   const render = useDelayedRender(delay);
 
   const { username, slug } = useParams<{ username: string; slug: string }>();
@@ -36,7 +36,10 @@ export function Pokemon ({ capture, delay = 0, setSelectedPokemon }: Props) {
 
   const { session } = useSession();
   const user = useUser(username).data!;
-  const dex = useMemo<Dex | undefined>(() => keyBy(user.dexes, 'slug')[slug], [user, slug]);
+  const dex = useMemo<Dex | undefined>(
+    () => keyBy(user.dexes, "slug")[slug],
+    [user, slug],
+  );
 
   const createCapturesMutation = useCreateCapture();
   const deleteCapturesMutation = useDeleteCapture();
@@ -70,42 +73,54 @@ export function Pokemon ({ capture, delay = 0, setSelectedPokemon }: Props) {
 
     const payload = { dex: dex.id, pokemon: [capture.pokemon.id] };
 
-    setCaptures((prev) => prev.map((cap) => {
-      if (cap.pokemon.id !== capture.pokemon.id) {
-        // We're not modifying this one.
-        return cap;
-      }
-      return {
-        ...cap,
-        pending: true,
-        // We need to make it look like captured is false, otherwise, the pending styles won't show up.
-        captured: false,
-      };
-    }));
+    setCaptures((prev) =>
+      prev.map((cap) => {
+        if (cap.pokemon.id !== capture.pokemon.id) {
+          // We're not modifying this one.
+          return cap;
+        }
+        return {
+          ...cap,
+          pending: true,
+          // We need to make it look like captured is false, otherwise, the pending styles won't show up.
+          captured: false,
+        };
+      }),
+    );
 
     // Marking isn't sent to analytics: it's the most frequent thing visitors
     // do, and the captures themselves are already in the database.
     if (capture.captured) {
-      await deleteCapturesMutation.mutateAsync({ username: user.username, slug, payload });
+      await deleteCapturesMutation.mutateAsync({
+        username: user.username,
+        slug,
+        payload,
+      });
     } else {
-      await createCapturesMutation.mutateAsync({ username: user.username, slug, payload });
+      await createCapturesMutation.mutateAsync({
+        username: user.username,
+        slug,
+        payload,
+      });
     }
 
-    setCaptures((prev) => prev.map((cap) => {
-      if (cap.pokemon.id !== capture.pokemon.id) {
-        // We're not modifying this one.
-        return cap;
-      }
-      return {
-        ...cap,
-        pending: false,
-        captured: !capture.captured,
-      };
-    }));
+    setCaptures((prev) =>
+      prev.map((cap) => {
+        if (cap.pokemon.id !== capture.pokemon.id) {
+          // We're not modifying this one.
+          return cap;
+        }
+        return {
+          ...cap,
+          pending: false,
+          captured: !capture.captured,
+        };
+      }),
+    );
   };
 
   const handleSetInfoClick = () => {
-    trackEvent('Pokemon', 'show info', capture.pokemon.name);
+    trackEvent("Pokemon", "show info", capture.pokemon.name);
 
     setSelectedPokemon(capture.pokemon.id);
     setShowInfo(true);
@@ -123,14 +138,20 @@ export function Pokemon ({ capture, delay = 0, setSelectedPokemon }: Props) {
     pending: capture.pending,
   };
 
-  const regional = dex.dex_type.tags.includes('regional');
-  const idToDisplay = regional ? (capture.pokemon.dex_number === -1 ? '---' : capture.pokemon.dex_number) : nationalId(capture.pokemon.national_id);
+  const regional = dex.dex_type.tags.includes("regional");
+  const idToDisplay = regional
+    ? capture.pokemon.dex_number === -1
+      ? "---"
+      : capture.pokemon.dex_number
+    : nationalId(capture.pokemon.national_id);
   const paddingDigits = dex.total >= 1000 ? 4 : 3;
 
   return (
     <div className={classNames(classes)}>
       <div className="set-captured" onClick={handleSetCapturedClick}>
-        <h4><PokemonName name={capture.pokemon.name} /></h4>
+        <h4>
+          <PokemonName name={capture.pokemon.name} />
+        </h4>
         <div className="icon-wrapper">
           <i className={iconClass(capture.pokemon, dex)} />
         </div>
@@ -140,7 +161,9 @@ export function Pokemon ({ capture, delay = 0, setSelectedPokemon }: Props) {
         <div className="icon-wrapper">
           <i className={iconClass(capture.pokemon, dex)} />
         </div>
-        <h4><PokemonName name={capture.pokemon.name} /></h4>
+        <h4>
+          <PokemonName name={capture.pokemon.name} />
+        </h4>
         <p>#{padding(idToDisplay, paddingDigits)}</p>
       </div>
       <div className="set-info" onClick={handleSetInfoClick}>

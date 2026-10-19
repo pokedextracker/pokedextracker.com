@@ -1,7 +1,7 @@
 // Based on https://www.30secondsofcode.org/react/s/use-local-storage
-import { useState } from 'react';
+import { useState } from "react";
 
-import { localStorage } from '../utils/local-storage';
+import { localStorage } from "../utils/local-storage";
 
 export type SetLocalStorageFn<T> = (newValue: T) => void;
 
@@ -10,7 +10,10 @@ interface Options<T> {
   parseAsJson?: boolean;
 }
 
-export function useLocalStorage<T> (key: string, options: Options<T>): [T, SetLocalStorageFn<T>] {
+export function useLocalStorage<T>(
+  key: string,
+  options: Options<T>,
+): [T, SetLocalStorageFn<T>] {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
       const value = localStorage.getItem(key);
@@ -30,7 +33,10 @@ export function useLocalStorage<T> (key: string, options: Options<T>): [T, SetLo
     if (newValue === null) {
       localStorage.removeItem(key);
     } else {
-      const serialized = options.parseAsJson || typeof newValue !== 'string' ? JSON.stringify(newValue) : newValue;
+      const serialized =
+        options.parseAsJson || typeof newValue !== "string"
+          ? JSON.stringify(newValue)
+          : newValue;
       localStorage.setItem(key, serialized);
     }
     setStoredValue(newValue);

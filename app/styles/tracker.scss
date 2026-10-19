@@ -12,7 +12,7 @@
     position: relative;
     left: 3px;
     bottom: 1px;
-    font-size: .7em;
+    font-size: 0.7em;
   }
 
   .dex-wrapper {
@@ -40,7 +40,7 @@
   }
 
   .pkicon.game-family-legends_arceus {
-    background-color: rgba($gray-light, .3);
+    background-color: rgba($gray-light, 0.3);
   }
 
   .info-collapse {
@@ -206,7 +206,7 @@
     border-top: 2px solid darken($brand-secondary-dark, 3%);
 
     a {
-      @include transition(all .1s ease-out);
+      @include transition(all 0.1s ease-out);
 
       width: 50%;
       padding: 20px;
@@ -229,7 +229,7 @@
       }
 
       .svg-inline--fa {
-        @include transition(all .1s ease-out);
+        @include transition(all 0.1s ease-out);
 
         font-size: 10px;
         margin-left: 3px;
@@ -305,7 +305,7 @@
   padding: 100px 0;
 
   .scroll-up {
-    @include transition(all .5s ease-out);
+    @include transition(all 0.5s ease-out);
     @include flexbox();
     @include align-items(center);
     @include justify-content(center);
@@ -317,7 +317,7 @@
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
     background-color: $brand-secondary;
     color: #fff;
     font-size: 11px;
@@ -496,7 +496,7 @@ header {
   height: $pokemon-box-size;
 
   &.pending {
-    background: rgba($brand-primary-light, .5);
+    background: rgba($brand-primary-light, 0.5);
   }
 
   &.captured {
@@ -508,12 +508,12 @@ header {
     }
 
     .game-family-legends_arceus {
-      background-color: rgba(#ffffff, .5);
+      background-color: rgba(#ffffff, 0.5);
     }
   }
 
   &.disabled {
-    opacity: .1;
+    opacity: 0.1;
 
     &:hover {
       cursor: default;
@@ -550,7 +550,7 @@ header {
   }
 
   .game-family-legends_arceus {
-    background-color: rgba($gray-medium, .4);
+    background-color: rgba($gray-medium, 0.4);
   }
 }
 
@@ -652,7 +652,7 @@ header {
     height: $pokemon-box-size + 2;
     width: $pokemon-box-size + 2;
 
-    &:nth-child(6n+1) {
+    &:nth-child(6n + 1) {
       margin-left: 0;
     }
 
@@ -705,7 +705,7 @@ header {
     }
 
     .share-container {
-      display: none
+      display: none;
     }
   }
 

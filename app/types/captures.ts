@@ -1,4 +1,4 @@
-import type { GameFamily } from './games';
+import type { GameFamily } from "./games";
 
 export interface Capture {
   dex_id: number;

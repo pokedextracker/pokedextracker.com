@@ -1,11 +1,9 @@
-import { createContext, useContext, useMemo } from 'react';
-import { tokenToUser } from '../../utils/state';
-import type { SetLocalStorageFn } from '../use-local-storage';
-import { useLocalStorage } from '../use-local-storage';
+import { createContext, useContext, useMemo, type ReactNode } from "react";
 
-import type { ReactNode } from 'react';
-import type { Session, User } from '../../types';
-import { useUser } from '../queries/users';
+import type { Session, User } from "../../types";
+import { tokenToUser } from "../../utils/state";
+import { useUser } from "../queries/users";
+import { useLocalStorage, type SetLocalStorageFn } from "../use-local-storage";
 
 interface SessionContextState {
   session: Session | null;
@@ -24,19 +22,20 @@ interface Props {
 }
 
 export const SessionProvider = ({ children }: Props) => {
-  const [token, setToken] = useLocalStorage<string | null>('token', { defaultValue: null });
+  const [token, setToken] = useLocalStorage<string | null>("token", {
+    defaultValue: null,
+  });
   const session = useMemo(() => tokenToUser(token), [token]);
   const { data: sessionUser } = useUser(session?.username);
 
-  const contextValue = useMemo<SessionContextState>(() => ({
-    session,
-    sessionUser: sessionUser || null,
-    setToken,
-  }), [
-    session,
-    sessionUser,
-    setToken,
-  ]);
+  const contextValue = useMemo<SessionContextState>(
+    () => ({
+      session,
+      sessionUser: sessionUser || null,
+      setToken,
+    }),
+    [session, sessionUser, setToken],
+  );
 
   return (
     <SessionContext.Provider value={contextValue}>

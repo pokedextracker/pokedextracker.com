@@ -11,6 +11,9 @@ declare global {
 
 // trackEvent records something a visitor did, as "Category: action" (like
 // "Dex: create"). label adds detail, like which box was marked.
-export function trackEvent (category: string, action: string, label?: string) {
-  window.umami?.track(`${category}: ${action}`, label === undefined ? undefined : { label });
+export function trackEvent(category: string, action: string, label?: string) {
+  window.umami?.track(
+    `${category}: ${action}`,
+    label === undefined ? undefined : { label },
+  );
 }

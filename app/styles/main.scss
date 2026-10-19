@@ -4,7 +4,9 @@ html {
   -webkit-font-smoothing: antialiased;
 }
 
-*, *:before, *:after {
+*,
+*:before,
+*:after {
   @include border-box();
 }
 
@@ -47,7 +49,7 @@ body {
 }
 
 a.link {
-  @include transition(all .1s ease-out);
+  @include transition(all 0.1s ease-out);
 
   color: $brand-secondary-light;
   font-weight: 500;
@@ -73,7 +75,7 @@ nav {
   font-family: $font-secondary;
 
   a {
-    @include transition(all .1s ease-out);
+    @include transition(all 0.1s ease-out);
     @include flexbox();
 
     align-items: center;
@@ -107,7 +109,8 @@ nav {
           color: $brand-secondary;
 
           &::after {
-            border-color: transparent transparent $brand-primary-light transparent;
+            border-color: transparent transparent $brand-primary-light
+              transparent;
           }
         }
       }
@@ -140,21 +143,21 @@ nav {
     }
 
     ul {
-      @include transition(all .1s ease-out);
+      @include transition(all 0.1s ease-out);
 
       opacity: 0;
       visibility: hidden;
       position: absolute;
       right: 0;
       top: 70%;
-    	margin: 0;
-    	padding: 0;
+      margin: 0;
+      padding: 0;
       list-style: none;
       text-align: right;
       z-index: 10;
       width: 230px;
 
-      li  a {
+      li a {
         display: block;
         border-top: 2px solid $brand-primary;
         background-color: lighten($brand-primary, 10%);
@@ -186,7 +189,7 @@ nav {
 }
 
 .btn {
-  @include transition(all .1s ease-out);
+  @include transition(all 0.1s ease-out);
 
   display: block;
   position: relative;
@@ -217,7 +220,7 @@ nav {
   }
 
   .svg-inline--fa {
-    @include transition(all .1s ease-out);
+    @include transition(all 0.1s ease-out);
 
     font-size: 10px;
     margin-left: 3px;
@@ -304,7 +307,7 @@ nav {
   }
 
   .fa-times {
-    @include transition(all .1s ease-out);
+    @include transition(all 0.1s ease-out);
 
     position: absolute;
     top: 8px;
@@ -351,7 +354,7 @@ nav {
 }
 
 form {
-  @include animation(slide .5s ease-out forwards);
+  @include animation(slide 0.5s ease-out forwards);
 
   position: relative;
   top: 60px;
@@ -453,10 +456,10 @@ select {
       cursor: pointer;
     }
 
-    input[type=radio] {
+    input[type="radio"] {
       display: none;
 
-      &:checked+.radio-custom span {
+      &:checked + .radio-custom span {
         opacity: 1;
       }
     }
@@ -473,7 +476,7 @@ select {
       border-radius: 50%;
 
       > span {
-        @include transition(all .15s ease-out);
+        @include transition(all 0.15s ease-out);
         display: inline-block;
         opacity: 0;
         position: absolute;
@@ -514,10 +517,10 @@ select {
       cursor: pointer;
     }
 
-    input[type=checkbox] {
+    input[type="checkbox"] {
       display: none;
 
-      &:checked+.checkbox-custom span {
+      &:checked + .checkbox-custom span {
         opacity: 1;
       }
     }
@@ -533,7 +536,7 @@ select {
       background-color: lighten($gray-light, 25%);
 
       > span {
-        @include transition(all .15s ease-out);
+        @include transition(all 0.15s ease-out);
         display: inline-block;
         opacity: 0;
         position: absolute;
@@ -690,7 +693,7 @@ select {
   text-align: center;
 
   img {
-    @include animation(slide 1s cubic-bezier(0,0,.05,1) forwards);
+    @include animation(slide 1s cubic-bezier(0, 0, 0.05, 1) forwards);
 
     position: relative;
     top: -100px;
@@ -699,7 +702,7 @@ select {
   }
 
   .not-found-caption {
-    @include animation(slide 1s cubic-bezier(0,0,.05,1) forwards);
+    @include animation(slide 1s cubic-bezier(0, 0, 0.05, 1) forwards);
 
     position: relative;
     top: 100px;
@@ -848,7 +851,7 @@ select {
       border-color: $night-mode-01dp;
 
       a {
-      color: $night-mode-link;
+        color: $night-mode-link;
 
         &:hover {
           color: $night-mode-link-dark;
@@ -866,7 +869,7 @@ select {
   }
 
   .home-container {
-    background: $night-mode url('/pattern-night.png') repeat center center;
+    background: $night-mode url("/pattern-night.png") repeat center center;
     background-size: 500px 250px;
 
     .footer {
@@ -889,7 +892,7 @@ select {
     }
   }
 
-  header  {
+  header {
     .share-container .share {
       background-color: $night-mode;
       border-color: $night-mode-02dp;
@@ -939,7 +942,7 @@ select {
 
   .pokemon {
     &.pending {
-      background: rgba($night-mode-primary, .5);
+      background: rgba($night-mode-primary, 0.5);
     }
 
     &.captured {
@@ -953,7 +956,7 @@ select {
       }
 
       .pkicon.game-family-legends_arceus {
-        background-color: rgba(#ffffff, .35);
+        background-color: rgba(#ffffff, 0.35);
       }
     }
 
@@ -975,7 +978,7 @@ select {
     }
 
     .pkicon.game-family-legends_arceus {
-      background-color: rgba($gray-light, .2);
+      background-color: rgba($gray-light, 0.2);
     }
   }
 
@@ -1095,7 +1098,7 @@ select {
     color: $night-mode-error;
 
     &:hover {
-      color: $night-mode-error-dark
+      color: $night-mode-error-dark;
     }
   }
 

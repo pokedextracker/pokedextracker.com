@@ -1,18 +1,24 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseQueryOptions,
+} from "@tanstack/react-query";
 
-import { API } from '../../utils/api';
-import { QueryKey as CaptureQueryKey } from './captures';
-import { QueryKey as UserQueryKey } from './users';
-
-import type { Dex } from '../../types';
-import type { PokedexTrackerError } from '../../utils/api';
-import type { UseQueryOptions } from '@tanstack/react-query';
+import type { Dex } from "../../types";
+import { API, type PokedexTrackerError } from "../../utils/api";
+import { QueryKey as CaptureQueryKey } from "./captures";
+import { QueryKey as UserQueryKey } from "./users";
 
 export enum QueryKey {
-  RetrieveDex = 'RetrieveDex',
+  RetrieveDex = "RetrieveDex",
 }
 
-export const useDex = (username: string, slug: string, options: UseQueryOptions<Dex, PokedexTrackerError> = {}) => {
+export const useDex = (
+  username: string,
+  slug: string,
+  options: UseQueryOptions<Dex, PokedexTrackerError> = {},
+) => {
   return useQuery<Dex, PokedexTrackerError, Dex>({
     ...options,
     queryKey: [QueryKey.RetrieveDex, username, slug],
@@ -71,7 +77,11 @@ export const useUpdateDex = () => {
     },
     onSuccess: (_data, { username, slug }) => {
       queryClient.invalidateQueries([QueryKey.RetrieveDex, username, slug]);
-      queryClient.invalidateQueries([CaptureQueryKey.ListCaptures, username, slug]);
+      queryClient.invalidateQueries([
+        CaptureQueryKey.ListCaptures,
+        username,
+        slug,
+      ]);
       queryClient.invalidateQueries([UserQueryKey.RetrieveUser, username]);
     },
   });
