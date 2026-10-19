@@ -164,7 +164,7 @@ func apiEnvironment(target DatabaseTarget) []string {
 }
 
 // serverEnvironment passes the chosen ports to the dev servers: PORT to the
-// API's config, and WEB_PORT and API_URL to webpack.config.js.
+// API's config, and WEB_PORT and API_URL to vite.config.mts.
 func serverEnvironment(servers Servers) []string {
 	var values []string
 	if servers.APIPort != 0 {
@@ -194,10 +194,9 @@ func runPreview(ctx context.Context, root string, environment []string) error {
 
 // buildSite builds the frontend for production into internal/webapp/dist,
 // then the binary that embeds it, and returns the binary's path. name is the
-// version the frontend reports and the build directory.
+// directory under build/ the binary goes in.
 func buildSite(ctx context.Context, root string, environment []string, name string) (string, error) {
-	build := append(append([]string{}, environment...), "NODE_ENV=production", "VERSION="+name)
-	if err := runSingleProcess(ctx, root, build, "pnpm", "build"); err != nil {
+	if err := runSingleProcess(ctx, root, environment, "pnpm", "build"); err != nil {
 		return "", err
 	}
 	binary := filepath.Join(root, "build", name, "api")

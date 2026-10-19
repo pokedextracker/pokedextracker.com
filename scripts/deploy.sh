@@ -80,27 +80,27 @@ if [ -n "$ROLLBAR_TOKEN" ]; then
     --builder multiarch \
     --file Dockerfile \
     --target web-dist \
-    --build-arg VERSION=${TAG} \
     --output type=local,dest="$WEB_DIR" \
     .
 
+  # Vite puts the built scripts, with their source maps, in assets/.
   shopt -s nullglob
-  main_paths=("$WEB_DIR"/main.*.js)
-  if [ ${#main_paths[@]} -eq 0 ]; then
-    echo "No main.*.js in the frontend build; can't upload source maps." >&2
+  script_paths=("$WEB_DIR"/assets/*.js)
+  if [ ${#script_paths[@]} -eq 0 ]; then
+    echo "No assets/*.js in the frontend build; can't upload source maps." >&2
     exit 1
   fi
-  for main_path in "${main_paths[@]}"; do
-    main_file=$(basename "$main_path")
+  for script_path in "${script_paths[@]}"; do
+    script_file="assets/$(basename "$script_path")"
     for host in staging.pokedextracker.com pokedextracker.com; do
       # The site works without source maps, so a failed upload is a warning
       # rather than a reason to stop the deploy.
       if ! curl -q -sS --fail-with-body --retry 3 --retry-all-errors https://api.rollbar.com/api/1/sourcemap \
         -F access_token=$ROLLBAR_TOKEN \
         -F version=$TAG \
-        -F minified_url=//$host/$main_file \
-        -F source_map=@$main_path.map; then
-        echo -e "\n\033[1;33m==> Couldn't upload the source map for //$host/$main_file; continuing\033[0m"
+        -F minified_url=//$host/$script_file \
+        -F source_map=@$script_path.map; then
+        echo -e "\n\033[1;33m==> Couldn't upload the source map for //$host/$script_file; continuing\033[0m"
       fi
       echo
     done

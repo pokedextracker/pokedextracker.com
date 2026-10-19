@@ -21,13 +21,13 @@ func testHandler(t *testing.T) http.Handler {
 func testHandlerWithScript(t *testing.T, script string) http.Handler {
 	t.Helper()
 	h, ok, err := newHandler(fstest.MapFS{
-		".gitkeep":                         {},
-		"index.html":                       {Data: []byte("<html><head></head>app</html>" + strings.Repeat(" ", 2048))},
-		"version":                          {Data: []byte("Sat Oct 17 2026\n")},
-		"main.0123456789abcdef0123.js":     {Data: []byte(strings.Repeat("console.log(1);\n", 200))},
-		"main.0123456789abcdef0123.js.map": {Data: []byte("{}")},
-		"pokesprite-v12.png":               {Data: []byte("png")},
-		"favicon/favicon-16x16.png":        {Data: []byte("icon")},
+		".gitkeep":                     {},
+		"index.html":                   {Data: []byte("<html><head></head>app</html>" + strings.Repeat(" ", 2048))},
+		"version":                      {Data: []byte("Sat Oct 17 2026\n")},
+		"assets/index-B80ZTyZ2.js":     {Data: []byte(strings.Repeat("console.log(1);\n", 200))},
+		"assets/index-B80ZTyZ2.js.map": {Data: []byte("{}")},
+		"pokesprite-v12.png":           {Data: []byte("png")},
+		"favicon/favicon-16x16.png":    {Data: []byte("icon")},
 	}, script)
 	require.NoError(t, err)
 	require.True(t, ok)
@@ -47,14 +47,14 @@ func get(h http.Handler, method, target string, headers map[string]string) *http
 func TestCacheHeaders(t *testing.T) {
 	h := testHandler(t)
 	for target, want := range map[string]string{
-		"/":                                 "no-cache",
-		"/index.html":                       "no-cache",
-		"/version":                          "no-cache",
-		"/u/ash/living-dex":                 "no-cache",
-		"/main.0123456789abcdef0123.js":     "public, max-age=31536000, immutable",
-		"/main.0123456789abcdef0123.js.map": "public, max-age=31536000, immutable",
-		"/pokesprite-v12.png":               "public, max-age=3600",
-		"/favicon/favicon-16x16.png":        "public, max-age=3600",
+		"/":                             "no-cache",
+		"/index.html":                   "no-cache",
+		"/version":                      "no-cache",
+		"/u/ash/living-dex":             "no-cache",
+		"/assets/index-B80ZTyZ2.js":     "public, max-age=31536000, immutable",
+		"/assets/index-B80ZTyZ2.js.map": "public, max-age=31536000, immutable",
+		"/pokesprite-v12.png":           "public, max-age=3600",
+		"/favicon/favicon-16x16.png":    "public, max-age=3600",
 	} {
 		w := get(h, http.MethodGet, target, nil)
 		assert.Equal(t, http.StatusOK, w.Code, target)
@@ -127,9 +127,9 @@ func TestDottedFrontendRoutesGetIndex(t *testing.T) {
 
 func TestGzip(t *testing.T) {
 	h := testHandler(t)
-	plain := get(h, http.MethodGet, "/main.0123456789abcdef0123.js", nil)
+	plain := get(h, http.MethodGet, "/assets/index-B80ZTyZ2.js", nil)
 
-	w := get(h, http.MethodGet, "/main.0123456789abcdef0123.js", map[string]string{"Accept-Encoding": "br, gzip;q=0.8"})
+	w := get(h, http.MethodGet, "/assets/index-B80ZTyZ2.js", map[string]string{"Accept-Encoding": "br, gzip;q=0.8"})
 
 	assert.Equal(t, "gzip", w.Header().Get("Content-Encoding"))
 	assert.Equal(t, "Accept-Encoding", w.Header().Get("Vary"))
@@ -144,7 +144,7 @@ func TestGzip(t *testing.T) {
 	// Gzipped responses are always whole, even when a range is asked for, so
 	// a bad range can't produce an error body labeled as gzip.
 	for _, byteRange := range []string{"bytes=0-9", "bytes=99999999-"} {
-		ranged := get(h, http.MethodGet, "/main.0123456789abcdef0123.js", map[string]string{"Accept-Encoding": "gzip", "Range": byteRange})
+		ranged := get(h, http.MethodGet, "/assets/index-B80ZTyZ2.js", map[string]string{"Accept-Encoding": "gzip", "Range": byteRange})
 		assert.Equal(t, http.StatusOK, ranged.Code, byteRange)
 		assert.Equal(t, w.Body.Bytes(), ranged.Body.Bytes(), byteRange)
 	}
@@ -153,9 +153,9 @@ func TestGzip(t *testing.T) {
 	assert.Equal(t, plain.Header().Get("Content-Type"), w.Header().Get("Content-Type"))
 
 	for _, refused := range []string{"gzip;q=0", "gzip; q=0.0", "GZIP;Q=0.000", "br"} {
-		assert.Empty(t, get(h, http.MethodGet, "/main.0123456789abcdef0123.js", map[string]string{"Accept-Encoding": refused}).Header().Get("Content-Encoding"), refused)
+		assert.Empty(t, get(h, http.MethodGet, "/assets/index-B80ZTyZ2.js", map[string]string{"Accept-Encoding": refused}).Header().Get("Content-Encoding"), refused)
 	}
-	assert.Equal(t, "gzip", get(h, http.MethodGet, "/main.0123456789abcdef0123.js", map[string]string{"Accept-Encoding": "GZIP;q=0.5"}).Header().Get("Content-Encoding"))
+	assert.Equal(t, "gzip", get(h, http.MethodGet, "/assets/index-B80ZTyZ2.js", map[string]string{"Accept-Encoding": "GZIP;q=0.5"}).Header().Get("Content-Encoding"))
 	assert.Empty(t, get(h, http.MethodGet, "/pokesprite-v12.png", map[string]string{"Accept-Encoding": "gzip"}).Header().Get("Content-Encoding"), "images aren't recompressed")
 	assert.Empty(t, get(h, http.MethodGet, "/version", map[string]string{"Accept-Encoding": "gzip"}).Header().Get("Content-Encoding"), "tiny files aren't worth it")
 }
@@ -169,7 +169,7 @@ func TestHeadScriptIsAddedToIndexOnly(t *testing.T) {
 		assert.True(t, strings.HasPrefix(w.Body.String(), "<html><head><script>window.X = 1;</script></head>app</html>"), target)
 	}
 	assert.NotEqual(t, get(plain, http.MethodGet, "/", nil).Header().Get("ETag"), get(h, http.MethodGet, "/", nil).Header().Get("ETag"), "the ETag covers the added script")
-	assert.NotContains(t, get(h, http.MethodGet, "/main.0123456789abcdef0123.js", nil).Body.String(), "window.X")
+	assert.NotContains(t, get(h, http.MethodGet, "/assets/index-B80ZTyZ2.js", nil).Body.String(), "window.X")
 }
 
 func TestHeadScriptNeedsAHead(t *testing.T) {
