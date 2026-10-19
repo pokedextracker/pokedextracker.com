@@ -1,13 +1,13 @@
-import Constructor from 'rollbar';
+import Constructor from "rollbar";
 
-import { Config } from '../../config';
+import { Config } from "../../config";
 
 const Rollbar = new Constructor({
   accessToken: Config.ROLLBAR_TOKEN,
   codeVersion: Config.VERSION,
-  enabled: Config.ENVIRONMENT !== 'development',
+  enabled: Config.ENVIRONMENT !== "development",
   environment: Config.ENVIRONMENT,
-  hostSafeList: ['pokedextracker.com', 'staging.pokedextracker.com'],
+  hostSafeList: ["pokedextracker.com", "staging.pokedextracker.com"],
   captureUncaught: true,
   captureUnhandledRejections: true,
   autoInstrument: {

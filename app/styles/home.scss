@@ -1,5 +1,5 @@
 .home-container {
-  background: $brand-primary url('/pattern.png') repeat center center;
+  background: $brand-primary url("/pattern.png") repeat center center;
   background-size: 500px 250px;
   text-align: center;
 
@@ -14,7 +14,7 @@
   }
 
   .hero {
-    @include animation(slide 1s cubic-bezier(0,0,.05,1) forwards);
+    @include animation(slide 1s cubic-bezier(0, 0, 0.05, 1) forwards);
 
     position: relative;
     top: -100px;
@@ -38,7 +38,7 @@
   }
 
   .sub {
-    @include animation(slide 1s cubic-bezier(0,0,.05,1) forwards);
+    @include animation(slide 1s cubic-bezier(0, 0, 0.05, 1) forwards);
     @include flexbox();
     @include flex-direction(column);
     @include align-items(center);

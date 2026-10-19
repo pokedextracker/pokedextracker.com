@@ -1,17 +1,22 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseQueryOptions,
+} from "@tanstack/react-query";
 
-import { API } from '../../utils/api';
-import { tokenToUser } from '../../utils/state';
-
-import type { PokedexTrackerError } from '../../utils/api';
-import type { Session, User } from '../../types';
-import type { UseQueryOptions } from '@tanstack/react-query';
+import type { Session, User } from "../../types";
+import { API, type PokedexTrackerError } from "../../utils/api";
+import { tokenToUser } from "../../utils/state";
 
 export enum QueryKey {
-  RetrieveUser = 'RetrieveUser',
+  RetrieveUser = "RetrieveUser",
 }
 
-export const useUser = (username?: string, options: UseQueryOptions<User, PokedexTrackerError> = {}) => {
+export const useUser = (
+  username?: string,
+  options: UseQueryOptions<User, PokedexTrackerError> = {},
+) => {
   return useQuery<User, PokedexTrackerError, User>({
     ...options,
     queryKey: [QueryKey.RetrieveUser, username],
@@ -40,12 +45,14 @@ interface CreateUserMutationVariables {
 }
 
 export const useCreateUser = () => {
-  return useMutation<Session, PokedexTrackerError, CreateUserMutationVariables>({
-    mutationFn: async ({ payload }) => {
-      const { token } = await API.post<{ token: string }>('/users', payload);
-      return tokenToUser(token) as Session;
+  return useMutation<Session, PokedexTrackerError, CreateUserMutationVariables>(
+    {
+      mutationFn: async ({ payload }) => {
+        const { token } = await API.post<{ token: string }>("/users", payload);
+        return tokenToUser(token) as Session;
+      },
     },
-  });
+  );
 };
 
 export interface UpdateUserPayload {
@@ -62,13 +69,18 @@ interface UpdateUserMutationVariables {
 export const useUpdateUser = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<Session, PokedexTrackerError, UpdateUserMutationVariables>({
-    mutationFn: async ({ username, payload }) => {
-      const { token } = await API.post<{ token: string }>(`/users/${username}`, payload);
-      return tokenToUser(token) as Session;
+  return useMutation<Session, PokedexTrackerError, UpdateUserMutationVariables>(
+    {
+      mutationFn: async ({ username, payload }) => {
+        const { token } = await API.post<{ token: string }>(
+          `/users/${username}`,
+          payload,
+        );
+        return tokenToUser(token) as Session;
+      },
+      onSuccess: (_data, { username }) => {
+        queryClient.invalidateQueries([QueryKey.RetrieveUser, username]);
+      },
     },
-    onSuccess: (_data, { username }) => {
-      queryClient.invalidateQueries([QueryKey.RetrieveUser, username]);
-    },
-  });
+  );
 };

@@ -1,10 +1,14 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
-import { useEffect, useRef } from 'react';
+import { faSearch, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  useEffect,
+  useRef,
+  type ChangeEvent,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 
-import { trackEvent } from '../../../utils/analytics';
-
-import type { ChangeEvent, Dispatch, SetStateAction } from 'react';
+import { trackEvent } from "../../../utils/analytics";
 
 interface Props {
   hideCaught: boolean;
@@ -13,27 +17,38 @@ interface Props {
   setQuery: Dispatch<SetStateAction<string>>;
 }
 
-export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }: Props) {
+export function SearchBar({
+  hideCaught,
+  query,
+  setHideCaught,
+  setQuery,
+}: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleKeyup = (e: KeyboardEvent) => {
-      if (e.target instanceof Element && e.target.tagName.toLowerCase() !== 'input' && e.key === '/') {
-        trackEvent('Search', 'used shortcut');
+      if (
+        e.target instanceof Element &&
+        e.target.tagName.toLowerCase() !== "input" &&
+        e.key === "/"
+      ) {
+        trackEvent("Search", "used shortcut");
         inputRef.current?.focus();
       }
     };
 
-    document.addEventListener('keyup', handleKeyup);
+    document.addEventListener("keyup", handleKeyup);
 
-    return () => document.removeEventListener('keyup', handleKeyup);
+    return () => document.removeEventListener("keyup", handleKeyup);
   }, [inputRef.current]);
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value);
-  const handleHideCaughtChange = (e: ChangeEvent<HTMLInputElement>) => setHideCaught(e.target.checked);
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) =>
+    setQuery(e.target.value);
+  const handleHideCaughtChange = (e: ChangeEvent<HTMLInputElement>) =>
+    setHideCaught(e.target.checked);
 
   const handleClearClick = () => {
-    setQuery('');
+    setQuery("");
     inputRef.current && inputRef.current.focus();
   };
 
@@ -56,12 +71,11 @@ export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }: Props
             type="text"
             value={query}
           />
-          {query.length > 0 ?
+          {query.length > 0 ? (
             <a className="clear-btn" onClick={handleClearClick}>
               <FontAwesomeIcon className="input-icon" icon={faTimes} />
-            </a> :
-            null
-          }
+            </a>
+          ) : null}
         </div>
         <div className="dex-search-bar-filters">
           <div className="form-group">
@@ -74,7 +88,10 @@ export function SearchBar ({ hideCaught, query, setHideCaught, setQuery }: Props
                   onChange={handleHideCaughtChange}
                   type="checkbox"
                 />
-                <span className="checkbox-custom"><span /></span>Hide Caught Pokémon
+                <span className="checkbox-custom">
+                  <span />
+                </span>
+                Hide Caught Pokémon
               </label>
             </div>
           </div>

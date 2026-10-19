@@ -1,20 +1,21 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 
-import { API } from '../../utils/api';
-
-import type { PokedexTrackerError } from '../../utils/api';
-import type { Pokemon } from '../../types';
-import type { UseQueryOptions } from '@tanstack/react-query';
+import type { Pokemon } from "../../types";
+import { API, type PokedexTrackerError } from "../../utils/api";
 
 export enum QueryKey {
-  RetrievePokemon = 'RetrievePokemon',
+  RetrievePokemon = "RetrievePokemon",
 }
 
 interface RetrievePokemonQuery {
   dex_type: number;
 }
 
-export const usePokemon = (id: number, query: RetrievePokemonQuery, options: UseQueryOptions<Pokemon, PokedexTrackerError> = {}) => {
+export const usePokemon = (
+  id: number,
+  query: RetrievePokemonQuery,
+  options: UseQueryOptions<Pokemon, PokedexTrackerError> = {},
+) => {
   return useQuery<Pokemon, PokedexTrackerError, Pokemon>({
     ...options,
     queryKey: [QueryKey.RetrievePokemon, id, query],

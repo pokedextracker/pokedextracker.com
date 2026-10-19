@@ -1,9 +1,9 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { useLocalStorageContext } from '../../hooks/contexts/use-local-storage-context';
+import { useLocalStorageContext } from "../../hooks/contexts/use-local-storage-context";
 
-export function Notification () {
+export function Notification() {
   const { hideNotification, setHideNotification } = useLocalStorageContext();
 
   if (hideNotification) {
@@ -15,7 +15,18 @@ export function Notification () {
   return (
     <div className="alert alert-muted">
       <FontAwesomeIcon icon={faTimes} onClick={handleClick} />
-      <p>We&apos;ve <em>finally</em> added support for Pokémon Legends: Z-A and the Mega Dimension DLC! <a href="https://pokedextracker.com/blog/pokemon-legends-z-a-mega-dimension-dlc/" rel="noopener noreferrer" target="_blank">Read more here</a>.</p>
+      <p>
+        We&apos;ve <em>finally</em> added support for Pokémon Legends: Z-A and
+        the Mega Dimension DLC!{" "}
+        <a
+          href="https://pokedextracker.com/blog/pokemon-legends-z-a-mega-dimension-dlc/"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Read more here
+        </a>
+        .
+      </p>
     </div>
   );
 }

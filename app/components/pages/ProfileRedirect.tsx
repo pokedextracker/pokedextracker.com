@@ -1,8 +1,8 @@
-import { Redirect } from 'react-router-dom';
+import { Redirect } from "react-router-dom";
 
-import { useSession } from '../../hooks/contexts/use-session';
+import { useSession } from "../../hooks/contexts/use-session";
 
-export function ProfileRedirect () {
+export function ProfileRedirect() {
   const { session } = useSession();
 
   if (session) {

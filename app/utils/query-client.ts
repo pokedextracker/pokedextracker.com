@@ -1,6 +1,6 @@
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient } from "@tanstack/react-query";
 
-import { PokedexTrackerError } from './api';
+import { PokedexTrackerError } from "./api";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -10,10 +10,12 @@ export const queryClient = new QueryClient({
       // to retry since that's probably a real error, not a transient one.
       retry: (failureCount: number, err: unknown) => {
         if (err instanceof PokedexTrackerError) {
-          return failureCount < 3 &&
+          return (
+            failureCount < 3 &&
             err.response.status !== 401 &&
             err.response.status !== 404 &&
-            err.response.status !== 422;
+            err.response.status !== 422
+          );
         }
         return failureCount < 3;
       },
@@ -27,7 +29,7 @@ export const queryClient = new QueryClient({
       // the original would "change" whenever it's re-fetched (either because
       // the window was refocused or the component just re-rendered somehow), it
       // would revert all the user's in-progress changes.
-      refetchOnMount: 'always',
+      refetchOnMount: "always",
       staleTime: Infinity,
     },
   },

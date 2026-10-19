@@ -1,13 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, type Dispatch, type SetStateAction } from "react";
 
-import { BOX_SIZE } from '../../../utils/pokemon';
-import { MarkAllButton } from './MarkAllButton';
-import { Pokemon } from './Pokemon';
-import { padding } from '../../../utils/formatting';
-import { useDeferredRender } from '../../../hooks/use-deferred-render';
-
-import type { Dispatch, SetStateAction } from 'react';
-import type { UICapture } from './use-tracker';
+import { useDeferredRender } from "../../../hooks/use-deferred-render";
+import { padding } from "../../../utils/formatting";
+import { BOX_SIZE } from "../../../utils/pokemon";
+import { MarkAllButton } from "./MarkAllButton";
+import { Pokemon } from "./Pokemon";
+import type { UICapture } from "./use-tracker";
 
 interface Props {
   captures: UICapture[];
@@ -16,10 +14,18 @@ interface Props {
   setSelectedPokemon: Dispatch<SetStateAction<number>>;
 }
 
-export function Box ({ captures, deferred = false, dexTotal, setSelectedPokemon }: Props) {
+export function Box({
+  captures,
+  deferred = false,
+  dexTotal,
+  setSelectedPokemon,
+}: Props) {
   const render = useDeferredRender(!deferred);
 
-  const empties = useMemo(() => Array.from({ length: BOX_SIZE - captures.length }).map((_, i) => i), [captures]);
+  const empties = useMemo(
+    () => Array.from({ length: BOX_SIZE - captures.length }).map((_, i) => i),
+    [captures],
+  );
 
   const paddingDigits = dexTotal >= 1000 ? 4 : 3;
   const firstPokemon = captures[0].pokemon;
@@ -34,8 +40,8 @@ export function Box ({ captures, deferred = false, dexTotal, setSelectedPokemon 
     } else {
       title = `${padding(firstNumber, paddingDigits)} - ${padding(lastNumber, paddingDigits)}`;
     }
-  } else if (title.indexOf('reset') === 0) {
-    const parts = title.split(':');
+  } else if (title.indexOf("reset") === 0) {
+    const parts = title.split(":");
     const prefix = parts[2];
 
     if (firstPokemon.dex_number === lastPokemon.dex_number) {
@@ -60,8 +66,20 @@ export function Box ({ captures, deferred = false, dexTotal, setSelectedPokemon 
         <MarkAllButton captures={captures} />
       </div>
       <div className="box-container">
-        {captures.map((capture) => <Pokemon capture={capture} key={capture.pokemon.id} setSelectedPokemon={setSelectedPokemon} />)}
-        {empties.map((index) => <Pokemon capture={null} key={index} setSelectedPokemon={setSelectedPokemon} />)}
+        {captures.map((capture) => (
+          <Pokemon
+            capture={capture}
+            key={capture.pokemon.id}
+            setSelectedPokemon={setSelectedPokemon}
+          />
+        ))}
+        {empties.map((index) => (
+          <Pokemon
+            capture={null}
+            key={index}
+            setSelectedPokemon={setSelectedPokemon}
+          />
+        ))}
       </div>
     </div>
   );

@@ -1,31 +1,31 @@
-import { useRef } from 'react';
-import { useParams } from 'react-router';
+import { useRef } from "react";
+import { useParams } from "react-router";
 
-import { trackEvent } from '../../utils/analytics';
+import { trackEvent } from "../../utils/analytics";
 
 interface Props {
   profile: boolean;
 }
 
-export function Share ({ profile }: Props) {
+export function Share({ profile }: Props) {
   const { username, slug } = useParams<{ username: string; slug: string }>();
 
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleClick = () => {
-    trackEvent('Share', 'select link');
+    trackEvent("Share", "select link");
     inputRef.current && inputRef.current.select();
   };
 
   return (
     <div className="share" onClick={(e) => e.stopPropagation()}>
-      Share this {profile ? 'Profile' : 'Living Dex'}:
+      Share this {profile ? "Profile" : "Living Dex"}:
       <input
         className="form-control"
         onClick={handleClick}
         readOnly
         ref={inputRef}
-        value={`https://pokedextracker.com/u/${username}${profile ? '' : `/${slug}`}`}
+        value={`https://pokedextracker.com/u/${username}${profile ? "" : `/${slug}`}`}
       />
     </div>
   );

@@ -6,31 +6,31 @@ run:
 linters:
   disable-all: true
   enable:
-  - bodyclose
-  - dogsled
-  - errcheck
-  - exhaustive
-  - exportloopref
-  - exportloopref
-  - gocritic
-  - godot
-  - goerr113
-  - goheader
-  - goimports
-  - gosec
-  - gosimple
-  - govet
-  - ineffassign
-  - misspell
-  - noctx
-  - revive
-  - staticcheck
-  - stylecheck
-  - typecheck
-  - unconvert
-  - unparam
-  - unused
-  - whitespace
+    - bodyclose
+    - dogsled
+    - errcheck
+    - exhaustive
+    - exportloopref
+    - exportloopref
+    - gocritic
+    - godot
+    - goerr113
+    - goheader
+    - goimports
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - noctx
+    - revive
+    - staticcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
 
 linters-settings:
   gocritic:

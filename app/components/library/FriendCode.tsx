@@ -1,15 +1,14 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Link } from 'react-router-dom';
-import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
-import { useParams } from 'react-router';
+import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import type { ReactNode } from "react";
+import { useParams } from "react-router";
+import { Link } from "react-router-dom";
 
-import { trackEvent } from '../../utils/analytics';
-import { useSession } from '../../hooks/contexts/use-session';
-import { useUser } from '../../hooks/queries/users';
+import { useSession } from "../../hooks/contexts/use-session";
+import { useUser } from "../../hooks/queries/users";
+import { trackEvent } from "../../utils/analytics";
 
-import type { ReactNode } from 'react';
-
-export function FriendCode () {
+export function FriendCode() {
   const { username } = useParams<{ username: string }>();
 
   const { session } = useSession();
@@ -20,20 +19,30 @@ export function FriendCode () {
   let editAccountBtn: ReactNode = null;
 
   if (ownPage) {
-    const handleClick = () => trackEvent('User', 'click edit friend code');
+    const handleClick = () => trackEvent("User", "click edit friend code");
 
     editAccountBtn = (
-      <Link onClick={handleClick} to="/account"><FontAwesomeIcon icon={faPencilAlt} /></Link>
+      <Link onClick={handleClick} to="/account">
+        <FontAwesomeIcon icon={faPencilAlt} />
+      </Link>
     );
   }
 
   return (
     <div>
       <h2>
-        <b>3DS FC</b>: <span className={user.friend_code_3ds ? '' : 'fc-missing'}>{user.friend_code_3ds || 'XXXX-XXXX-XXXX'}</span> {editAccountBtn}
+        <b>3DS FC</b>:{" "}
+        <span className={user.friend_code_3ds ? "" : "fc-missing"}>
+          {user.friend_code_3ds || "XXXX-XXXX-XXXX"}
+        </span>{" "}
+        {editAccountBtn}
       </h2>
       <h2>
-        <b>Switch FC</b>: <span className={user.friend_code_switch ? '' : 'fc-missing'}>{user.friend_code_switch || 'SW-XXXX-XXXX-XXXX'}</span> {editAccountBtn}
+        <b>Switch FC</b>:{" "}
+        <span className={user.friend_code_switch ? "" : "fc-missing"}>
+          {user.friend_code_switch || "SW-XXXX-XXXX-XXXX"}
+        </span>{" "}
+        {editAccountBtn}
       </h2>
     </div>
   );

@@ -1,19 +1,22 @@
 const FRIEND_CODE_3DS_REGEX = /(\d{4})(?=\d)/g;
 const FRIEND_CODE_SWITCH_REGEX = /(^[a-zA-Z]{2}|\d{4})(?=\d)/g;
 
-export function capitalize (input: string): string {
-  return input.replace(/([^\W_]+[^\s-]*) */g, (word) => word[0].toUpperCase() + word.substr(1).toLowerCase());
+export function capitalize(input: string): string {
+  return input.replace(
+    /([^\W_]+[^\s-]*) */g,
+    (word) => word[0].toUpperCase() + word.substr(1).toLowerCase(),
+  );
 }
 
-export function decimal (number: number, precision: number): string {
+export function decimal(number: number, precision: number): string {
   return number.toFixed(precision);
 }
 
-export function friendCode3dsFormatter (code: string): string {
-  return code.replace(FRIEND_CODE_3DS_REGEX, '$1-');
+export function friendCode3dsFormatter(code: string): string {
+  return code.replace(FRIEND_CODE_3DS_REGEX, "$1-");
 }
 
-export function friendCodeSwitchFormatter (code: string): string {
+export function friendCodeSwitchFormatter(code: string): string {
   if (!code) {
     return code;
   }
@@ -24,16 +27,20 @@ export function friendCodeSwitchFormatter (code: string): string {
   // in, force `SW-` in front of whatever it was that they were typing. This
   // will make it so that if they follow the formatting rules, nothing will
   // self-correct, but if they don't, it will.
-  ['S', 'W', '-'].forEach((letter, i) => {
+  ["S", "W", "-"].forEach((letter, i) => {
     if (upperCode[i] && upperCode[i] !== letter) {
       upperCode = upperCode.slice(0, i) + letter + upperCode.slice(i);
     }
   });
 
-  return upperCode.replace(FRIEND_CODE_SWITCH_REGEX, '$1-');
+  return upperCode.replace(FRIEND_CODE_SWITCH_REGEX, "$1-");
 }
 
-export function padding (number: number | '---', digits: number, value = '0'): string {
+export function padding(
+  number: number | "---",
+  digits: number,
+  value = "0",
+): string {
   if (parseInt(`${number}`, 10) >= 10 ** digits) {
     return `${number}`;
   }
@@ -47,7 +54,7 @@ export function padding (number: number | '---', digits: number, value = '0'): s
 // update when we do know the real national IDs easier. Most of the time, this
 // function will just return the ID again because our database national IDs will
 // be correct.
-export function nationalId (id: number): number {
+export function nationalId(id: number): number {
   return id;
 }
 
@@ -56,11 +63,11 @@ export function nationalId (id: number): number {
 // location where we can transform it if we need to. Most of the time, this
 // function will just return the ID again because our database national IDs will
 // be correct.
-export function serebiiNationalId (id: number): number {
+export function serebiiNationalId(id: number): number {
   id = nationalId(id);
   return id;
 }
 
-export function serebiiLink (serebiiPath: string, nationalId: number) {
+export function serebiiLink(serebiiPath: string, nationalId: number) {
   return `http://www.serebii.net/${serebiiPath}/${padding(serebiiNationalId(nationalId), 3)}.shtml`;
 }

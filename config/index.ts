@@ -1,6 +1,5 @@
-import { Development } from './development';
-
-import type { Config as ConfigType } from './types';
+import { Development } from "./development";
+import type { Config as ConfigType } from "./types";
 
 // The Go server adds this to index.html (pkg/server's frontendConfig), so the
 // same build reports the right environment wherever it runs.
@@ -17,9 +16,9 @@ declare global {
 }
 
 // Any field the server leaves out falls back to the development value.
-function fromServer (server: Partial<ServerConfig>): ConfigType {
+function fromServer(server: Partial<ServerConfig>): ConfigType {
   return {
-    API_HOST: '/api',
+    API_HOST: "/api",
     ENVIRONMENT: server.environment || Development.ENVIRONMENT,
     ROLLBAR_TOKEN: server.rollbarToken || Development.ROLLBAR_TOKEN,
     VERSION: server.version || Development.VERSION,

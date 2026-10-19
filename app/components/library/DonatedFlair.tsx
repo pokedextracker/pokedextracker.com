@@ -4,7 +4,7 @@ interface Props {
   };
 }
 
-export function DonatedFlair ({ user }: Props) {
+export function DonatedFlair({ user }: Props) {
   if (!user.donated) {
     return null;
   }
