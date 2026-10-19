@@ -15,6 +15,7 @@ import (
 )
 
 type fakeDatabase struct {
+	seedRoots []string
 	port      int
 	databases map[string]bool
 	seeded    map[string]bool
@@ -28,6 +29,7 @@ func (f *fakeDatabase) Pull(_ context.Context, _ Environment, url, localDatabase
 }
 
 func (f *fakeDatabase) Seed(_ context.Context, _ Environment, name, dir string) ([]string, error) {
+	f.seedRoots = append(f.seedRoots, filepath.Base(filepath.Dir(dir)))
 	f.calls = append(f.calls, "seed "+name+" "+filepath.Base(dir))
 	f.seeded[name] = true
 	return nil, nil
@@ -80,9 +82,14 @@ func (f *fakeDatabase) Psql(_ context.Context, _ Environment, name string) error
 }
 
 type fakeProcesses struct {
-	calls   []string
-	servers Servers
-	mode    string
+	prepareErr    error
+	fetchErr      error
+	visualErr     map[string]error
+	visualRetried map[string][]string
+	migrateRoots  []string
+	calls         []string
+	servers       Servers
+	mode          string
 }
 
 func (f *fakeProcesses) Start(_ context.Context, _ Environment, mode string, servers Servers) error {
@@ -91,7 +98,8 @@ func (f *fakeProcesses) Start(_ context.Context, _ Environment, mode string, ser
 	return nil
 }
 
-func (f *fakeProcesses) Migrate(_ context.Context, _ Environment, target DatabaseTarget, args ...string) error {
+func (f *fakeProcesses) Migrate(_ context.Context, env Environment, target DatabaseTarget, args ...string) error {
+	f.migrateRoots = append(f.migrateRoots, filepath.Base(env.CurrentRoot))
 	f.calls = append(f.calls, fmt.Sprintf("migrate %s %s:%d %s", target.Environment, target.Name, target.Port, strings.Join(args, " ")))
 	return nil
 }
@@ -104,6 +112,26 @@ func (f *fakeProcesses) Test(_ context.Context, _ Environment, target DatabaseTa
 func (f *fakeProcesses) E2E(_ context.Context, _ Environment, target DatabaseTarget, port int, args ...string) error {
 	f.calls = append(f.calls, fmt.Sprintf("e2e %s %s:%d on %d %s", target.Environment, target.Name, target.Port, port, strings.Join(args, " ")))
 	return nil
+}
+
+func (f *fakeProcesses) CheckoutReference(_ context.Context, env Environment, ref string) (*Reference, error) {
+	f.calls = append(f.calls, "checkout "+ref)
+	return &Reference{
+		Root:     filepath.Join(env.CurrentRoot, "tmp", "visual", "reference"),
+		Commit:   "abc1234def",
+		FetchErr: f.fetchErr,
+		Remove:   func() { f.calls = append(f.calls, "remove reference") },
+	}, nil
+}
+
+func (f *fakeProcesses) PrepareVisual(context.Context, Environment) error {
+	f.calls = append(f.calls, "prepare visual")
+	return f.prepareErr
+}
+
+func (f *fakeProcesses) Visual(_ context.Context, site, tests Environment, target DatabaseTarget, port int, side string, args ...string) ([]string, error) {
+	f.calls = append(f.calls, fmt.Sprintf("visual %s site=%s tests=%s %s:%d on %d %s", side, filepath.Base(site.CurrentRoot), filepath.Base(tests.CurrentRoot), target.Name, target.Port, port, strings.Join(args, " ")))
+	return f.visualRetried[side], f.visualErr[side]
 }
 
 type fixedPorts struct{ next int }
@@ -563,4 +591,141 @@ func TestE2ENeedsSeedFiles(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "mise db:pull")
+}
+
+func TestVisualComparesTheBranchWithTheReference(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"visual", "chromium"}))
+
+	assert.Equal(t, []string{
+		"prepare visual",
+		"checkout origin/master",
+		"migrate development pdt_worktree_vis:9876 migrate",
+		"visual reference site=reference tests=worktree pdt_worktree_vis:9876 on 8700 --project=chromium-*",
+		"migrate development pdt_worktree_vis:9876 migrate",
+		"visual branch site=worktree tests=worktree pdt_worktree_vis:9876 on 8700 --project=chromium-*",
+		"remove reference",
+	}, h.processes.calls)
+	assert.Equal(t, []string{
+		"ensure",
+		"reset pdt_worktree_vis", "seed pdt_worktree_vis seeds",
+		"reset pdt_worktree_vis", "seed pdt_worktree_vis seeds",
+	}, h.database.calls, "each side starts from its own fresh database")
+	assert.Equal(t, []string{"reference", "worktree"}, h.processes.migrateRoots, "each side runs its own migrations")
+	assert.Equal(t, []string{"reference", "worktree"}, h.database.seedRoots, "and loads its own seeds")
+	assert.Contains(t, h.stdout.String(), "No visual differences from origin/master (abc1234).")
+}
+
+func TestVisualTakesARefAndEveryBrowser(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"visual", "all", "v1.2.3"}))
+
+	assert.Equal(t, "checkout v1.2.3", h.processes.calls[1])
+	assert.NotContains(t, strings.Join(h.processes.calls, "\n"), "--project", "every browser runs")
+}
+
+func TestVisualListsWhatDidNotPass(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	h.processes.visualErr = map[string]error{"branch": &VisualFailure{
+		Differ: []string{"[webkit-desktop] profile › own profile"},
+		Failed: []string{"[webkit-phone] tracker › search"},
+	}}
+
+	err := h.app.Run(context.Background(), []string{"visual", "webkit"})
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "the comparison with origin/master (abc1234) didn't pass")
+	assert.Contains(t, err.Error(), "show-report tmp/visual/report")
+	assert.Contains(t, h.stdout.String(), "Screenshots that differ from origin/master (abc1234):\n  [webkit-desktop] profile › own profile\n")
+	assert.Contains(t, h.stdout.String(), "failed before or apart from their screenshot:\n  [webkit-phone] tracker › search\n")
+	assert.Equal(t, "remove reference", h.processes.calls[len(h.processes.calls)-1], "the reference worktree is removed either way")
+}
+
+func TestVisualDoesNotPassScreenshotsThatMatchedOnlyOnARetry(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	h.processes.visualErr = map[string]error{"branch": &VisualFailure{
+		Flaky: []string{"[chromium-phone] signed out › register"},
+	}}
+
+	err := h.app.Run(context.Background(), []string{"visual", "chromium"})
+
+	require.Error(t, err)
+	assert.Contains(t, h.stdout.String(), "passed only on a retry")
+	assert.Contains(t, h.stdout.String(), "[chromium-phone] signed out › register")
+	assert.NotContains(t, h.stdout.String(), "No visual differences")
+}
+
+func TestVisualListsTestsRetriedForAHiccup(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	h.processes.visualRetried = map[string][]string{"branch": {"[webkit-desktop] tracker › search (Test timeout of 60000ms exceeded.)"}}
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"visual", "webkit"}))
+
+	assert.Contains(t, h.stdout.String(), "Passed after a retry for a timeout or dropped connection, not a difference:\n  [webkit-desktop] tracker › search (Test timeout of 60000ms exceeded.)\n")
+	assert.Contains(t, h.stdout.String(), "No visual differences")
+}
+
+func TestVisualWarnsWhenItCannotFetchTheRef(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	h.processes.fetchErr = fmt.Errorf("could not resolve host")
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"visual", "chromium"}))
+
+	assert.Contains(t, h.stdout.String(), "Couldn't fetch origin/master, so comparing with the copy fetched last time: could not resolve host\n")
+}
+
+func TestVisualStopsWhenDockerIsNotReady(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	h.processes.prepareErr = fmt.Errorf("docker isn't running")
+
+	err := h.app.Run(context.Background(), []string{"visual", "chromium"})
+
+	assert.EqualError(t, err, "docker isn't running")
+	assert.Equal(t, []string{"prepare visual"}, h.processes.calls, "nothing is checked out or built")
+	assert.Empty(t, h.database.calls)
+}
+
+func TestVisualRejectsBadArguments(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+
+	assert.Error(t, h.app.Run(context.Background(), []string{"visual"}))
+	assert.Error(t, h.app.Run(context.Background(), []string{"visual", "safari"}))
+	assert.Error(t, h.app.Run(context.Background(), []string{"visual", "chromium", "master", "extra"}))
+	assert.Empty(t, h.processes.calls)
+}
+
+func TestVisualReportsBuildFailuresAsThemselves(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	h.processes.visualErr = map[string]error{"reference": fmt.Errorf("pnpm exited: exit status 1")}
+
+	err := h.app.Run(context.Background(), []string{"visual", "chromium"})
+
+	require.Error(t, err)
+	assert.Equal(t, "reference: pnpm exited: exit status 1", err.Error(), "not mistaken for screenshots that differ")
+}
+
+func TestVisualPointsAtTheReferenceReportWhenItCantBeTaken(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	h.processes.visualErr = map[string]error{"reference": &VisualFailure{
+		Differ: []string{"[chromium-desktop] signed out › home"},
+	}}
+
+	err := h.app.Run(context.Background(), []string{"visual", "chromium"})
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "couldn't take the reference screenshots")
+	assert.Contains(t, err.Error(), "show-report tmp/visual/report-reference")
+	assert.Contains(t, h.stdout.String(), "didn't come out the same twice:\n  [chromium-desktop] signed out › home\n")
 }
