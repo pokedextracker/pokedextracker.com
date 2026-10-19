@@ -16,7 +16,7 @@ COPY --from=pnpm-version /pnpm-version /tmp/pnpm-version
 RUN npm install --global --silent "pnpm@$(cat /tmp/pnpm-version)"
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile --reporter=append-only
-COPY tsconfig.json vite.config.mts ./
+COPY tsconfig*.json vite.config.mts ./
 COPY config config
 COPY public public
 COPY app app

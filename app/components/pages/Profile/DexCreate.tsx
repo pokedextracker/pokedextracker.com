@@ -232,7 +232,7 @@ export function DexCreate({ isOpen, onRequestClose }: Props) {
       });
       trackEvent("Dex", "create");
       history.push(`/u/${session!.username}/${dex.slug}`);
-    } catch (_) {
+    } catch {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
       // error besides prevent it from bubbling up.
       if (formRef.current) {

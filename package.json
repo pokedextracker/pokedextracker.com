@@ -10,10 +10,10 @@
     "build": "vite build; result=$?; touch internal/webapp/dist/.gitkeep; [ $result -eq 0 ] && pnpm build:version",
     "build:version": "date > internal/webapp/dist/version",
     "format": "prettier --write .",
-    "lint": "eslint --ext .js,.jsx,.ts,.tsx,.mts --max-warnings 0 .",
+    "lint": "eslint --max-warnings 0 .",
     "lint:all": "pnpm lint && pnpm lint:prettier && pnpm lint:types",
     "lint:prettier": "prettier --check .",
-    "lint:types": "tsc --noEmit && tsc --noEmit -p tsconfig.e2e.json",
+    "lint:types": "tsc -b --noEmit",
     "start": "vite"
   },
   "dependencies": {
@@ -25,7 +25,7 @@
     "@tanstack/react-query": "^4.29.19",
     "@types/history": "^4.7.11",
     "@types/lodash": "^4.14.195",
-    "@types/node": "^20.2.5",
+    "@types/node": "^26.6.5",
     "@types/qs": "^6.9.7",
     "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",
@@ -44,19 +44,21 @@
     "react-router-dom": "^5.3.4",
     "rollbar": "^2.26.2",
     "sass": "^1.105.2",
-    "slug": "^2.1.1",
-    "typescript": "5.0.4"
+    "slug": "^2.1.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
     "@playwright/test": "1.64.1",
-    "@tanstack/eslint-plugin-query": "^4.29.9",
-    "@typescript-eslint/eslint-plugin": "^5.60.1",
-    "@typescript-eslint/parser": "^5.60.1",
+    "@tanstack/eslint-plugin-query": "^5.104.4",
     "@vitejs/plugin-react": "^6.1.2",
-    "eslint": "^8.44.0",
-    "eslint-plugin-react": "^7.32.2",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
     "prettier": "3.9.10",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.2",
     "vite": "^8.3.4"
   },
   "repository": {

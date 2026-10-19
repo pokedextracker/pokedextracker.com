@@ -24,7 +24,7 @@ export function useLocalStorage<T>(
         return value;
       }
       return options.defaultValue;
-    } catch (error) {
+    } catch {
       return options.defaultValue;
     }
   });
