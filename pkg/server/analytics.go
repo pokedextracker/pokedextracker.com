@@ -38,11 +38,19 @@ func analyticsEnabled(cfg *config.Config) bool {
 // events also go through /stats. It's async, not defer: deferred scripts run
 // in order, so a slow or unreachable Umami would hold up the app's own
 // (deferred) bundle.
+//
+// Everything it records is tagged with the deployed version, so the dashboard
+// can show who's still on an older build: a tab keeps the version it loaded
+// with until it's reloaded.
 func analyticsScript(cfg *config.Config) string {
 	if !analyticsEnabled(cfg) {
 		return ""
 	}
-	return `<script async src="` + analyticsPrefix + analyticsScriptPath + `" data-website-id="` + html.EscapeString(cfg.UmamiWebsiteID) + `"></script>`
+	tag := ""
+	if cfg.Version != "" {
+		tag = ` data-tag="` + html.EscapeString(cfg.Version) + `"`
+	}
+	return `<script async src="` + analyticsPrefix + analyticsScriptPath + `" data-website-id="` + html.EscapeString(cfg.UmamiWebsiteID) + `"` + tag + `></script>`
 }
 
 // registerAnalytics forwards the tracker script and its event endpoint to

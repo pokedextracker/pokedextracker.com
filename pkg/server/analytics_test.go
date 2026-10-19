@@ -216,3 +216,14 @@ func TestInvalidUmamiURL(t *testing.T) {
 		assert.Error(t, err, raw)
 	}
 }
+
+func TestAnalyticsAreTaggedWithTheVersion(t *testing.T) {
+	cfg := &config.Config{UmamiURL: "https://umami.example.com", UmamiWebsiteID: "site-1", Version: "08730e5"}
+	assert.Equal(t, `<script async src="/stats/script.js" data-website-id="site-1" data-tag="08730e5"></script>`, analyticsScript(cfg))
+
+	cfg.Version = ""
+	assert.NotContains(t, analyticsScript(cfg), "data-tag", "a build without a version isn't tagged")
+
+	cfg.Version = `v"><script>alert(1)</script>`
+	assert.Equal(t, 1, strings.Count(analyticsScript(cfg), "<script"), "the version can't add a tag")
+}
