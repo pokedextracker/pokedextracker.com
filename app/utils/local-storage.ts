@@ -1,7 +1,7 @@
 function testLocalStorage() {
   try {
     window.localStorage.setItem("_", "_");
-  } catch (e) {
+  } catch {
     return false;
   }
 
@@ -22,7 +22,7 @@ if (testLocalStorage()) {
       this._data[key] = String(val);
     },
     getItem(key: string): string | null {
-      return this._data.hasOwnProperty(key) ? this._data[key] : undefined;
+      return Object.hasOwn(this._data, key) ? this._data[key] : null;
     },
     key(index: number): string | null {
       return this.getItem(Object.keys(this._data)[index]);

@@ -14,7 +14,7 @@ export function Share({ profile }: Props) {
 
   const handleClick = () => {
     trackEvent("Share", "select link");
-    inputRef.current && inputRef.current.select();
+    inputRef.current?.select();
   };
 
   return (

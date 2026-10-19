@@ -47,7 +47,7 @@ export function Login() {
       setToken(token);
       trackEvent("Session", "login");
       history.push(`/u/${username}`);
-    } catch (_) {
+    } catch {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
       // error besides prevent it from bubbling up.
       window.scrollTo({ top: 0 });

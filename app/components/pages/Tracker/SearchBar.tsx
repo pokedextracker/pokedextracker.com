@@ -49,7 +49,7 @@ export function SearchBar({
 
   const handleClearClick = () => {
     setQuery("");
-    inputRef.current && inputRef.current.focus();
+    inputRef.current?.focus();
   };
 
   return (

@@ -31,7 +31,7 @@ function getHeaders() {
 }
 
 export const API = {
-  async delete<T, U = any>(path: string, payload?: U): Promise<T> {
+  async delete<T, U = unknown>(path: string, payload?: U): Promise<T> {
     const response = await fetch(Config.API_HOST + path, {
       method: "DELETE",
       body: JSON.stringify(payload),
@@ -39,7 +39,7 @@ export const API = {
     });
     return handleResponse(response);
   },
-  async get<T, U = any>(path: string, params?: U): Promise<T> {
+  async get<T, U = unknown>(path: string, params?: U): Promise<T> {
     const query = stringify(params);
     const response = await fetch(
       `${Config.API_HOST}${path}${query ? `?${query}` : ""}`,
@@ -49,7 +49,7 @@ export const API = {
     );
     return handleResponse(response);
   },
-  async post<T, U = any>(path: string, payload: U): Promise<T> {
+  async post<T, U = unknown>(path: string, payload: U): Promise<T> {
     const response = await fetch(Config.API_HOST + path, {
       method: "POST",
       body: JSON.stringify(payload),

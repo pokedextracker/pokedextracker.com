@@ -81,7 +81,7 @@ export function Account() {
       });
       setToken(token);
       trackEvent("User", "update");
-    } catch (_) {
+    } catch {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
       // error besides prevent it from bubbling up.
     }
