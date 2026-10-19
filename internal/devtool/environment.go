@@ -19,9 +19,10 @@ const (
 	// PostgreSQL truncates identifiers longer than 63 bytes.
 	maxIdentifierLength = 63
 	testDatabaseSuffix  = "_test"
-	// The e2e database's suffix is no longer than the test database's, so
-	// names leave room for both.
-	e2eDatabaseSuffix = "_e2e"
+	// The e2e and visual databases' suffixes are no longer than the test
+	// database's, so names leave room for all of them.
+	e2eDatabaseSuffix    = "_e2e"
+	visualDatabaseSuffix = "_vis"
 )
 
 // Environment describes the repository and worktree resources used by a
@@ -49,6 +50,12 @@ func (e Environment) TestDatabase() string {
 // run.
 func (e Environment) E2EDatabase() string {
 	return e.CurrentDatabase + e2eDatabaseSuffix
+}
+
+// VisualDatabase is the database the visual comparison runs against. It's
+// rebuilt for each side of every comparison.
+func (e Environment) VisualDatabase() string {
+	return e.CurrentDatabase + visualDatabaseSuffix
 }
 
 // ResolveEnvironment finds the main checkout and current worktree from git.

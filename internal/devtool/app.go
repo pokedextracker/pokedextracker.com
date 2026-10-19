@@ -40,6 +40,10 @@ const (
 
 	// e2eAll runs every browser in playwright.config.ts.
 	e2eAll = "all"
+
+	// defaultVisualRef is what visual compares against without a ref: master
+	// as it is on GitHub, since the local branch can be behind.
+	defaultVisualRef = "origin/master"
 )
 
 // e2eBrowsers are the Playwright projects in playwright.config.ts.
@@ -97,6 +101,8 @@ func (a *App) Run(ctx context.Context, args []string) error {
 		return a.psql(ctx, env, args[1:])
 	case "e2e":
 		return a.e2e(ctx, env, args[1:])
+	case "visual":
+		return a.visual(ctx, env, args[1:])
 	default:
 		return fmt.Errorf("unknown command %q", args[0])
 	}
@@ -429,11 +435,7 @@ func (a *App) e2e(ctx context.Context, env Environment, args []string) error {
 		return fmt.Errorf("seed files are missing from %s; run mise db:pull first", seedsPath(env))
 	}
 
-	// A second run in this worktree would rebuild the database and the
-	// frontend under the first one.
-	unlock, err := lockFile(ctx, filepath.Join(env.CurrentRoot, "tmp", "e2e.lock"), func() {
-		_ = a.printf("Waiting for another e2e run in this worktree to finish...\n")
-	})
+	unlock, err := a.lockBrowserTests(ctx, env)
 	if err != nil {
 		return err
 	}
@@ -470,6 +472,149 @@ func (a *App) e2e(ctx context.Context, env Environment, args []string) error {
 		return err
 	}
 	return a.Processes.E2E(ctx, env, target, lease.Port(), playwrightArgs...)
+}
+
+// visual compares the site's look against ref (master by default): it
+// screenshots the pages in e2e/visual with ref's build, then with this
+// worktree's, and reports what changed. Both sides use this worktree's specs,
+// so ref doesn't need them. Besides the site's builds, what it makes stays in
+// tmp/visual.
+func (a *App) visual(ctx context.Context, env Environment, args []string) error {
+	if len(args) == 0 || len(args) > 2 {
+		return fmt.Errorf("usage: visual <%s|%s> [ref]", strings.Join(e2eBrowsers, "|"), e2eAll)
+	}
+	browser, ref := args[0], defaultVisualRef
+	if len(args) == 2 {
+		ref = args[1]
+	}
+	var playwrightArgs []string
+	if browser != e2eAll {
+		if !isE2EBrowser(browser) {
+			return fmt.Errorf("unknown browser %q; use %s or %s", browser, strings.Join(e2eBrowsers, ", "), e2eAll)
+		}
+		// Each browser has a desktop and a phone project.
+		playwrightArgs = append(playwrightArgs, "--project="+browser+"-*")
+	}
+	if !hasSeeds(seedsPath(env)) {
+		return fmt.Errorf("seed files are missing from %s; run mise db:pull first", seedsPath(env))
+	}
+
+	unlock, err := a.lockBrowserTests(ctx, env)
+	if err != nil {
+		return err
+	}
+	defer unlock()
+
+	if err := a.Processes.PrepareVisual(ctx, env); err != nil {
+		return err
+	}
+	port, err := a.Database.Ensure(ctx, env)
+	if err != nil {
+		return err
+	}
+	target := DatabaseTarget{Environment: "development", Name: env.VisualDatabase(), Port: port}
+	lease, err := a.Ports(env).Acquire(defaultE2EPort)
+	if err != nil {
+		return fmt.Errorf("reserve visual server port: %w", err)
+	}
+	defer func() { _ = lease.Close() }()
+
+	if err := a.printf("Checking out %s for the reference screenshots...\n", ref); err != nil {
+		return err
+	}
+	checkout, err := a.Processes.CheckoutReference(ctx, env, ref)
+	if err != nil {
+		return err
+	}
+	defer checkout.Remove()
+	if checkout.FetchErr != nil {
+		if err := a.printf("Couldn't fetch %s, so comparing with the copy fetched last time: %v\n", ref, checkout.FetchErr); err != nil {
+			return err
+		}
+	}
+	ref = fmt.Sprintf("%s (%.7s)", ref, checkout.Commit)
+	reference := env
+	reference.CurrentRoot = checkout.Root
+
+	// Each side gets the database its own migrations and seeds make.
+	sides := []struct {
+		name string
+		site Environment
+	}{
+		{visualReference, reference},
+		{visualBranch, env},
+	}
+	for _, side := range sides {
+		if err := a.printf("Screenshotting the %s on %s...\n", side.name, apiURL(lease.Port())); err != nil {
+			return err
+		}
+		if err := a.Database.Reset(ctx, env, target.Name); err != nil {
+			return err
+		}
+		if err := a.Processes.Migrate(ctx, side.site, target, "migrate"); err != nil {
+			return err
+		}
+		if _, err := a.Database.Seed(ctx, env, target.Name, seedsPath(side.site)); err != nil {
+			return err
+		}
+		retried, err := a.Processes.Visual(ctx, side.site, env, target, lease.Port(), side.name, playwrightArgs...)
+		if len(retried) > 0 {
+			if err := a.printf("\nPassed after a retry for a timeout or dropped connection, not a difference:\n  %s\n", strings.Join(retried, "\n  ")); err != nil {
+				return err
+			}
+		}
+		if err != nil {
+			var failure *VisualFailure
+			if !errors.As(err, &failure) {
+				return fmt.Errorf("%s: %w", side.name, err)
+			}
+			return a.visualFailure(env, ref, side.name, failure)
+		}
+	}
+	return a.printf("No visual differences from %s.\n", ref)
+}
+
+// visualFailure lists the specs that didn't pass on one side of a visual
+// comparison, and points at that side's report.
+func (a *App) visualFailure(env Environment, ref, side string, failure *VisualFailure) error {
+	report := "report"
+	if side == visualReference {
+		report = "report-reference"
+	}
+	report, _ = filepath.Rel(env.CurrentRoot, filepath.Join(visualDir(env), report))
+
+	groups := []struct {
+		heading string
+		tests   []string
+	}{
+		{"Screenshots that differ from " + ref, failure.Differ},
+		{"Tests that failed before or apart from their screenshot", failure.Failed},
+		{"Tests that passed only on a retry, after a difference or an unexpected error (noise, or a change that only happens sometimes; run it again to see whether it repeats)", failure.Flaky},
+	}
+	if side == visualReference {
+		groups[0].heading = "Reference screenshots that didn't come out the same twice"
+	}
+	for _, group := range groups {
+		if len(group.tests) == 0 {
+			continue
+		}
+		if err := a.printf("\n%s:\n  %s\n", group.heading, strings.Join(group.tests, "\n  ")); err != nil {
+			return err
+		}
+	}
+	if side == visualReference {
+		return fmt.Errorf("couldn't take the reference screenshots of %s; see pnpm exec playwright show-report %s", ref, report)
+	}
+	return fmt.Errorf("the comparison with %s didn't pass; see pnpm exec playwright show-report %s", ref, report)
+}
+
+// lockBrowserTests keeps e2e and visual runs in this worktree from running at
+// once: each rebuilds the frontend, and a second e2e run would rebuild the
+// database under the first.
+func (a *App) lockBrowserTests(ctx context.Context, env Environment) (func(), error) {
+	return lockFile(ctx, filepath.Join(env.CurrentRoot, "tmp", "e2e.lock"), func() {
+		_ = a.printf("Waiting for another e2e or visual run in this worktree to finish...\n")
+	})
 }
 
 func isE2EBrowser(name string) bool {

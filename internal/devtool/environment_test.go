@@ -28,6 +28,7 @@ func TestWorktreeDatabaseNameLeavesRoomForTestSuffix(t *testing.T) {
 
 	assert.LessOrEqual(t, len(name+testDatabaseSuffix), maxIdentifierLength)
 	assert.LessOrEqual(t, len(name+e2eDatabaseSuffix), maxIdentifierLength)
+	assert.LessOrEqual(t, len(name+visualDatabaseSuffix), maxIdentifierLength)
 	assert.NotContains(t, name, "__")
 }
 

@@ -22,5 +22,7 @@ export default defineConfig({
     : "list",
   retries: process.env.CI ? 1 : 0,
   testDir: "./e2e",
+  // The visual comparison has its own config (playwright.visual.config.ts).
+  testIgnore: "visual/**",
   use: { baseURL, trace: "retain-on-failure" },
 });

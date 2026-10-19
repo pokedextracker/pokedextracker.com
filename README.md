@@ -28,6 +28,7 @@ mise lint               # golangci-lint, ESLint, Prettier, and TypeScript checks
 mise format             # Format the code, config, and docs with Prettier
 mise test:go            # Go tests
 mise test:e2e           # End-to-end tests in Chromium (test:e2e:all for every browser)
+mise test:visual        # Compare how the site looks with master (needs Docker)
 mise build              # Build the frontend, then the API (which embeds it) and migrations
 mise db:migrate         # Run pending migrations
 mise psql               # Open psql against this worktree's database
@@ -85,6 +86,48 @@ test. When a test fails, `pnpm exec playwright show-trace` on the trace in
 
 The tests use the Legends: Z-A regional dex from `seeds/`, so a `mise db:pull`
 that changes that dex may mean updating them too.
+
+### Visual comparison
+
+For changes that shouldn't alter how the site looks (dependency upgrades,
+styling refactors), `mise test:visual` screenshots about 25 page states at a
+desktop and a phone width, once with `master`'s build and once with this
+branch's, and reports anything that changed. It needs Docker.
+
+```sh
+mise test:visual            # Chromium, compared with master (origin/master)
+mise test:visual v1.2.3     # Compared with another branch, tag, or commit
+mise test:visual:all        # Chromium, Firefox, and WebKit
+```
+
+It fetches `origin/master` (or checks out the ref you give it) into a temporary
+worktree and builds it with this branch's tools, so a ref from before a Node,
+pnpm, or Go upgrade may not build. The ref's dependencies, build, and server
+run on your machine, so only compare against refs you trust. Each side gets a
+fresh `_vis` database with the same users and dexes. The screenshots are taken
+in Playwright's Linux Docker image, because Chromium on macOS doesn't render
+text identically from run to run. The WebKit phone is a high-resolution touch
+screen; the other phones are narrow windows with a mouse.
+
+The reference screenshots are taken twice, and any that don't come out the
+same are retaken, up to three times. On this branch's side, a screenshot fails
+when more than 5 pixels change color at all, and a failure is retried twice. A
+test that passes only on a retry doesn't pass either, unless what it retried
+was a timeout or a dropped connection: it's listed separately, since it's
+either noise or a change that only happens some of the time, and running the
+comparison again tells you which. The report, with each difference
+highlighted, is in `tmp/visual/report`
+(`pnpm exec playwright show-report tmp/visual/report`), and the servers' logs
+are in `tmp/visual/server-*.log`. Google Fonts are cached in
+`tmp/visual/fonts` so both sides get the same files; delete it if the site's
+fonts change.
+
+Nothing it makes is committed: the pages it covers are in `e2e/visual/`. Both
+sides run this branch's specs, so a spec has to work against both: select by
+ids, roles, and text rather than class names a change might rename. A spec
+that fails on the reference stops the comparison and is listed. A change to
+how a page looks needs specs for the states it touches, added in the same
+branch.
 
 If you used this repo before the launcher existed, the old setup's container
 (named after the checkout, like `pokedextracker-com-postgres-1`) and its

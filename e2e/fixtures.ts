@@ -6,12 +6,14 @@ import {
   type Page,
 } from "@playwright/test";
 
+import { slugOf } from "./slug";
+
 // WebKit reports a request that a navigation cancels (the test moving to
 // another page while the app is still fetching) as a page error worded like a
 // cross-origin failure. The request belonged to the page being left, so it's
 // not a real error. The site and its API share an origin, so a same-origin
 // request can't actually fail access control.
-function cancelledByNavigation(error: Error, host: string): boolean {
+export function cancelledByNavigation(error: Error, host: string): boolean {
   const text = `${error.name}: ${error.message}`;
   return (
     text.startsWith("Fetch API cannot load") &&
@@ -64,8 +66,7 @@ export async function createUser(
   title = "Living Dex",
 ): Promise<CreatedUser> {
   const username = uniqueUsername();
-  // The frontend makes the slug from the title; the API doesn't.
-  const slug = title.toLowerCase().replace(/ /g, "-");
+  const slug = slugOf(title);
   const response = await request.post("/api/users", {
     data: {
       username,

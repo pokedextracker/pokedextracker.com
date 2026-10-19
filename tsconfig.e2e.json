@@ -5,5 +5,10 @@
     "lib": ["ES2022", "ESNext.Disposable", "DOM", "DOM.Iterable"]
   },
   // config declares window.POKEDEXTRACKER_CONFIG, which the tests read.
-  "include": ["e2e", "playwright.config.ts", "config/index.ts"]
+  "include": [
+    "e2e",
+    "playwright.config.ts",
+    "playwright.visual.config.ts",
+    "config/index.ts"
+  ]
 }
