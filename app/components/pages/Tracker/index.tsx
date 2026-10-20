@@ -1,51 +1,70 @@
 import keyBy from "lodash/keyBy";
-import throttle from "lodash/throttle";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useCaptures } from "../../../hooks/queries/captures";
 import { useUser } from "../../../hooks/queries/users";
 import { useDexParams } from "../../../hooks/use-dex-params";
+import type { Capture } from "../../../types";
 import { Footer } from "../../library/Footer";
 import { Nav } from "../../library/Nav";
 import { Reload } from "../../library/Reload";
 import { NotFound } from "../NotFound";
 import { Dex } from "./Dex";
 import { Info } from "./Info";
-import { SCROLL_DEBOUNCE, SHOW_SCROLL_THRESHOLD } from "./Scroll";
+import { SHOW_SCROLL_THRESHOLD } from "./Scroll";
 import { SearchBar } from "./SearchBar";
-import { TrackerContextProvider, useTrackerContext } from "./use-tracker";
+import { TrackerContextProvider } from "./use-tracker";
 
-// To enable the inner component to access the context value, it needs to be nested under the provider, so we need this
-// wrapper component to add that nesting.
+// Tracker loads the dex's owner and captures, then renders the tracker with
+// them. A dex that doesn't exist has no captures either (the API 404s), so it
+// gets the not-found page. The tracker is keyed by the dex, so moving to
+// another one starts it fresh, like loading that page directly.
 export function Tracker() {
+  const { username, slug } = useDexParams();
+
+  const { data: user, isPending: userIsLoading } = useUser(username);
+  const { data: captures, isPending: capturesIsLoading } = useCaptures(
+    username,
+    slug,
+  );
+
+  const dex = useMemo(() => keyBy(user?.dexes, "slug")[slug], [user, slug]);
+
+  useEffect(() => {
+    document.title = `${username}'s Living Dex | Pokédex Tracker`;
+  }, [username]);
+
+  if (userIsLoading || capturesIsLoading) {
+    return <div className="loading">Loading...</div>;
+  }
+
+  if (!dex || !captures?.length) {
+    return <NotFound />;
+  }
+
   return (
-    <TrackerContextProvider>
-      <TrackerInner />
+    <TrackerContextProvider
+      initialCaptures={captures}
+      key={`${username}/${slug}`}
+    >
+      <TrackerInner captures={captures} />
     </TrackerContextProvider>
   );
 }
 
-export function TrackerInner() {
-  const { username, slug } = useDexParams();
+interface TrackerInnerProps {
+  captures: Capture[];
+}
 
+function TrackerInner({ captures }: TrackerInnerProps) {
   const trackerRef = useRef<HTMLDivElement>(null);
-
-  const { setCaptures } = useTrackerContext();
-
-  const { data: user, isPending: userIsLoading } = useUser(username);
-  const { data: capturesFromServer, isPending: capturesIsLoading } =
-    useCaptures(username, slug);
-
-  const dex = useMemo(() => keyBy(user?.dexes, "slug")[slug], [user, slug]);
 
   const [query, setQuery] = useState("");
   const [hideCaught, setHideCaught] = useState(false);
   const [showScroll, setShowScroll] = useState(false);
-  const [selectedPokemon, setSelectedPokemon] = useState(0);
-
-  useEffect(() => {
-    document.title = `${username}'s Living Dex | Pokédex Tracker`;
-  }, []);
+  const [selectedPokemon, setSelectedPokemon] = useState(
+    captures[0].pokemon.id,
+  );
 
   useEffect(() => {
     if (trackerRef.current) {
@@ -53,42 +72,19 @@ export function TrackerInner() {
     }
   }, [query]);
 
-  useEffect(() => {
-    if (capturesFromServer) {
-      setCaptures(capturesFromServer);
-      setSelectedPokemon(capturesFromServer[0].pokemon.id);
+  // Setting the same value doesn't re-render, so this can run on every
+  // scroll.
+  const handleScroll = () => {
+    if (trackerRef.current) {
+      setShowScroll(trackerRef.current.scrollTop >= SHOW_SCROLL_THRESHOLD);
     }
-  }, [capturesFromServer]);
+  };
 
-  const handleScroll = throttle(() => {
-    if (
-      !showScroll &&
-      trackerRef.current &&
-      trackerRef.current.scrollTop >= SHOW_SCROLL_THRESHOLD
-    ) {
-      setShowScroll(true);
-    } else if (
-      showScroll &&
-      trackerRef.current &&
-      trackerRef.current.scrollTop < SHOW_SCROLL_THRESHOLD
-    ) {
-      setShowScroll(false);
-    }
-  }, SCROLL_DEBOUNCE);
-
-  const handleScrollButtonClick = useCallback(() => {
+  const handleScrollButtonClick = () => {
     if (trackerRef.current) {
       trackerRef.current.scrollTop = 0;
     }
-  }, [trackerRef.current]);
-
-  if (userIsLoading || capturesIsLoading || !selectedPokemon) {
-    return <div className="loading">Loading...</div>;
-  }
-
-  if (!dex) {
-    return <NotFound />;
-  }
+  };
 
   return (
     <div className="tracker-container">

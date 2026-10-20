@@ -34,7 +34,7 @@ export function Account() {
     if (!session) {
       navigate("/login");
     }
-  }, [session]);
+  }, [session, navigate]);
 
   if (!sessionUser) {
     return null;

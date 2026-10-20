@@ -11,7 +11,7 @@ export function useDeferredRender(value: boolean): boolean {
 
       return () => window.cancelAnimationFrame(id);
     }
-  }, []);
+  }, [render]);
 
   return render;
 }

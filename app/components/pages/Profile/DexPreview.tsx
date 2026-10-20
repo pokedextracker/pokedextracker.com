@@ -49,11 +49,9 @@ export function DexPreview({ dex }: Props) {
             >
               <FontAwesomeIcon icon={faPencilAlt} />
             </a>
-            <DexEdit
-              dex={dex}
-              isOpen={showEditDex}
-              onRequestClose={handleRequestClose}
-            />
+            {showEditDex && (
+              <DexEdit dex={dex} onRequestClose={handleRequestClose} />
+            )}
           </div>
         )}
         <DexIndicator dex={dex} />

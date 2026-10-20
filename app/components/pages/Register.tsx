@@ -12,6 +12,7 @@ import startCase from "lodash/startCase";
 import uniqBy from "lodash/uniqBy";
 import {
   useEffect,
+  useEffectEvent,
   useMemo,
   useState,
   type ChangeEvent,
@@ -154,32 +155,35 @@ export function Register() {
     document.title = "Register | Pokédex Tracker";
   }, []);
 
-  useEffect(() => {
+  // Someone who's already logged in goes to their profile, but only when they
+  // arrive: registering here navigates on its own.
+  const redirectIfLoggedIn = useEffectEvent(() => {
     if (session) {
       navigate(`/u/${session.username}`);
     }
+  });
+  useEffect(() => {
+    redirectIfLoggedIn();
   }, []);
 
-  useEffect(() => {
-    if (games && !game) {
-      setGame(games[0].id);
-    }
-  }, [games, game]);
-
-  useEffect(() => {
-    if (
-      games &&
-      Object.keys(dexTypesByGameFamilyId).length > 0 &&
-      dexType === -1
-    ) {
-      setDexType(
-        dexTypesByGameFamilyId[games[0].game_family.id].find(
-          (dt) => !dt.base_dex_type_id,
-        )!.id,
-      );
-      setSelectedCustomizations({});
-    }
-  }, [games, dexTypesByGameFamilyId, dexType]);
+  // Once the games and dex types load, the form defaults to the first game
+  // and its first dex type. Setting state while rendering applies these before
+  // anything shows, rather than drawing an empty form first.
+  if (games && !game) {
+    setGame(games[0].id);
+  }
+  if (
+    games &&
+    Object.keys(dexTypesByGameFamilyId).length > 0 &&
+    dexType === -1
+  ) {
+    setDexType(
+      dexTypesByGameFamilyId[games[0].game_family.id].find(
+        (dt) => !dt.base_dex_type_id,
+      )!.id,
+    );
+    setSelectedCustomizations({});
+  }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

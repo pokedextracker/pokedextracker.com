@@ -66,7 +66,7 @@ export function Dex({
         setSelectedPokemon={setSelectedPokemon}
       />
     ));
-  }, [groupedCaptures]);
+  }, [groupedCaptures, dex.total, setSelectedPokemon]);
 
   return (
     <div className="dex">

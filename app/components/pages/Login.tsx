@@ -3,7 +3,13 @@ import {
   faLongArrowAltRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import { Link, useNavigate } from "react-router";
 
 import { useSession } from "../../hooks/contexts/use-session";
@@ -28,10 +34,15 @@ export function Login() {
     document.title = "Login | Pokédex Tracker";
   }, []);
 
-  useEffect(() => {
+  // Someone who's already logged in goes to their profile, but only when they
+  // arrive: logging in here navigates on its own.
+  const redirectIfLoggedIn = useEffectEvent(() => {
     if (session) {
       navigate(`/u/${session.username}`);
     }
+  });
+  useEffect(() => {
+    redirectIfLoggedIn();
   }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {

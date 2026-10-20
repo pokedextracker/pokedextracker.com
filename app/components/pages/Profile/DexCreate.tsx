@@ -11,7 +11,6 @@ import keyBy from "lodash/keyBy";
 import startCase from "lodash/startCase";
 import uniqBy from "lodash/uniqBy";
 import {
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -145,26 +144,24 @@ export function DexCreate({ isOpen, onRequestClose }: Props) {
 
   const createDexMutation = useCreateDex();
 
-  useEffect(() => {
-    if (games && !game) {
-      setGame(games[0].id);
-    }
-  }, [games, game]);
-
-  useEffect(() => {
-    if (
-      games &&
-      Object.keys(dexTypesByGameFamilyId).length > 0 &&
-      dexType === -1
-    ) {
-      setDexType(
-        dexTypesByGameFamilyId[games[0].game_family.id].find(
-          (dt) => !dt.base_dex_type_id,
-        )!.id,
-      );
-      setSelectedCustomizations({});
-    }
-  }, [games, dexTypesByGameFamilyId, dexType]);
+  // Once the games and dex types load, the form defaults to the first game
+  // and its first dex type. Setting state while rendering applies these before
+  // anything shows, rather than drawing an empty form first.
+  if (games && !game) {
+    setGame(games[0].id);
+  }
+  if (
+    games &&
+    Object.keys(dexTypesByGameFamilyId).length > 0 &&
+    dexType === -1
+  ) {
+    setDexType(
+      dexTypesByGameFamilyId[games[0].game_family.id].find(
+        (dt) => !dt.base_dex_type_id,
+      )!.id,
+    );
+    setSelectedCustomizations({});
+  }
 
   const handleRequestClose = () => {
     createDexMutation.reset();

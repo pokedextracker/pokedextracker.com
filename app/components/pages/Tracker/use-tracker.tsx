@@ -26,10 +26,16 @@ const TrackerContext = createContext<TrackerContextState>({
 
 interface Props {
   children: ReactNode;
+  // The captures as loaded. Marking Pokémon caught changes this copy, so the
+  // page doesn't wait on the API.
+  initialCaptures: Capture[];
 }
 
-export const TrackerContextProvider = ({ children }: Props) => {
-  const [captures, setCaptures] = useState<UICapture[]>([]);
+export const TrackerContextProvider = ({
+  children,
+  initialCaptures,
+}: Props) => {
+  const [captures, setCaptures] = useState<UICapture[]>(initialCaptures);
 
   const contextValue = useMemo<TrackerContextState>(
     () => ({

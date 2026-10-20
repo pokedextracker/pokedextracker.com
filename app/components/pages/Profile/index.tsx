@@ -26,7 +26,7 @@ export function Profile() {
 
   useEffect(() => {
     document.title = `${username}'s Profile | Pokédex Tracker`;
-  }, []);
+  }, [username]);
 
   const handleCreateNewDexClick = () => setShowDexCreate(true);
   const handleDexCreateRequestClose = () => setShowDexCreate(false);

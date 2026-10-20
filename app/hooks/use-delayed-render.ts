@@ -8,7 +8,7 @@ export function useDelayedRender(delay: number): boolean {
       const id = setTimeout(() => setRender(true), delay);
       return () => clearTimeout(id);
     }
-  }, []);
+  }, [delay]);
 
   return render;
 }

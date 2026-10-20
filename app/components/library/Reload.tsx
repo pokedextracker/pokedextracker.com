@@ -1,24 +1,20 @@
 import { faExclamationCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 
 import { useVersion } from "../../hooks/queries/version";
 
 export function Reload() {
   const { data: version } = useVersion();
+  // The version this tab loaded with. When /version starts answering with
+  // something else, a new build is out.
   const [firstVersion, setFirstVersion] = useState<string | null>(
     version || null,
   );
-  const shouldReload = useMemo(
-    () => firstVersion && firstVersion !== version,
-    [firstVersion, version],
-  );
-
-  useEffect(() => {
-    if (!firstVersion && version) {
-      setFirstVersion(version);
-    }
-  }, [version, firstVersion]);
+  if (!firstVersion && version) {
+    setFirstVersion(version);
+  }
+  const shouldReload = firstVersion && firstVersion !== version;
 
   if (!shouldReload) {
     return null;
