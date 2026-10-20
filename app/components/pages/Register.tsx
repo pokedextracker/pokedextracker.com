@@ -12,13 +12,13 @@ import startCase from "lodash/startCase";
 import uniqBy from "lodash/uniqBy";
 import {
   useEffect,
+  useEffectEvent,
   useMemo,
   useState,
   type ChangeEvent,
   type FormEvent,
 } from "react";
-import { useHistory } from "react-router";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 import slug from "slug";
 
 import { useLocalStorageContext } from "../../hooks/contexts/use-local-storage-context";
@@ -38,7 +38,7 @@ import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
 
 export function Register() {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const { setHideNotification } = useLocalStorageContext();
 
@@ -155,32 +155,35 @@ export function Register() {
     document.title = "Register | Pokédex Tracker";
   }, []);
 
-  useEffect(() => {
+  // Someone who's already logged in goes to their profile, but only when they
+  // arrive: registering here navigates on its own.
+  const redirectIfLoggedIn = useEffectEvent(() => {
     if (session) {
-      history.push(`/u/${session.username}`);
+      navigate(`/u/${session.username}`);
     }
+  });
+  useEffect(() => {
+    redirectIfLoggedIn();
   }, []);
 
-  useEffect(() => {
-    if (games && !game) {
-      setGame(games[0].id);
-    }
-  }, [games, game]);
-
-  useEffect(() => {
-    if (
-      games &&
-      Object.keys(dexTypesByGameFamilyId).length > 0 &&
-      dexType === -1
-    ) {
-      setDexType(
-        dexTypesByGameFamilyId[games[0].game_family.id].find(
-          (dt) => !dt.base_dex_type_id,
-        )!.id,
-      );
-      setSelectedCustomizations({});
-    }
-  }, [games, dexTypesByGameFamilyId, dexType]);
+  // Once the games and dex types load, the form defaults to the first game
+  // and its first dex type. Setting state while rendering applies these before
+  // anything shows, rather than drawing an empty form first.
+  if (games && !game) {
+    setGame(games[0].id);
+  }
+  if (
+    games &&
+    Object.keys(dexTypesByGameFamilyId).length > 0 &&
+    dexType === -1
+  ) {
+    setDexType(
+      dexTypesByGameFamilyId[games[0].game_family.id].find(
+        (dt) => !dt.base_dex_type_id,
+      )!.id,
+    );
+    setSelectedCustomizations({});
+  }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -210,7 +213,7 @@ export function Register() {
       setToken(token);
       trackEvent("Session", "register");
       setHideNotification(true);
-      history.push(`/u/${username}/${payload.slug}`);
+      navigate(`/u/${username}/${payload.slug}`);
     } catch {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
       // error besides prevent it from bubbling up.
@@ -494,7 +497,7 @@ export function Register() {
           <div className="form-column">
             <button
               className="btn btn-blue"
-              disabled={createUserMutation.isLoading}
+              disabled={createUserMutation.isPending}
               type="submit"
             >
               Let&apos;s go! <FontAwesomeIcon icon={faLongArrowAltRight} />

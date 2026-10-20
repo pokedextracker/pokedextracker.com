@@ -68,12 +68,6 @@ export default defineConfig(
       ...react.configs.flat.recommended.rules,
       ...react.configs.flat["jsx-runtime"].rules,
       ...reactHooks.configs.recommended.rules,
-      // These flag effects with missing dependencies, setState inside effects,
-      // and refs read during render. Fixing them changes when effects run, so
-      // they're turned on with the React upgrade, which reworks that code.
-      "react-hooks/exhaustive-deps": "off",
-      "react-hooks/refs": "off",
-      "react-hooks/set-state-in-effect": "off",
       "react/boolean-prop-naming": "error",
       "react/jsx-boolean-value": ["error", "never"],
       "react/jsx-sort-props": "error",

@@ -2,7 +2,6 @@ import { faCircleNotch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import keyBy from "lodash/keyBy";
 import { useMemo } from "react";
-import { useParams } from "react-router";
 
 import { useSession } from "../../../hooks/contexts/use-session";
 import {
@@ -10,6 +9,7 @@ import {
   useDeleteCapture,
 } from "../../../hooks/queries/captures";
 import { useUser } from "../../../hooks/queries/users";
+import { useUserParams } from "../../../hooks/use-user-params";
 import { trackEvent } from "../../../utils/analytics";
 import { padding } from "../../../utils/formatting";
 import { useTrackerContext, type UICapture } from "./use-tracker";
@@ -19,7 +19,7 @@ interface Props {
 }
 
 export function MarkAllButton({ captures }: Props) {
-  const { username, slug } = useParams<{ username: string; slug: string }>();
+  const { username, slug } = useUserParams();
 
   const { session } = useSession();
   const user = useUser(username).data!;
@@ -103,19 +103,19 @@ export function MarkAllButton({ captures }: Props) {
     );
   };
 
-  const isLoading =
-    createCapturesMutation.isLoading || deleteCapturesMutation.isLoading;
+  const isPending =
+    createCapturesMutation.isPending || deleteCapturesMutation.isPending;
 
   return (
     <button
       className="btn btn-blue"
-      disabled={isLoading}
+      disabled={isPending}
       onClick={handleButtonClick}
     >
-      <span className={isLoading ? "hidden" : ""}>
+      <span className={isPending ? "hidden" : ""}>
         {uncaught === 0 ? "Unmark" : "Mark"} All
       </span>
-      {isLoading ? (
+      {isPending ? (
         <span className="spinner">
           <FontAwesomeIcon icon={faCircleNotch} spin />
         </span>

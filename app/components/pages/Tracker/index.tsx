@@ -1,51 +1,95 @@
 import keyBy from "lodash/keyBy";
-import throttle from "lodash/throttle";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useCaptures } from "../../../hooks/queries/captures";
 import { useUser } from "../../../hooks/queries/users";
+import { useUserParams } from "../../../hooks/use-user-params";
 import { Footer } from "../../library/Footer";
+import { isNotFound, LoadError } from "../../library/LoadError";
 import { Nav } from "../../library/Nav";
 import { Reload } from "../../library/Reload";
 import { NotFound } from "../NotFound";
 import { Dex } from "./Dex";
 import { Info } from "./Info";
-import { SCROLL_DEBOUNCE, SHOW_SCROLL_THRESHOLD } from "./Scroll";
+import { SHOW_SCROLL_THRESHOLD } from "./Scroll";
 import { SearchBar } from "./SearchBar";
-import { TrackerContextProvider, useTrackerContext } from "./use-tracker";
+import { TrackerContextProvider } from "./use-tracker";
 
-// To enable the inner component to access the context value, it needs to be nested under the provider, so we need this
-// wrapper component to add that nesting.
+// Tracker is keyed by the dex, so moving to another one (from the nav, or with
+// Back) mounts it fresh, like loading that page directly: its captures are
+// fetched again and its search and selection start over. The router would
+// otherwise keep the same component mounted with new params.
 export function Tracker() {
+  const { username, slug } = useUserParams();
+
+  return <TrackerPage key={`${username}/${slug}`} />;
+}
+
+// TrackerPage loads the dex's owner and captures, then renders the tracker
+// with them. A dex that doesn't exist has no captures either (the API 404s),
+// so it gets the not-found page.
+function TrackerPage() {
+  const { username, slug } = useUserParams();
+
+  const userQuery = useUser(username);
+  const capturesQuery = useCaptures(username, slug);
+  const user = userQuery.data;
+  // After a failed fetch, the cache can still hold older captures. They're not
+  // used: the tracker only starts from this visit's.
+  const captures = capturesQuery.error ? undefined : capturesQuery.data;
+
+  const dex = useMemo(() => keyBy(user?.dexes, "slug")[slug], [user, slug]);
+
+  // The tracker keeps its own copy of the captures as Pokémon are marked, and
+  // the cached ones can be from before that (or from before the dex's game
+  // changed), so it waits for this visit's fetch rather than starting from
+  // the cache.
+  if (userQuery.isPending || !capturesQuery.isFetchedAfterMount) {
+    return <div className="loading">Loading...</div>;
+  }
+
+  // A failed refresh of an owner who's already loaded doesn't count: the page
+  // can still show them.
+  const failed = [
+    userQuery.data ? null : userQuery.error,
+    capturesQuery.error,
+  ].find((error) => error && !isNotFound(error));
+  if (failed) {
+    return <LoadError error={failed} thing="dex" />;
+  }
+
+  if (!dex || !captures?.length) {
+    return <NotFound />;
+  }
+
   return (
-    <TrackerContextProvider>
-      <TrackerInner />
+    <TrackerContextProvider initialCaptures={captures}>
+      <TrackerInner initialSelectedPokemon={captures[0].pokemon.id} />
     </TrackerContextProvider>
   );
 }
 
-export function TrackerInner() {
-  const { username, slug } = useParams<{ username: string; slug: string }>();
+interface TrackerInnerProps {
+  initialSelectedPokemon: number;
+}
+
+function TrackerInner({ initialSelectedPokemon }: TrackerInnerProps) {
+  const { username } = useUserParams();
 
   const trackerRef = useRef<HTMLDivElement>(null);
 
-  const { setCaptures } = useTrackerContext();
-
-  const { data: user, isLoading: userIsLoading } = useUser(username);
-  const { data: capturesFromServer, isLoading: capturesIsLoading } =
-    useCaptures(username, slug);
-
-  const dex = useMemo(() => keyBy(user?.dexes, "slug")[slug], [user, slug]);
+  // Set here rather than while loading, so a dex that turns out not to exist
+  // keeps the not found page's title.
+  useEffect(() => {
+    document.title = `${username}'s Living Dex | Pokédex Tracker`;
+  }, [username]);
 
   const [query, setQuery] = useState("");
   const [hideCaught, setHideCaught] = useState(false);
   const [showScroll, setShowScroll] = useState(false);
-  const [selectedPokemon, setSelectedPokemon] = useState(0);
-
-  useEffect(() => {
-    document.title = `${username}'s Living Dex | Pokédex Tracker`;
-  }, []);
+  const [selectedPokemon, setSelectedPokemon] = useState(
+    initialSelectedPokemon,
+  );
 
   useEffect(() => {
     if (trackerRef.current) {
@@ -53,42 +97,19 @@ export function TrackerInner() {
     }
   }, [query]);
 
-  useEffect(() => {
-    if (capturesFromServer) {
-      setCaptures(capturesFromServer);
-      setSelectedPokemon(capturesFromServer[0].pokemon.id);
+  // Setting the same value doesn't re-render, so this can run on every
+  // scroll.
+  const handleScroll = () => {
+    if (trackerRef.current) {
+      setShowScroll(trackerRef.current.scrollTop >= SHOW_SCROLL_THRESHOLD);
     }
-  }, [capturesFromServer]);
+  };
 
-  const handleScroll = throttle(() => {
-    if (
-      !showScroll &&
-      trackerRef.current &&
-      trackerRef.current.scrollTop >= SHOW_SCROLL_THRESHOLD
-    ) {
-      setShowScroll(true);
-    } else if (
-      showScroll &&
-      trackerRef.current &&
-      trackerRef.current.scrollTop < SHOW_SCROLL_THRESHOLD
-    ) {
-      setShowScroll(false);
-    }
-  }, SCROLL_DEBOUNCE);
-
-  const handleScrollButtonClick = useCallback(() => {
+  const handleScrollButtonClick = () => {
     if (trackerRef.current) {
       trackerRef.current.scrollTop = 0;
     }
-  }, [trackerRef.current]);
-
-  if (userIsLoading || capturesIsLoading || !selectedPokemon) {
-    return <div className="loading">Loading...</div>;
-  }
-
-  if (!dex) {
-    return <NotFound />;
-  }
+  };
 
   return (
     <div className="tracker-container">

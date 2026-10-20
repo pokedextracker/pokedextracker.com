@@ -40,7 +40,7 @@ export function SearchBar({
     document.addEventListener("keyup", handleKeyup);
 
     return () => document.removeEventListener("keyup", handleKeyup);
-  }, [inputRef.current]);
+  }, []);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) =>
     setQuery(e.target.value);

@@ -2,7 +2,7 @@ import "./styles";
 
 import { ErrorBoundary, Provider as RollbarProvider } from "@rollbar/react";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { render } from "react-dom";
+import { createRoot } from "react-dom/client";
 import Modal from "react-modal";
 
 import { App } from "./components/pages/App";
@@ -14,7 +14,7 @@ import { Rollbar } from "./utils/rollbar";
 Modal.setAppElement("#root");
 
 function run() {
-  render(
+  createRoot(document.getElementById("root")!).render(
     <RollbarProvider instance={Rollbar}>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
@@ -26,7 +26,6 @@ function run() {
         </QueryClientProvider>
       </ErrorBoundary>
     </RollbarProvider>,
-    document.getElementById("root"),
   );
 }
 

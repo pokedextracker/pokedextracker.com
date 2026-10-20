@@ -3,9 +3,14 @@ import {
   faLongArrowAltRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
-import { useHistory } from "react-router";
-import { Link } from "react-router-dom";
+import {
+  useEffect,
+  useEffectEvent,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
+import { Link, useNavigate } from "react-router";
 
 import { useSession } from "../../hooks/contexts/use-session";
 import { useLogin } from "../../hooks/queries/sessions";
@@ -16,7 +21,7 @@ import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
 
 export function Login() {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const { session, setToken } = useSession();
 
@@ -29,10 +34,15 @@ export function Login() {
     document.title = "Login | Pokédex Tracker";
   }, []);
 
-  useEffect(() => {
+  // Someone who's already logged in goes to their profile, but only when they
+  // arrive: logging in here navigates on its own.
+  const redirectIfLoggedIn = useEffectEvent(() => {
     if (session) {
-      history.push(`/u/${session.username}`);
+      navigate(`/u/${session.username}`);
     }
+  });
+  useEffect(() => {
+    redirectIfLoggedIn();
   }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -46,7 +56,7 @@ export function Login() {
       const { token } = await loginMutation.mutateAsync({ payload });
       setToken(token);
       trackEvent("Session", "login");
-      history.push(`/u/${username}`);
+      navigate(`/u/${username}`);
     } catch {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
       // error besides prevent it from bubbling up.
@@ -103,7 +113,7 @@ export function Login() {
           </div>
           <button
             className="btn btn-blue"
-            disabled={loginMutation.isLoading}
+            disabled={loginMutation.isPending}
             type="submit"
           >
             Let&apos;s go! <FontAwesomeIcon icon={faLongArrowAltRight} />

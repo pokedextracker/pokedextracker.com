@@ -10,7 +10,10 @@ export enum QueryKey {
 type ListDexTypesData = DexType[];
 
 export const useDexTypes = (
-  options: UseQueryOptions<ListDexTypesData, PokedexTrackerError> = {},
+  options: Omit<
+    UseQueryOptions<ListDexTypesData, PokedexTrackerError>,
+    "queryKey" | "queryFn"
+  > = {},
 ) => {
   return useQuery<ListDexTypesData, PokedexTrackerError, ListDexTypesData>({
     ...options,

@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import keyBy from "lodash/keyBy";
 import { useMemo, type Dispatch, type SetStateAction } from "react";
-import { useParams } from "react-router";
 
 import { useLocalStorageContext } from "../../../hooks/contexts/use-local-storage-context";
 import { useSession } from "../../../hooks/contexts/use-session";
@@ -13,6 +12,7 @@ import {
 } from "../../../hooks/queries/captures";
 import { useUser } from "../../../hooks/queries/users";
 import { useDelayedRender } from "../../../hooks/use-delayed-render";
+import { useUserParams } from "../../../hooks/use-user-params";
 import type { Dex } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
 import { nationalId, padding } from "../../../utils/formatting";
@@ -29,7 +29,7 @@ interface Props {
 export function Pokemon({ capture, delay = 0, setSelectedPokemon }: Props) {
   const render = useDelayedRender(delay);
 
-  const { username, slug } = useParams<{ username: string; slug: string }>();
+  const { username, slug } = useUserParams();
 
   const { setCaptures } = useTrackerContext();
   const { setShowInfo } = useLocalStorageContext();
@@ -63,7 +63,7 @@ export function Pokemon({ capture, delay = 0, setSelectedPokemon }: Props) {
       return;
     }
 
-    if (createCapturesMutation.isLoading || deleteCapturesMutation.isLoading) {
+    if (createCapturesMutation.isPending || deleteCapturesMutation.isPending) {
       // We're already making a request, so exit early.
       return;
     }

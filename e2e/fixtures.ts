@@ -91,3 +91,16 @@ export async function signIn(page: Page, user: CreatedUser): Promise<void> {
     user.token,
   );
 }
+
+// SERVER_ERROR is what the API sends with a 500, for faking one with
+// page.route. The API reports those to Rollbar.
+export const SERVER_ERROR = {
+  status: 500,
+  json: {
+    error: {
+      code: "internal_server_error",
+      message: "Internal Server Error",
+      status_code: 500,
+    },
+  },
+};

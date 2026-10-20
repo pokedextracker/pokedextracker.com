@@ -12,7 +12,6 @@ import keyBy from "lodash/keyBy";
 import startCase from "lodash/startCase";
 import uniqBy from "lodash/uniqBy";
 import {
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -41,11 +40,12 @@ const URL_WARNING = "The old URL to your dex will not function anymore.";
 
 interface Props {
   dex: Dex;
-  isOpen: boolean;
   onRequestClose: () => void;
 }
 
-export function DexEdit({ dex, isOpen, onRequestClose }: Props) {
+// DexEdit is only mounted while it's open, so every time it opens, the form
+// starts from the dex as it is then.
+export function DexEdit({ dex, onRequestClose }: Props) {
   const formRef = useRef<HTMLDivElement>(null);
 
   const { isNightMode } = useLocalStorageContext();
@@ -164,38 +164,8 @@ export function DexEdit({ dex, isOpen, onRequestClose }: Props) {
     selectedCustomizations,
   ]);
 
-  useEffect(() => {
-    setIsConfirmingUpdate(false);
-  }, [game, resolvedDexType, title]);
-
   const updateDexMutation = useUpdateDex();
   const deleteDexMutation = useDeleteDex();
-
-  const reset = () => {
-    updateDexMutation.reset();
-    deleteDexMutation.reset();
-    setTitle(dex.title);
-    setGame(dex.game.id);
-    setDexType(dex.dex_type.base_dex_type_id || dex.dex_type.id);
-    setShiny(dex.shiny);
-    setSelectedCustomizations(
-      dex.dex_type.tags
-        .filter((tag) => tag.startsWith("customization-"))
-        .reduce(
-          (acc, tag) => ({
-            ...acc,
-            [tag]: true,
-          }),
-          {},
-        ),
-    );
-    setIsConfirmingDelete(false);
-    setIsConfirmingUpdate(false);
-  };
-
-  useEffect(() => {
-    reset();
-  }, [dex]);
 
   const showGameWarning = useMemo(() => {
     // If you're moving from an expansion down to the original as a regional dex, we should show the game warning. The
@@ -217,11 +187,11 @@ export function DexEdit({ dex, isOpen, onRequestClose }: Props) {
       dex.game.game_family.national_total;
 
     return differentFamily && lessNationalCount;
-  }, [dex.id, game, gamesById, regional]);
+  }, [dex, game, gamesById, regional]);
 
   const showRegionalWarning = useMemo(
     () => regional && !dex.dex_type.tags.includes("regional"),
-    [dex.id, regional],
+    [dex, regional],
   );
   // A different family is not necessarily a superset, even when moving to an expansion.
   // Without membership data, warn on any template change unless the game warning already covers it.
@@ -232,13 +202,12 @@ export function DexEdit({ dex, isOpen, onRequestClose }: Props) {
     : showDexTypeWarning && DEX_TYPE_WARNING;
   const showUrlWarning = useMemo(
     () => slug(title || "Living Dex", { lower: true }) !== dex.slug,
-    [dex.id, title],
+    [dex, title],
   );
 
-  const handleRequestClose = () => {
-    reset();
-    onRequestClose();
-  };
+  // Changing what the dex will become cancels a confirmation of the old
+  // values.
+  const cancelConfirmingUpdate = () => setIsConfirmingUpdate(false);
 
   const handleGameChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const newGameId = e.target.value;
@@ -265,17 +234,20 @@ export function DexEdit({ dex, isOpen, onRequestClose }: Props) {
     }
 
     setGame(newGameId);
+    cancelConfirmingUpdate();
   };
 
-  const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) =>
+  const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
+    cancelConfirmingUpdate();
+  };
   const handleShinyChange = (e: ChangeEvent<HTMLInputElement>) =>
     setShiny(e.target.checked);
 
   const handleDeleteClick = async (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
 
-    if (updateDexMutation.isLoading || deleteDexMutation.isLoading) {
+    if (updateDexMutation.isPending || deleteDexMutation.isPending) {
       // We're already making a change, so exit early.
       return;
     }
@@ -294,7 +266,7 @@ export function DexEdit({ dex, isOpen, onRequestClose }: Props) {
         slug: dex.slug,
       });
       trackEvent("Dex", "delete");
-      handleRequestClose();
+      onRequestClose();
     } catch {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
       // error besides prevent it from bubbling up.
@@ -331,7 +303,7 @@ export function DexEdit({ dex, isOpen, onRequestClose }: Props) {
         },
       });
       trackEvent("Dex", "update");
-      handleRequestClose();
+      onRequestClose();
     } catch {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
       // error besides prevent it from bubbling up.
@@ -342,7 +314,6 @@ export function DexEdit({ dex, isOpen, onRequestClose }: Props) {
   };
 
   if (
-    !isOpen ||
     !games ||
     Object.keys(gamesById).length === 0 ||
     Object.keys(dexTypesByGameFamilyId).length === 0
@@ -354,8 +325,8 @@ export function DexEdit({ dex, isOpen, onRequestClose }: Props) {
     <Modal
       className={`modal ${isNightMode ? "night-mode" : ""}`}
       contentLabel="Edit Dex"
-      isOpen={isOpen}
-      onRequestClose={handleRequestClose}
+      isOpen
+      onRequestClose={onRequestClose}
       overlayClassName="modal-overlay"
     >
       <div className="dex-delete-container">
@@ -437,6 +408,7 @@ export function DexEdit({ dex, isOpen, onRequestClose }: Props) {
                         onChange={() => {
                           setDexType(dt.id);
                           setSelectedCustomizations({});
+                          cancelConfirmingUpdate();
                         }}
                         type="radio"
                       />
@@ -492,6 +464,7 @@ export function DexEdit({ dex, isOpen, onRequestClose }: Props) {
                           ...prev,
                           [customization.value]: e.target.checked,
                         }));
+                        cancelConfirmingUpdate();
                       }}
                       type="checkbox"
                     />
@@ -515,7 +488,7 @@ export function DexEdit({ dex, isOpen, onRequestClose }: Props) {
           <button
             className="btn btn-blue form-confirm"
             disabled={
-              updateDexMutation.isLoading || deleteDexMutation.isLoading
+              updateDexMutation.isPending || deleteDexMutation.isPending
             }
             type="submit"
           >
@@ -525,7 +498,7 @@ export function DexEdit({ dex, isOpen, onRequestClose }: Props) {
         </form>
       </div>
       <p>
-        <a className="link" onClick={handleRequestClose}>
+        <a className="link" onClick={onRequestClose}>
           Go Back
         </a>
       </p>

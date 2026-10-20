@@ -10,7 +10,10 @@ export enum QueryKey {
 type ListGamesData = Game[];
 
 export const useGames = (
-  options: UseQueryOptions<ListGamesData, PokedexTrackerError> = {},
+  options: Omit<
+    UseQueryOptions<ListGamesData, PokedexTrackerError>,
+    "queryKey" | "queryFn"
+  > = {},
 ) => {
   return useQuery<ListGamesData, PokedexTrackerError, ListGamesData>({
     ...options,

@@ -11,7 +11,6 @@ import keyBy from "lodash/keyBy";
 import startCase from "lodash/startCase";
 import uniqBy from "lodash/uniqBy";
 import {
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -19,7 +18,7 @@ import {
   type FormEvent,
 } from "react";
 import Modal from "react-modal";
-import { useHistory } from "react-router";
+import { useNavigate } from "react-router";
 import slug from "slug";
 
 import { useLocalStorageContext } from "../../../hooks/contexts/use-local-storage-context";
@@ -32,12 +31,13 @@ import { trackEvent } from "../../../utils/analytics";
 import { Alert } from "../../library/Alert";
 
 interface Props {
-  isOpen: boolean;
   onRequestClose: () => void;
 }
 
-export function DexCreate({ isOpen, onRequestClose }: Props) {
-  const history = useHistory();
+// DexCreate is only mounted while it's open, so every time it opens, the form
+// starts fresh.
+export function DexCreate({ onRequestClose }: Props) {
+  const navigate = useNavigate();
 
   const formRef = useRef<HTMLDivElement>(null);
 
@@ -145,40 +145,24 @@ export function DexCreate({ isOpen, onRequestClose }: Props) {
 
   const createDexMutation = useCreateDex();
 
-  useEffect(() => {
-    if (games && !game) {
-      setGame(games[0].id);
-    }
-  }, [games, game]);
-
-  useEffect(() => {
-    if (
-      games &&
-      Object.keys(dexTypesByGameFamilyId).length > 0 &&
-      dexType === -1
-    ) {
-      setDexType(
-        dexTypesByGameFamilyId[games[0].game_family.id].find(
-          (dt) => !dt.base_dex_type_id,
-        )!.id,
-      );
-      setSelectedCustomizations({});
-    }
-  }, [games, dexTypesByGameFamilyId, dexType]);
-
-  const handleRequestClose = () => {
-    createDexMutation.reset();
-    setTitle("");
-    setGame(games![0].id || "");
+  // Once the games and dex types load, the form defaults to the first game
+  // and its first dex type. Setting state while rendering applies these before
+  // anything shows, rather than drawing an empty form first.
+  if (games && !game) {
+    setGame(games[0].id);
+  }
+  if (
+    games &&
+    Object.keys(dexTypesByGameFamilyId).length > 0 &&
+    dexType === -1
+  ) {
     setDexType(
-      dexTypesByGameFamilyId[games![0].game_family.id].find(
+      dexTypesByGameFamilyId[games[0].game_family.id].find(
         (dt) => !dt.base_dex_type_id,
       )!.id,
     );
-    setShiny(false);
     setSelectedCustomizations({});
-    onRequestClose();
-  };
+  }
 
   const handleGameChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const newGameId = e.target.value;
@@ -231,7 +215,7 @@ export function DexCreate({ isOpen, onRequestClose }: Props) {
         },
       });
       trackEvent("Dex", "create");
-      history.push(`/u/${session!.username}/${dex.slug}`);
+      navigate(`/u/${session!.username}/${dex.slug}`);
     } catch {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
       // error besides prevent it from bubbling up.
@@ -242,7 +226,6 @@ export function DexCreate({ isOpen, onRequestClose }: Props) {
   };
 
   if (
-    !isOpen ||
     !games ||
     !game ||
     dexType === -1 ||
@@ -256,8 +239,8 @@ export function DexCreate({ isOpen, onRequestClose }: Props) {
     <Modal
       className={`modal ${isNightMode ? "night-mode" : ""}`}
       contentLabel="Create a New Dex"
-      isOpen={isOpen}
-      onRequestClose={handleRequestClose}
+      isOpen
+      onRequestClose={onRequestClose}
       overlayClassName="modal-overlay"
     >
       <div className="form" ref={formRef}>
@@ -381,7 +364,7 @@ export function DexCreate({ isOpen, onRequestClose }: Props) {
           </div>
           <button
             className="btn btn-blue"
-            disabled={createDexMutation.isLoading}
+            disabled={createDexMutation.isPending}
             type="submit"
           >
             Create <FontAwesomeIcon icon={faLongArrowAltRight} />
@@ -389,7 +372,7 @@ export function DexCreate({ isOpen, onRequestClose }: Props) {
         </form>
       </div>
       <p>
-        <a className="link" onClick={handleRequestClose}>
+        <a className="link" onClick={onRequestClose}>
           Go Back
         </a>
       </p>

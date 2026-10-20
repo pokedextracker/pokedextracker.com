@@ -15,7 +15,10 @@ export enum QueryKey {
 
 export const useUser = (
   username?: string,
-  options: UseQueryOptions<User, PokedexTrackerError> = {},
+  options: Omit<
+    UseQueryOptions<User, PokedexTrackerError>,
+    "queryKey" | "queryFn"
+  > = {},
 ) => {
   return useQuery<User, PokedexTrackerError, User>({
     ...options,
@@ -79,7 +82,9 @@ export const useUpdateUser = () => {
         return tokenToUser(token) as Session;
       },
       onSuccess: (_data, { username }) => {
-        queryClient.invalidateQueries([QueryKey.RetrieveUser, username]);
+        queryClient.invalidateQueries({
+          queryKey: [QueryKey.RetrieveUser, username],
+        });
       },
     },
   );

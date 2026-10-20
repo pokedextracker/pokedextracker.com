@@ -3,10 +3,10 @@ import { faLink } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import keyBy from "lodash/keyBy";
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
-import { useParams } from "react-router";
 
 import { useSession } from "../../hooks/contexts/use-session";
 import { useUser } from "../../hooks/queries/users";
+import { useUserParams } from "../../hooks/use-user-params";
 import type { Dex } from "../../types";
 import { trackEvent } from "../../utils/analytics";
 import { DexIndicator } from "./DexIndicator";
@@ -18,7 +18,7 @@ interface Props {
 }
 
 export function Header({ profile = false }: Props) {
-  const { username, slug } = useParams<{ username: string; slug: string }>();
+  const { username, slug } = useUserParams();
 
   const { session } = useSession();
   const user = useUser(username).data!;

@@ -1,11 +1,11 @@
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
-import { useParams } from "react-router";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { useSession } from "../../../hooks/contexts/use-session";
 import { useUser } from "../../../hooks/queries/users";
+import { useUserParams } from "../../../hooks/use-user-params";
 import type { Dex } from "../../../types";
 import { DexIndicator } from "../../library/DexIndicator";
 import { Progress } from "../../library/Progress";
@@ -16,7 +16,7 @@ interface Props {
 }
 
 export function DexPreview({ dex }: Props) {
-  const { username } = useParams<{ username: string }>();
+  const { username } = useUserParams();
 
   const user = useUser(username).data!;
 
@@ -49,11 +49,9 @@ export function DexPreview({ dex }: Props) {
             >
               <FontAwesomeIcon icon={faPencilAlt} />
             </a>
-            <DexEdit
-              dex={dex}
-              isOpen={showEditDex}
-              onRequestClose={handleRequestClose}
-            />
+            {showEditDex && (
+              <DexEdit dex={dex} onRequestClose={handleRequestClose} />
+            )}
           </div>
         )}
         <DexIndicator dex={dex} />
