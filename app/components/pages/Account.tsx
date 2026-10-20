@@ -10,6 +10,7 @@ import { useHistory } from "react-router";
 
 import { useSession } from "../../hooks/contexts/use-session";
 import { useUpdateUser } from "../../hooks/queries/users";
+import type { User } from "../../types";
 import { trackEvent } from "../../utils/analytics";
 import {
   friendCode3dsFormatter,
@@ -23,20 +24,7 @@ import { Reload } from "../library/Reload";
 export function Account() {
   const history = useHistory();
 
-  const { session, sessionUser, setToken } = useSession();
-
-  const [error, setError] = useState("");
-  const [isEditingPassword, setIsEditingPassword] = useState(false);
-  const [password, setPassword] = useState("");
-  const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [friendCode3ds, setFriendCode3ds] = useState(
-    sessionUser?.friend_code_3ds || "",
-  );
-  const [friendCodeSwitch, setFriendCodeSwitch] = useState(
-    sessionUser?.friend_code_switch || "",
-  );
-
-  const updateUserMutation = useUpdateUser();
+  const { session, sessionUser } = useSession();
 
   useEffect(() => {
     document.title = "Account | Pokédex Tracker";
@@ -48,16 +36,35 @@ export function Account() {
     }
   }, [session]);
 
-  useEffect(() => {
-    if (sessionUser) {
-      setFriendCode3ds(sessionUser.friend_code_3ds || "");
-      setFriendCodeSwitch(sessionUser.friend_code_switch || "");
-    }
-  }, [sessionUser]);
-
   if (!sessionUser) {
     return null;
   }
+
+  // The form only renders once the user has loaded, so its fields start with
+  // the saved values instead of being filled in a moment later, which could
+  // land in the middle of someone typing.
+  return <AccountForm key={sessionUser.username} sessionUser={sessionUser} />;
+}
+
+interface AccountFormProps {
+  sessionUser: User;
+}
+
+function AccountForm({ sessionUser }: AccountFormProps) {
+  const { setToken } = useSession();
+
+  const [error, setError] = useState("");
+  const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [friendCode3ds, setFriendCode3ds] = useState(
+    sessionUser.friend_code_3ds || "",
+  );
+  const [friendCodeSwitch, setFriendCodeSwitch] = useState(
+    sessionUser.friend_code_switch || "",
+  );
+
+  const updateUserMutation = useUpdateUser();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -187,13 +194,13 @@ export function Account() {
           </div>
           <button className="btn btn-blue" type="submit">
             {/* The double check for isLoading is necessary because there is a slight delay when applying visibility: hidden onto the icon. */}
-            <span className={updateUserMutation.isLoading ? "hidden" : ""}>
+            <span className={updateUserMutation.isPending ? "hidden" : ""}>
               Save{" "}
-              {!updateUserMutation.isLoading && (
+              {!updateUserMutation.isPending && (
                 <FontAwesomeIcon icon={faLongArrowAltRight} />
               )}
             </span>
-            {updateUserMutation.isLoading ? (
+            {updateUserMutation.isPending ? (
               <span className="spinner">
                 <FontAwesomeIcon icon={faCircleNotch} spin />
               </span>

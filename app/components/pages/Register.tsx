@@ -494,7 +494,7 @@ export function Register() {
           <div className="form-column">
             <button
               className="btn btn-blue"
-              disabled={createUserMutation.isLoading}
+              disabled={createUserMutation.isPending}
               type="submit"
             >
               Let&apos;s go! <FontAwesomeIcon icon={faLongArrowAltRight} />

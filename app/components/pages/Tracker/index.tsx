@@ -32,8 +32,8 @@ export function TrackerInner() {
 
   const { setCaptures } = useTrackerContext();
 
-  const { data: user, isLoading: userIsLoading } = useUser(username);
-  const { data: capturesFromServer, isLoading: capturesIsLoading } =
+  const { data: user, isPending: userIsLoading } = useUser(username);
+  const { data: capturesFromServer, isPending: capturesIsLoading } =
     useCaptures(username, slug);
 
   const dex = useMemo(() => keyBy(user?.dexes, "slug")[slug], [user, slug]);

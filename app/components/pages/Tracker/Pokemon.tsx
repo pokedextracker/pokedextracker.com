@@ -63,7 +63,7 @@ export function Pokemon({ capture, delay = 0, setSelectedPokemon }: Props) {
       return;
     }
 
-    if (createCapturesMutation.isLoading || deleteCapturesMutation.isLoading) {
+    if (createCapturesMutation.isPending || deleteCapturesMutation.isPending) {
       // We're already making a request, so exit early.
       return;
     }

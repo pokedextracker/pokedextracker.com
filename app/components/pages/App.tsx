@@ -14,7 +14,6 @@ import { Register } from "./Register";
 import { Tracker } from "./Tracker";
 
 const history = createBrowserHistory();
-// @ts-expect-error Rollbar's types are wrong. See https://github.com/rollbar/rollbar-react/issues/69
 history.listen(historyContext(Rollbar));
 
 export function App() {

@@ -381,7 +381,7 @@ export function DexCreate({ isOpen, onRequestClose }: Props) {
           </div>
           <button
             className="btn btn-blue"
-            disabled={createDexMutation.isLoading}
+            disabled={createDexMutation.isPending}
             type="submit"
           >
             Create <FontAwesomeIcon icon={faLongArrowAltRight} />

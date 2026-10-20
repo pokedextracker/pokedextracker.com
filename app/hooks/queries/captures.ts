@@ -17,7 +17,10 @@ type ListCapturesData = Capture[];
 export const useCaptures = (
   username: string,
   slug: string,
-  options: UseQueryOptions<ListCapturesData, PokedexTrackerError> = {},
+  options: Omit<
+    UseQueryOptions<ListCapturesData, PokedexTrackerError>,
+    "queryKey" | "queryFn"
+  > = {},
 ) => {
   return useQuery<ListCapturesData, PokedexTrackerError, ListCapturesData>({
     ...options,
@@ -51,10 +54,9 @@ export const useCreateCapture = () => {
       return API.post("/captures", payload);
     },
     onSuccess: (_data, { username, slug }) => {
-      queryClient.invalidateQueries([
-        QueryKey.ListCaptures,
-        { username, slug },
-      ]);
+      queryClient.invalidateQueries({
+        queryKey: [QueryKey.ListCaptures, { username, slug }],
+      });
     },
   });
 };
@@ -82,10 +84,9 @@ export const useDeleteCapture = () => {
       return API.delete("/captures", payload);
     },
     onSuccess: (_data, { username, slug }) => {
-      queryClient.invalidateQueries([
-        QueryKey.ListCaptures,
-        { username, slug },
-      ]);
+      queryClient.invalidateQueries({
+        queryKey: [QueryKey.ListCaptures, { username, slug }],
+      });
     },
   });
 };

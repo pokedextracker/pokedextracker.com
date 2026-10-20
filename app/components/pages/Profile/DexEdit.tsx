@@ -275,7 +275,7 @@ export function DexEdit({ dex, isOpen, onRequestClose }: Props) {
   const handleDeleteClick = async (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
 
-    if (updateDexMutation.isLoading || deleteDexMutation.isLoading) {
+    if (updateDexMutation.isPending || deleteDexMutation.isPending) {
       // We're already making a change, so exit early.
       return;
     }
@@ -515,7 +515,7 @@ export function DexEdit({ dex, isOpen, onRequestClose }: Props) {
           <button
             className="btn btn-blue form-confirm"
             disabled={
-              updateDexMutation.isLoading || deleteDexMutation.isLoading
+              updateDexMutation.isPending || deleteDexMutation.isPending
             }
             type="submit"
           >

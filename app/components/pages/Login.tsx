@@ -103,7 +103,7 @@ export function Login() {
           </div>
           <button
             className="btn btn-blue"
-            disabled={loginMutation.isLoading}
+            disabled={loginMutation.isPending}
             type="submit"
           >
             Let&apos;s go! <FontAwesomeIcon icon={faLongArrowAltRight} />

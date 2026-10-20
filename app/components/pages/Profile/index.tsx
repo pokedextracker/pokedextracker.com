@@ -18,7 +18,7 @@ import { DexPreview } from "./DexPreview";
 export function Profile() {
   const { username } = useParams<{ username: string }>();
 
-  const { data: user, isLoading: userIsLoading } = useUser(username);
+  const { data: user, isPending: userIsLoading } = useUser(username);
 
   const { session } = useSession();
 

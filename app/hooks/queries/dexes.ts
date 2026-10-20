@@ -17,7 +17,10 @@ export enum QueryKey {
 export const useDex = (
   username: string,
   slug: string,
-  options: UseQueryOptions<Dex, PokedexTrackerError> = {},
+  options: Omit<
+    UseQueryOptions<Dex, PokedexTrackerError>,
+    "queryKey" | "queryFn"
+  > = {},
 ) => {
   return useQuery<Dex, PokedexTrackerError, Dex>({
     ...options,
@@ -49,7 +52,9 @@ export const useCreateDex = () => {
       return API.post(`/users/${username}/dexes`, payload);
     },
     onSuccess: (_data, { username }) => {
-      queryClient.invalidateQueries([UserQueryKey.RetrieveUser, username]);
+      queryClient.invalidateQueries({
+        queryKey: [UserQueryKey.RetrieveUser, username],
+      });
     },
   });
 };
@@ -76,13 +81,15 @@ export const useUpdateDex = () => {
       return API.post(`/users/${username}/dexes/${slug}`, payload);
     },
     onSuccess: (_data, { username, slug }) => {
-      queryClient.invalidateQueries([QueryKey.RetrieveDex, username, slug]);
-      queryClient.invalidateQueries([
-        CaptureQueryKey.ListCaptures,
-        username,
-        slug,
-      ]);
-      queryClient.invalidateQueries([UserQueryKey.RetrieveUser, username]);
+      queryClient.invalidateQueries({
+        queryKey: [QueryKey.RetrieveDex, username, slug],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [CaptureQueryKey.ListCaptures, username, slug],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [UserQueryKey.RetrieveUser, username],
+      });
     },
   });
 };
@@ -100,7 +107,9 @@ export const useDeleteDex = () => {
       return API.delete(`/users/${username}/dexes/${slug}`);
     },
     onSuccess: (_data, { username }) => {
-      queryClient.invalidateQueries([UserQueryKey.RetrieveUser, username]);
+      queryClient.invalidateQueries({
+        queryKey: [UserQueryKey.RetrieveUser, username],
+      });
     },
   });
 };

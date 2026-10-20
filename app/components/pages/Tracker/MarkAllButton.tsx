@@ -104,7 +104,7 @@ export function MarkAllButton({ captures }: Props) {
   };
 
   const isLoading =
-    createCapturesMutation.isLoading || deleteCapturesMutation.isLoading;
+    createCapturesMutation.isPending || deleteCapturesMutation.isPending;
 
   return (
     <button
