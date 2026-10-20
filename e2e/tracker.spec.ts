@@ -142,3 +142,45 @@ test("a dex whose captures can't be reached says to refresh", async ({
     page.getByText("Couldn't load this dex. Try refreshing the page."),
   ).toBeVisible({ timeout: 20_000 });
 });
+
+test("switching between dexes and back shows each one", async ({
+  page,
+  request,
+}) => {
+  const user = await createUser(request);
+  const created = await request.post(`/api/users/${user.username}/dexes`, {
+    headers: { Authorization: `Bearer ${user.token}` },
+    data: {
+      title: "Second Dex",
+      slug: "second-dex",
+      shiny: false,
+      game: "legends_za",
+      dex_type: 23,
+    },
+  });
+  expect(created.status(), await created.text()).toBe(200);
+  await signIn(page, user);
+  const progress = page.getByTestId("progress-count");
+
+  await page.goto(`/u/${user.username}/${user.slug}`);
+  await toggleCaught(page, "Chikorita");
+  await expect(progress).toHaveText("(1 caught, 236 to go)");
+
+  // In-app, so the first dex's captures are cached when it opens again.
+  const switchTo = async (title: string) => {
+    await page.getByTestId("nav-dropdown").hover();
+    await page
+      .getByTestId("nav-dropdown-menu")
+      .getByRole("link", { name: title })
+      .click();
+  };
+  await switchTo("Second Dex");
+  await expect(page).toHaveURL(`/u/${user.username}/second-dex`);
+  await expect(progress).toHaveText("(0 caught, 237 to go)");
+  await switchTo("Living Dex");
+  await expect(progress).toHaveText("(1 caught, 236 to go)");
+  await page.goBack();
+  await expect(progress).toHaveText("(0 caught, 237 to go)");
+  await page.goForward();
+  await expect(progress).toHaveText("(1 caught, 236 to go)");
+});

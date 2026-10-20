@@ -59,3 +59,14 @@ test("a profile that can't be reached says to refresh", async ({ page }) => {
     page.getByText("Couldn't load this profile. Try refreshing the page."),
   ).toBeVisible({ timeout: 20_000 });
 });
+
+test("a dex that doesn't exist has the not found title", async ({
+  page,
+  request,
+}) => {
+  const user = await createUser(request);
+  await page.goto(`/u/${user.username}/no-such-dex`);
+
+  await expect(page.getByRole("heading", { name: /404 Error/ })).toBeVisible();
+  await expect(page).toHaveTitle("404 Not Found | Pokédex Tracker");
+});

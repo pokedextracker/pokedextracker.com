@@ -15,11 +15,20 @@ import { SHOW_SCROLL_THRESHOLD } from "./Scroll";
 import { SearchBar } from "./SearchBar";
 import { TrackerContextProvider } from "./use-tracker";
 
-// Tracker loads the dex's owner and captures, then renders the tracker with
-// them. A dex that doesn't exist has no captures either (the API 404s), so it
-// gets the not-found page. The tracker is keyed by the dex, so moving to
-// another one starts it fresh, like loading that page directly.
+// Tracker is keyed by the dex, so moving to another one (from the nav, or with
+// Back) mounts it fresh, like loading that page directly: its captures are
+// fetched again and its search and selection start over. The router would
+// otherwise keep the same component mounted with new params.
 export function Tracker() {
+  const { username, slug } = useUserParams();
+
+  return <TrackerPage key={`${username}/${slug}`} />;
+}
+
+// TrackerPage loads the dex's owner and captures, then renders the tracker
+// with them. A dex that doesn't exist has no captures either (the API 404s),
+// so it gets the not-found page.
+function TrackerPage() {
   const { username, slug } = useUserParams();
 
   const userQuery = useUser(username);
@@ -28,10 +37,6 @@ export function Tracker() {
   const captures = capturesQuery.data;
 
   const dex = useMemo(() => keyBy(user?.dexes, "slug")[slug], [user, slug]);
-
-  useEffect(() => {
-    document.title = `${username}'s Living Dex | Pokédex Tracker`;
-  }, [username]);
 
   // The tracker keeps its own copy of the captures as Pokémon are marked, and
   // the cached ones can be from before that (or from before the dex's game
@@ -53,10 +58,7 @@ export function Tracker() {
   }
 
   return (
-    <TrackerContextProvider
-      initialCaptures={captures}
-      key={`${username}/${slug}`}
-    >
+    <TrackerContextProvider initialCaptures={captures}>
       <TrackerInner initialSelectedPokemon={captures[0].pokemon.id} />
     </TrackerContextProvider>
   );
@@ -67,7 +69,15 @@ interface TrackerInnerProps {
 }
 
 function TrackerInner({ initialSelectedPokemon }: TrackerInnerProps) {
+  const { username } = useUserParams();
+
   const trackerRef = useRef<HTMLDivElement>(null);
+
+  // Set here rather than while loading, so a dex that turns out not to exist
+  // keeps the not found page's title.
+  useEffect(() => {
+    document.title = `${username}'s Living Dex | Pokédex Tracker`;
+  }, [username]);
 
   const [query, setQuery] = useState("");
   const [hideCaught, setHideCaught] = useState(false);
