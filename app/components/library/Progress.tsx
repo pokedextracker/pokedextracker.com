@@ -13,7 +13,7 @@ export function Progress({ caught, total }: Props) {
       <div className="relative h-full w-full border-2 border-solid border-brand-primary bg-white night:border-night-mode-primary-dark night:bg-night-mode-01dp">
         <div className="absolute w-full p-5 text-center font-secondary text-11 font-normal tracking-1 uppercase">
           <b>{decimal(percent, 1)}%</b> done!
-          <span className="max-500:[display:none]">
+          <span className="max-500:hidden">
             {" "}
             (<b>{caught}</b> caught, <b>{total - caught}</b> to go)
           </span>
@@ -24,7 +24,7 @@ export function Progress({ caught, total }: Props) {
         />
       </div>
       <h3
-        className="mx-0 my-10 [display:none] font-secondary text-11 font-normal tracking-1 uppercase max-500:block"
+        className="mx-0 my-10 hidden font-secondary text-11 font-normal tracking-1 uppercase max-500:block"
         data-testid="progress-count"
       >
         (<b>{caught}</b> caught, <b>{total - caught}</b> to go)

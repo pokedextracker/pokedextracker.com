@@ -227,7 +227,7 @@ function AccountForm({ sessionUser }: AccountFormProps) {
             type="submit"
           >
             {/* The double check for isPending is necessary because there is a slight delay when applying visibility: hidden onto the icon. */}
-            <span className={updateUserMutation.isPending ? "hidden" : ""}>
+            <span className={updateUserMutation.isPending ? "invisible" : ""}>
               Save{" "}
               {!updateUserMutation.isPending && (
                 <FontAwesomeIcon

@@ -64,7 +64,7 @@ function collapseClassName(showInfo: boolean): string {
 function mainClassName(showInfo: boolean): string {
   return classNames(
     "w-350 flex-col bg-brand-secondary text-white night:bg-night-mode-02dp max-1100:absolute max-1100:right-0 max-1100:h-full max-400:relative max-400:w-full",
-    showInfo ? "flex" : "[display:none]",
+    showInfo ? "flex" : "hidden",
   );
 }
 

@@ -114,7 +114,7 @@ export function MarkAllButton({ captures }: Props) {
       disabled={isPending}
       onClick={handleButtonClick}
     >
-      <span className={isPending ? "hidden" : ""}>
+      <span className={isPending ? "invisible" : ""}>
         {uncaught === 0 ? "Unmark" : "Mark"} All
       </span>
       {isPending ? <ButtonSpinner /> : null}

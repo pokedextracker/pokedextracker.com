@@ -1,22 +1,64 @@
-/* Tailwind for the site. The stylesheets from before it are in the legacy
-   layer (index.scss), which comes before utilities, so a utility always wins
-   over them. */
-@layer theme, base, legacy, components, utilities;
+/* The site's styles: Tailwind's theme and utilities, and a few base styles
+   under them. */
+@layer theme, base, components, utilities;
 
-/* No preflight: its reset would restyle every page still on the old
-   stylesheets. */
+/* No preflight. The pages are built on the browser's own styles (a heading's
+   margins, a list's padding), and its reset would change them all. */
 @import "tailwindcss/theme.css" layer(theme);
+
+/* Font Awesome's stylesheet, which the site's styles override (see
+   index.tsx), and the sprite sheet of Pokémon icons. */
+@import "@fortawesome/fontawesome-svg-core/styles.css" layer(base);
+@import "./pokesprite.css" layer(base);
+
 @import "tailwindcss/utilities.css" layer(utilities);
 
-/* A class name the old stylesheets use for something else, which Tailwind
-   would otherwise turn into a utility that wins over it: .hidden is
-   visibility: hidden there (Tailwind's is display: none). It comes off this
-   list when its old rule goes. */
-@source not inline("hidden");
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  *:focus {
+    outline: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-primary);
+  }
+
+  #root {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* Night mode is a class on the app's root, and on a modal, which renders
+     outside it. A link that doesn't set its own color takes night mode's. */
+  .night-mode {
+    background-color: var(--color-night-mode);
+    color: var(--color-white);
+  }
+
+  .night-mode a {
+    color: var(--color-night-mode-link);
+  }
+
+  .night-mode a:hover {
+    color: var(--color-night-mode-link-dark);
+  }
+}
 
 @theme {
-  /* Only the site's colors, copied from variables.scss as Sass computes them,
-     so a utility can't pick a color the site doesn't use. */
+  /* Only the site's colors, as the old stylesheets' Sass computed them, so a
+     utility can't pick a color the site doesn't use. */
   --color-*: initial;
   --color-white: #fff;
   --color-black: #000;

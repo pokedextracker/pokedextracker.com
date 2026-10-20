@@ -51,7 +51,7 @@ function tileClassName({
     pending &&
       "bg-[rgba(100%,92.0386784851%,54.1176470588%,0.5)] night:bg-[rgba(199,189,125,0.5)]",
     !empty && !readOnly && "hover:cursor-pointer",
-    empty && "max-750:[display:none]",
+    empty && "max-750:hidden",
     searchResult &&
       "min-751:-mt-2 min-751:-ml-2 min-751:h-112 min-751:w-112 min-751:nth-[6n+1]:ml-0 min-751:hover:z-1",
   );
@@ -69,7 +69,7 @@ function desktopClassName({
   searchResult?: boolean;
 }): string {
   return classNames(
-    "flex grow flex-col items-center justify-center border max-750:[display:none]",
+    "flex grow flex-col items-center justify-center border max-750:hidden",
     captured
       ? "border-brand-primary-lighten-15 night:border-night-mode-primary-dark"
       : "border-gray-light night:border-night-mode-01dp",
@@ -83,7 +83,7 @@ function desktopClassName({
 // The tile on a phone, a row with its border.
 function mobileClassName(captured = false): string {
   return classNames(
-    "grow items-center border [display:none] max-750:flex",
+    "grow items-center border hidden max-750:flex",
     captured
       ? "border-brand-primary-lighten-15 night:border-night-mode-primary-dark"
       : "border-gray-light night:border-night-mode-01dp",

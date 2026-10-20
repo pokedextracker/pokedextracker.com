@@ -14,7 +14,7 @@ const label =
 
 export function DexIndicator({ dex }: Props) {
   return (
-    <div className="ml-auto shrink-0 pl-30 max-500:[display:none]">
+    <div className="ml-auto shrink-0 pl-30 max-500:hidden">
       {dex.shiny && (
         <FontAwesomeIcon
           className="text-8 text-shiny-star"

@@ -1,13 +1,17 @@
+/* The sprite sheet of Pokémon icons: an icon is .pkicon with its number,
+   form, and shininess. */
 .pkicon {
-  @include crisp-rendering();
-
+  -ms-interpolation-mode: nearest-neighbor;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
+  image-rendering: pixelated;
   display: inline-block;
-  background-image: url('/pokesprite-v12.png');
+  background-image: url("/pokesprite-v12.png");
   background-repeat: no-repeat;
+}
 
-  &.game-family-legends_arceus {
-    border-radius: 50%;
-  }
+.pkicon.game-family-legends_arceus {
+  border-radius: 50%;
 }
 
 .pkicon.pkicon-ball-love { width: 18px; height: 18px; background-position: 0px 0px; }

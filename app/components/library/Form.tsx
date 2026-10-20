@@ -72,7 +72,7 @@ function ChoiceInput({
   return (
     <div className="mx-13 my-0 inline-block">
       <label className="mb-0 block cursor-pointer font-primary text-15 font-normal tracking-0 normal-case">
-        <input {...props} className="[display:none]" type={type} />
+        <input {...props} className="hidden" type={type} />
         <span
           className={`relative top-3 right-7 inline-block h-16 w-16 border border-gray-medium bg-white night:border-night-mode-24dp night:bg-night-mode-24dp ${box}`}
         >

@@ -44,16 +44,6 @@ export default defineConfig({
     chunkSizeWarningLimit: 3000,
   },
   clearScreen: false,
-  css: {
-    preprocessorOptions: {
-      scss: {
-        // The stylesheets still use @import and the global color functions
-        // (lighten(), darken()), which Sass plans to remove in 3.0. Moving
-        // them to @use and the sass:color module is its own change.
-        silenceDeprecations: ["color-functions", "global-builtin", "import"],
-      },
-    },
-  },
   plugins: [react(), tailwindcss(), developmentVersion()],
   server: {
     allowedHosts: [machine, `${machine}.local`],

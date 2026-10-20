@@ -63,7 +63,7 @@ export function Header({ profile = false }: Props) {
     <div className="flex items-center">
       <h1 className="relative m-0 inline-block text-40 text-brand-secondary night:text-white max-750:text-30">
         {dex?.title || `${user.username}'s Profile`}
-        <div className="relative inline-block max-750:[display:none]">
+        <div className="relative inline-block max-750:hidden">
           <a
             className={`${headerLink} relative`}
             data-testid="share-toggle"
