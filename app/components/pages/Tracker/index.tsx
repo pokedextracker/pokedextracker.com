@@ -34,7 +34,9 @@ function TrackerPage() {
   const userQuery = useUser(username);
   const capturesQuery = useCaptures(username, slug);
   const user = userQuery.data;
-  const captures = capturesQuery.data;
+  // After a failed fetch, the cache can still hold older captures. They're not
+  // used: the tracker only starts from this visit's.
+  const captures = capturesQuery.error ? undefined : capturesQuery.data;
 
   const dex = useMemo(() => keyBy(user?.dexes, "slug")[slug], [user, slug]);
 
@@ -46,9 +48,12 @@ function TrackerPage() {
     return <div className="loading">Loading...</div>;
   }
 
-  const failed = [userQuery.error, capturesQuery.error].find(
-    (error) => error && !isNotFound(error),
-  );
+  // A failed refresh of an owner who's already loaded doesn't count: the page
+  // can still show them.
+  const failed = [
+    userQuery.data ? null : userQuery.error,
+    capturesQuery.error,
+  ].find((error) => error && !isNotFound(error));
   if (failed) {
     return <LoadError error={failed} thing="dex" />;
   }

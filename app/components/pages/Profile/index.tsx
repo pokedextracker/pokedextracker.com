@@ -3,6 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 
 import { useSession } from "../../../hooks/contexts/use-session";
+import { useDexTypes } from "../../../hooks/queries/dex-types";
+import { useGames } from "../../../hooks/queries/games";
 import { useUser } from "../../../hooks/queries/users";
 import { useUserParams } from "../../../hooks/use-user-params";
 import { Footer } from "../../library/Footer";
@@ -26,6 +28,12 @@ export function Profile() {
   } = useUser(username);
 
   const { session } = useSession();
+  const ownPage = Boolean(user && session?.id === user.id);
+
+  // The create and edit dex modals need these. Loading them with your own
+  // profile means the modals open with them ready.
+  useGames({ enabled: ownPage });
+  useDexTypes({ enabled: ownPage });
 
   const [showDexCreate, setShowDexCreate] = useState(false);
 
@@ -40,15 +48,15 @@ export function Profile() {
     return <div className="loading">Loading...</div>;
   }
 
-  if (userError && !isNotFound(userError)) {
+  // A failed refresh of a user who's already loaded doesn't count: the page can
+  // still show them.
+  if (userError && !user && !isNotFound(userError)) {
     return <LoadError error={userError} thing="profile" />;
   }
 
   if (!user) {
     return <NotFound />;
   }
-
-  const ownPage = session?.id === user.id;
 
   return (
     <div className="profile-container">

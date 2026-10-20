@@ -96,5 +96,11 @@ export async function signIn(page: Page, user: CreatedUser): Promise<void> {
 // page.route. The API reports those to Rollbar.
 export const SERVER_ERROR = {
   status: 500,
-  json: { error: { message: "Internal Server Error", status_code: 500 } },
+  json: {
+    error: {
+      code: "internal_server_error",
+      message: "Internal Server Error",
+      status_code: 500,
+    },
+  },
 };

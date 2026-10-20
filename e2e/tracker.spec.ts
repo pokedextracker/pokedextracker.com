@@ -187,3 +187,46 @@ test("switching between dexes and back shows each one", async ({
   await page.goForward();
   await expect(progress).toHaveText("(1 caught, 236 to go)");
 });
+
+// A 500 the API didn't send, like a proxy's error page, was never reported.
+test("a server error page from outside the API says to refresh", async ({
+  page,
+  request,
+}) => {
+  const user = await createUser(request);
+  await page.route("**/captures", (route) =>
+    route.fulfill({ status: 500, body: "<html>Internal Server Error</html>" }),
+  );
+  await page.goto(`/u/${user.username}/${user.slug}`);
+
+  await expect(
+    page.getByText("Couldn't load this dex. Try refreshing the page."),
+  ).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText("We've been notified")).toHaveCount(0);
+});
+
+test("a failed refresh of a loaded user doesn't replace the page", async ({
+  page,
+  request,
+}) => {
+  test.setTimeout(60_000);
+  const user = await createUser(request);
+  await page.goto(`/u/${user.username}`);
+  await expect(page.getByTestId("dex-preview")).toBeVisible();
+
+  // From here, refreshing the user fails, after React Query's retries.
+  await page.route(`**/api/users/${user.username}`, (route) =>
+    route.fulfill(SERVER_ERROR),
+  );
+  await page.getByTestId("dex-preview").getByRole("link").first().click();
+  await expect(page.getByTestId("box").first()).toBeVisible();
+  await page.waitForTimeout(9_000);
+  await expect(page.getByTestId("box").first()).toBeVisible();
+  await expect(page.getByText("We've been notified")).toHaveCount(0);
+
+  await page.getByRole("link", { name: `/u/${user.username}` }).click();
+  await expect(page.getByTestId("dex-preview")).toBeVisible();
+  await page.waitForTimeout(9_000);
+  await expect(page.getByTestId("dex-preview")).toBeVisible();
+  await expect(page.getByText("We've been notified")).toHaveCount(0);
+});

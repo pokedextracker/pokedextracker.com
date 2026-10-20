@@ -20,9 +20,9 @@ export function LoadError({ error, thing }: Props) {
     document.title = "Error | Pokédex Tracker";
   }, []);
 
-  // The API reports its own 500s to Rollbar. Anything else, like a timeout or
-  // the proxy finding the API down, never reached it, so it isn't reported
-  // and is usually worth trying again.
+  // The API reports its own 500s to Rollbar. Anything else isn't reported:
+  // timeouts and the proxy finding the API down never reach it, and are
+  // usually worth trying again.
   const message =
     error.response?.status === 500
       ? "Something went wrong on our end. We've been notified and will look into it."
