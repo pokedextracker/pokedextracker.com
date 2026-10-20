@@ -28,14 +28,12 @@ body {
   height: 100vh;
 
   .tracker-container,
-  .home-container,
   .profile-container {
     @include flex(1 1 auto);
     @include flexbox();
     @include flex-direction(column);
   }
 
-  // All but the home container.
   .tracker-container,
   .profile-container {
     min-height: 0;
@@ -98,19 +96,6 @@ body {
   header {
     h1 {
       color: white;
-    }
-  }
-
-  .home-container {
-    background: $night-mode url("/pattern-night.png") repeat center center;
-    background-size: 500px 250px;
-
-    .footer {
-      background-color: $night-mode-dark;
-    }
-
-    .hero h1 {
-      color: $night-mode-link;
     }
   }
 

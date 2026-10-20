@@ -8,6 +8,12 @@ import { useSession } from "../../hooks/contexts/use-session";
 import { buttonClassName, buttonIcon } from "../library/Button";
 import { link } from "../library/links";
 
+// The text under the title, and the headings in the list, which sit closer.
+// Both are a little smaller on a narrow phone; the list itself isn't.
+const text =
+  "mx-0 mt-20 mb-0 max-w-570 px-20 py-0 text-15 font-normal max-400:text-14";
+const item = "m-0 max-w-570 p-0 text-15 font-normal max-400:text-14";
+
 // The buttons under the list, side by side.
 const homeButton =
   "mx-8 mt-20 mb-0 inline-block w-180 p-15 text-11 max-400:w-150";
@@ -21,20 +27,26 @@ export function Home() {
   }, []);
 
   return (
-    <div className="home-container">
-      <div className="home">
-        <div className="hero">
-          <img alt="Gotta catch 'em all!" src="/pokeball.svg" />
-          <h1>Pokédex Tracker</h1>
+    <div className="flex flex-[1_1_auto] flex-col bg-brand-primary bg-[url(/pattern.png)] bg-[size:500px_250px] bg-center bg-repeat text-center night:bg-night-mode night:bg-[url(/pattern-night.png)]">
+      <div className="flex grow flex-col justify-center overflow-y-scroll pt-20">
+        <div className="relative -top-100 animate-slide">
+          <img
+            alt="Gotta catch 'em all!"
+            className="mb-10 h-100 w-100 max-400:h-80 max-400:w-80"
+            src="/pokeball.svg"
+          />
+          <h1 className="m-0 font-secondary text-60 font-bold tracking-1 text-brand-secondary uppercase no-underline night:text-night-mode-link max-400:text-45">
+            Pokédex Tracker
+          </h1>
         </div>
 
-        <div className="sub">
-          <h2>
+        <div className="relative top-100 flex animate-slide flex-col items-center">
+          <h2 className={text}>
             A tool for tracking your Living Dex progress! We currently support:
           </h2>
-          <ul>
+          <ul className="mx-0 mt-20 mb-0 inline-block max-w-570 px-20 py-0 text-left text-15 font-normal">
             <li>
-              <h2>
+              <h2 className={item}>
                 <Link
                   className={link}
                   to="/u/ashketchum10/legends-z-a-mega-dimension-full-lumiose-living-dex"
@@ -51,7 +63,7 @@ export function Home() {
               </h2>
             </li>
             <li>
-              <h2>
+              <h2 className={item}>
                 <Link
                   className={link}
                   to="/u/ashketchum10/legends-z-a-lumiose-living-dex"
@@ -61,7 +73,7 @@ export function Home() {
               </h2>
             </li>
             <li>
-              <h2>
+              <h2 className={item}>
                 <Link
                   className={link}
                   to="/u/ashketchum10/scarlet-expansion-living-dex"
@@ -85,7 +97,7 @@ export function Home() {
               </h2>
             </li>
             <li>
-              <h2>
+              <h2 className={item}>
                 <Link
                   className={link}
                   to="/u/ashketchum10/scarlet-regional-living-dex"
@@ -95,7 +107,7 @@ export function Home() {
               </h2>
             </li>
             <li>
-              <h2>
+              <h2 className={item}>
                 <Link
                   className={link}
                   to="/u/ashketchum10/home-national-living-dex"
@@ -106,7 +118,7 @@ export function Home() {
               </h2>
             </li>
             <li>
-              <h2>
+              <h2 className={item}>
                 <Link
                   className={link}
                   to="/u/ashketchum10/legends-arceus-regional-living-dex"
@@ -116,7 +128,7 @@ export function Home() {
               </h2>
             </li>
             <li>
-              <h2>
+              <h2 className={item}>
                 Pokémon Brilliant Diamond &amp; Shining Pearl{" "}
                 <Link
                   className={link}
@@ -134,7 +146,7 @@ export function Home() {
               </h2>
             </li>
             <li>
-              <h2>
+              <h2 className={item}>
                 <Link
                   className={link}
                   to="/u/ashketchum10/sword-expansion-pass-regional-living-dex"
@@ -144,7 +156,7 @@ export function Home() {
               </h2>
             </li>
             <li>
-              <h2>
+              <h2 className={item}>
                 <Link
                   className={link}
                   to="/u/ashketchum10/sword-regional-living-dex"
@@ -154,7 +166,7 @@ export function Home() {
               </h2>
             </li>
             <li>
-              <h2>
+              <h2 className={item}>
                 Previous Games:{" "}
                 <Link
                   className={link}
@@ -193,7 +205,7 @@ export function Home() {
               </h2>
             </li>
             <li>
-              <h2>
+              <h2 className={item}>
                 <Link className={link} to="/u/ashketchum10/shinies">
                   Shiny Dexes
                 </Link>{" "}
@@ -240,7 +252,7 @@ export function Home() {
             </div>
           )}
 
-          <h2>
+          <h2 className={text}>
             Easily toggle between and track your captured Pokémon, find the
             locations of those left to be captured, manage all your dexes on one{" "}
             <Link className={link} to="/u/ashketchum10">
@@ -250,7 +262,7 @@ export function Home() {
             other out.
           </h2>
 
-          <p>
+          <p className={text}>
             This project is open source, and you can find the code on{" "}
             <a
               className={link}
@@ -273,9 +285,9 @@ export function Home() {
             &mdash;every little bit helps!
           </p>
 
-          <div className="social">
+          <div className="mx-0 my-20">
             <a
-              className={link}
+              className={`${link} mx-5 my-0 text-14`}
               href="https://twitter.com/PokedexTracker"
               rel="noopener noreferrer"
               target="_blank"
@@ -283,7 +295,7 @@ export function Home() {
               <FontAwesomeIcon icon={faTwitter} />
             </a>
             <a
-              className={link}
+              className={`${link} mx-5 my-0 text-14`}
               href="/blog/"
               rel="noopener noreferrer"
               target="_blank"
@@ -293,8 +305,10 @@ export function Home() {
           </div>
         </div>
       </div>
-      <div className="footer">
-        Made with <i className="pkicon pkicon-ball-love" /> in San Francisco
+      <div className="z-1 mt-auto w-full bg-brand-primary-light p-10 font-secondary text-11 font-bold tracking-1 text-brand-secondary uppercase night:bg-night-mode-dark">
+        Made with{" "}
+        <i className="pkicon pkicon-ball-love mx-3 my-5 align-middle" /> in San
+        Francisco
       </div>
     </div>
   );
