@@ -1,0 +1,137 @@
+/* Tailwind for the site. The stylesheets from before it are in the legacy
+   layer (index.scss), which comes before utilities, so a utility always wins
+   over them. */
+@layer theme, base, legacy, components, utilities;
+
+/* No preflight: its reset would restyle every page still on the old
+   stylesheets. */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Class names the old stylesheets use for something else, which Tailwind
+   would otherwise turn into utilities that win over them: .hidden is
+   visibility: hidden there (Tailwind's is display: none), and .visible slides
+   in the scroll button. Each comes off this list when its old rule goes. */
+@source not inline("hidden visible");
+
+@theme {
+  /* Only the site's colors, copied from variables.scss as Sass computes them,
+     so a utility can't pick a color the site doesn't use. */
+  --color-*: initial;
+  --color-white: #fff;
+  --color-black: #000;
+  --color-brand-primary: #ffd924;
+  --color-brand-primary-light: rgb(100%, 92.0386784851%, 54.1176470588%);
+  --color-brand-primary-dark: rgb(100%, 82.6688154714%, 0.1176470588%);
+  --color-brand-secondary: #18447d;
+  --color-brand-secondary-light: rgb(
+    11.6667982629%,
+    33.0559284116%,
+    60.7645742861%
+  );
+  --color-brand-secondary-dark: rgb(
+    7.1567311488%,
+    20.2774049217%,
+    37.2746414002%
+  );
+  --color-error: #ff0000;
+  --color-success: #00cc66;
+  --color-gray-light: #f1f1f1;
+  --color-gray-medium: #d2d2d2;
+  --color-gray-dark: #ababab;
+  --color-night-mode: #121212;
+  --color-night-mode-01dp: rgb(12.0588235294%, 12.0588235294%, 12.0588235294%);
+  --color-night-mode-02dp: rgb(14.0588235294%, 14.0588235294%, 14.0588235294%);
+  --color-night-mode-03dp: rgb(15.0588235294%, 15.0588235294%, 15.0588235294%);
+  --color-night-mode-04dp: rgb(16.0588235294%, 16.0588235294%, 16.0588235294%);
+  --color-night-mode-06dp: rgb(18.0588235294%, 18.0588235294%, 18.0588235294%);
+  --color-night-mode-08dp: rgb(19.0588235294%, 19.0588235294%, 19.0588235294%);
+  --color-night-mode-12dp: rgb(21.0588235294%, 21.0588235294%, 21.0588235294%);
+  --color-night-mode-16dp: rgb(22.0588235294%, 22.0588235294%, 22.0588235294%);
+  --color-night-mode-24dp: rgb(23.0588235294%, 23.0588235294%, 23.0588235294%);
+  --color-night-mode-dark: rgb(0.0588235294%, 0.0588235294%, 0.0588235294%);
+  --color-night-mode-primary: #c7bd7d;
+  --color-night-mode-primary-light: rgb(
+    87.0714737508%,
+    84.7628083491%,
+    69.9873497786%
+  );
+  --color-night-mode-primary-dark: rgb(
+    67.8368121442%,
+    62.6185958254%,
+    29.2220113852%
+  );
+  --color-night-mode-secondary: #102d52;
+  --color-night-mode-secondary-light: rgb(
+    8.5602240896%,
+    24.0756302521%,
+    43.8711484594%
+  );
+  --color-night-mode-secondary-dark: rgb(
+    3.9887955182%,
+    11.218487395%,
+    20.4425770308%
+  );
+  --color-night-mode-link: #3777ca;
+  --color-night-mode-link-dark: rgb(
+    18.180113152%,
+    40.1334573355%,
+    68.6042005735%
+  );
+  --color-night-mode-link-gray: #5f5f5f;
+  --color-night-mode-link-gray-dark: rgb(
+    30.2549019608%,
+    30.2549019608%,
+    30.2549019608%
+  );
+  --color-night-mode-error: #bb2323;
+  --color-night-mode-error-dark: rgb(
+    61.5405405405%,
+    11.5182829889%,
+    11.5182829889%
+  );
+
+  --font-*: initial;
+  --font-primary: "Alegreya Sans", "Helvetica", sans-serif;
+  --font-secondary: "Montserrat", "Helvetica", sans-serif;
+
+  /* One unit is one pixel (mt-15 is 15px), so sizes read like the
+     stylesheets they replace and don't change with the browser's font
+     size, which the old px values didn't either. */
+  --spacing: 1px;
+
+  --animate-slide: slide 1s cubic-bezier(0, 0, 0.05, 1) forwards;
+
+  @keyframes slide {
+    0% {
+      opacity: 0;
+    }
+
+    100% {
+      top: 0;
+      opacity: 1;
+    }
+  }
+}
+
+/* Hover applies on every device, as it does in the old stylesheets. Tailwind
+   4 limits it to devices that can hover, which would change taps on phones. */
+@custom-variant hover (&:hover);
+
+/* The old stylesheets' .no-touch class (set in index.html on devices without
+   touch), for the few hover styles limited to those. */
+@custom-variant no-touch (.no-touch &);
+
+/* Night mode is a class on the app's root. */
+@custom-variant night (&:where(.night-mode, .night-mode *));
+
+/* The old stylesheets' breakpoints, exactly. Tailwind's max-* variants use
+   width < N rather than max-width: N, a pixel off. */
+@custom-variant max-400 (@media (max-width: 400px));
+@custom-variant max-500 (@media (max-width: 500px));
+@custom-variant max-550 (@media (max-width: 550px));
+@custom-variant max-600 (@media (max-width: 600px));
+@custom-variant max-700 (@media (max-width: 700px));
+@custom-variant max-750 (@media (max-width: 750px));
+@custom-variant max-1100 (@media (max-width: 1100px));
+@custom-variant min-751 (@media (min-width: 751px));

@@ -1,4 +1,5 @@
 import { hostname } from "node:os";
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 
@@ -53,7 +54,7 @@ export default defineConfig({
       },
     },
   },
-  plugins: [react(), developmentVersion()],
+  plugins: [react(), tailwindcss(), developmentVersion()],
   server: {
     allowedHosts: [machine, `${machine}.local`],
     host: true,

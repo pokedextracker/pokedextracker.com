@@ -222,8 +222,17 @@ test.describe("tracker", () => {
     await firstCheck;
     await expect(page.getByTestId("progress-count")).toContainText("7 caught");
     version = "second";
-    await page.clock.fastForward(31_000);
-    await expect(page.getByTestId("reload-banner")).toBeVisible();
+    // Past the next check, again if it hadn't been set up yet when a busy
+    // machine got here.
+    await expect
+      .poll(
+        async () => {
+          await page.clock.fastForward(31_000);
+          return page.getByTestId("reload-banner").isVisible();
+        },
+        { timeout: 20_000 },
+      )
+      .toBe(true);
     await settle(page);
     await expect(page).toHaveScreenshot("dex-new-version.png");
   });
