@@ -266,61 +266,6 @@ nav {
   }
 }
 
-.alert {
-  position: relative;
-  padding: 11px;
-  margin-bottom: 20px;
-  border: 2px solid $brand-secondary;
-  text-align: center;
-  font-size: 14px;
-
-  a {
-    font-size: 14px;
-  }
-
-  &.alert-error {
-    border: 2px solid $error;
-    color: $error;
-  }
-
-  &.alert-success {
-    border: 2px solid $success;
-    color: $success;
-  }
-
-  &.form-confirm {
-    margin-top: 40px;
-  }
-
-  &.alert-muted {
-    margin-bottom: 50px;
-    border: 2px solid $gray-medium;
-    color: darken($gray-dark, 20%);
-
-    a {
-      color: darken($gray-dark, 40%);
-
-      &:hover {
-        color: black;
-      }
-    }
-  }
-
-  .fa-times {
-    @include transition(all 0.1s ease-out);
-
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    color: $gray-medium;
-
-    &:hover {
-      cursor: pointer;
-      color: $gray-dark;
-    }
-  }
-}
-
 .form {
   @include flex(1 0 auto);
   @include flexbox();
@@ -689,18 +634,6 @@ select {
   color: $brand-secondary;
 }
 
-.reload {
-  text-align: center;
-  padding: 10px 30px;
-  background-color: lighten($brand-primary-light, 15%);
-  font-size: 14px;
-
-  .svg-inline--fa {
-    font-size: 10px;
-    margin-right: 2px;
-  }
-}
-
 .wrapper {
   width: 6 * $pokemon-box-size + 2;
   margin: 0 auto;
@@ -800,33 +733,6 @@ select {
 
   .loading {
     color: $night-mode-link;
-  }
-
-  .alert {
-    background-color: $night-mode-02dp;
-    color: white;
-
-    &.alert-muted {
-      background-color: $night-mode-01dp;
-      color: white;
-      border-color: $night-mode-01dp;
-
-      a {
-        color: $night-mode-link;
-
-        &:hover {
-          color: $night-mode-link-dark;
-        }
-      }
-    }
-  }
-
-  .main-footer {
-    background-color: $night-mode-01dp;
-
-    .fa {
-      color: $night-mode-24dp;
-    }
   }
 
   .home-container {
@@ -1051,10 +957,6 @@ select {
     }
   }
 
-  .alert.alert-error {
-    border-color: $night-mode-error;
-  }
-
   .dex-delete-container a:first-child {
     color: $night-mode-error;
 
@@ -1062,42 +964,11 @@ select {
       color: $night-mode-error-dark;
     }
   }
-
-  .reload {
-    background-color: $night-mode-16dp;
-  }
-}
-
-.main-footer {
-  padding: 100px 20px;
-  text-align: center;
-  background-color: $gray-light;
-  font-family: $font-secondary;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-top: auto;
-
-  .link {
-    text-decoration: none;
-    font-weight: 700;
-  }
-
-  .svg-inline--fa {
-    vertical-align: middle;
-    font-size: 5px;
-    margin: 0 10px;
-    color: $gray-medium;
-  }
 }
 
 @media (max-width: 750px) {
   .wrapper {
     width: 100%;
-  }
-
-  .main-footer {
-    padding: 50px 20px;
   }
 }
 

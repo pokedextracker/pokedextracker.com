@@ -478,7 +478,7 @@ export function DexEdit({ dex, onRequestClose }: Props) {
             ))}
           </div>
           <Alert
-            className="form-confirm"
+            className="mt-40"
             message={
               isConfirmingUpdate &&
               "Please review the warnings above and confirm your edit!"

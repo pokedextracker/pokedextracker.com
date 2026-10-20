@@ -23,8 +23,11 @@ export function Reload() {
   const handleClick = () => window.location.reload();
 
   return (
-    <div className="reload" data-testid="reload-banner">
-      <FontAwesomeIcon icon={faExclamationCircle} />
+    <div
+      className="bg-brand-primary-lighter px-30 py-10 text-center text-14 night:bg-night-mode-16dp"
+      data-testid="reload-banner"
+    >
+      <FontAwesomeIcon className="mr-2 text-10" icon={faExclamationCircle} />
       There&apos;s a new version of the app available &ndash;{" "}
       <a className="link" onClick={handleClick}>
         Refresh your browser
