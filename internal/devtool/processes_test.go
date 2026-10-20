@@ -105,3 +105,8 @@ func TestCaptureReferenceStopsOnOtherErrors(t *testing.T) {
 	assert.EqualError(t, err, "docker exited: exit status 125")
 	assert.Equal(t, 2, runs)
 }
+
+func TestServerEnvironmentAlwaysSetsTheTokenNamespace(t *testing.T) {
+	assert.Contains(t, serverEnvironment(Servers{TokenNamespace: "feature_1a2b3c4d"}), "POKEDEXTRACKER_TOKEN_NAMESPACE=feature_1a2b3c4d")
+	assert.Contains(t, serverEnvironment(Servers{}), "POKEDEXTRACKER_TOKEN_NAMESPACE=", "an empty one still overrides the shell's")
+}

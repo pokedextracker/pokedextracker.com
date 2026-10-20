@@ -41,6 +41,19 @@ func (e Environment) IsMain() bool {
 	return samePath(e.MainRoot, e.CurrentRoot)
 }
 
+// TokenNamespace names where this worktree's frontend keeps its login token.
+// Every worktree's dev server can end up on the same localhost port, and
+// browsers keep localStorage per host and port, so worktrees would otherwise
+// share a login, along with a user id from another worktree's database. The
+// main checkout keeps the plain key. A linked worktree gets its directory name
+// and a hash of its path, like its database.
+func (e Environment) TokenNamespace() string {
+	if e.IsMain() {
+		return ""
+	}
+	return sanitizeIdentifier(filepath.Base(e.CurrentRoot)) + "_" + shortHash(e.CurrentRoot)
+}
+
 // TestDatabase is the database this worktree's Go tests run against.
 func (e Environment) TestDatabase() string {
 	return e.CurrentDatabase + testDatabaseSuffix

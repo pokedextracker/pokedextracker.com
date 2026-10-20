@@ -53,6 +53,12 @@ can run at once without stepping on each other:
   when another worktree or project already has them. `mise start` prints the
   URLs it picked. `mise start:web` on its own uses the API this worktree is
   running, so start one with `mise start:air` first.
+- **Logins** are per worktree too. Worktrees often take turns on the same
+  port, and the browser keeps one login per port, so each linked worktree's
+  frontend keeps its token under its own key. `mise start:web:staging` gets
+  its own as well, since staging's users aren't the local ones. A token that
+  doesn't match a user here (a different id, or no such user) counts as
+  signed out.
 
 Because the database and ports are chosen by the launcher, running the API or
 `go test` directly (for example from an editor) won't find the database. Use

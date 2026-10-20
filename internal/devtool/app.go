@@ -170,6 +170,8 @@ func (a *App) start(ctx context.Context, env Environment, args []string) error {
 		defer forget()
 	}
 
+	servers.TokenNamespace = tokenNamespace(env, mode)
+
 	if runsWeb {
 		lease, err := ports.Acquire(defaultWebPort)
 		if err != nil {
@@ -218,6 +220,20 @@ func (a *App) start(ctx context.Context, env Environment, args []string) error {
 		}
 	}
 	return a.Processes.Start(ctx, env, mode, servers)
+}
+
+// tokenNamespace is where a dev server's frontend keeps its login token: the
+// worktree's namespace, plus "staging" when it talks to the staging API, whose
+// users have different ids from any local database's.
+func tokenNamespace(env Environment, mode string) string {
+	var parts []string
+	if namespace := env.TokenNamespace(); namespace != "" {
+		parts = append(parts, namespace)
+	}
+	if mode == startWebStaging {
+		parts = append(parts, "staging")
+	}
+	return strings.Join(parts, "_")
 }
 
 func (a *App) database(ctx context.Context, env Environment, args []string) error {

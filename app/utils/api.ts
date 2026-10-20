@@ -2,6 +2,7 @@ import { stringify } from "qs";
 
 import { Config } from "../../config";
 import { localStorage } from "./local-storage";
+import { TOKEN_KEY } from "./token";
 
 export class PokedexTrackerError extends Error {
   public response: Response;
@@ -10,6 +11,12 @@ export class PokedexTrackerError extends Error {
     super(message);
     this.response = response;
   }
+}
+
+// isNotFound reports whether a failed request was a 404. Errors that never got
+// a response, like a dropped connection, have no status.
+export function isNotFound(error: { response?: Response } | null): boolean {
+  return error?.response?.status === 404;
 }
 
 async function handleResponse(response: Response) {
@@ -22,7 +29,7 @@ async function handleResponse(response: Response) {
 }
 
 function getHeaders() {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem(TOKEN_KEY);
   return {
     Authorization: token ? `Bearer ${token}` : "",
     "Content-Type": "application/json",
