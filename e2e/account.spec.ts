@@ -10,7 +10,7 @@ test("saving a friend code shows it on the profile", async ({
 
   await page.locator("#friend_code_switch").fill("SW-1234-5678-9012");
   await page.getByRole("button", { name: "Save" }).click();
-  await expect(page.locator(".alert-success")).toHaveText(
+  await expect(page.getByTestId("alert-success")).toHaveText(
     "Account settings saved!",
   );
 

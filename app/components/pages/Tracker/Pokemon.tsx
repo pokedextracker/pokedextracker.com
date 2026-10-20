@@ -131,9 +131,10 @@ export function Pokemon({ capture, delay = 0, setSelectedPokemon }: Props) {
     return null;
   }
 
+  const readOnly = !session || session.id !== user.id;
   const classes = {
     pokemon: true,
-    viewing: !session || session.id !== user.id,
+    viewing: readOnly,
     captured: capture.captured,
     pending: capture.pending,
   };
@@ -147,8 +148,17 @@ export function Pokemon({ capture, delay = 0, setSelectedPokemon }: Props) {
   const paddingDigits = dex.total >= 1000 ? 4 : 3;
 
   return (
-    <div className={classNames(classes)}>
-      <div className="set-captured" onClick={handleSetCapturedClick}>
+    <div
+      className={classNames(classes)}
+      data-captured={capture.captured}
+      data-read-only={readOnly}
+      data-testid="pokemon"
+    >
+      <div
+        className="set-captured"
+        data-testid="set-captured"
+        onClick={handleSetCapturedClick}
+      >
         <h4>
           <PokemonName name={capture.pokemon.name} />
         </h4>
@@ -166,7 +176,11 @@ export function Pokemon({ capture, delay = 0, setSelectedPokemon }: Props) {
         </h4>
         <p>#{padding(idToDisplay, paddingDigits)}</p>
       </div>
-      <div className="set-info" onClick={handleSetInfoClick}>
+      <div
+        className="set-info"
+        data-testid="set-info"
+        onClick={handleSetInfoClick}
+      >
         <FontAwesomeIcon icon={faInfo} />
       </div>
     </div>

@@ -12,7 +12,7 @@ test("creating another dex from the profile", async ({ page, request }) => {
   await dialog.getByRole("button", { name: "Create" }).click();
 
   await expect(page).toHaveURL(`/u/${user.username}/shiny-hunt`);
-  await expect(page.locator(".percentage h3")).toHaveText(
+  await expect(page.getByTestId("progress-count")).toHaveText(
     "(0 caught, 237 to go)",
   );
 

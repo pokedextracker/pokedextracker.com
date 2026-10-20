@@ -27,7 +27,7 @@ export function Reload() {
   const handleClick = () => window.location.reload();
 
   return (
-    <div className="reload">
+    <div className="reload" data-testid="reload-banner">
       <FontAwesomeIcon icon={faExclamationCircle} />
       There&apos;s a new version of the app available &ndash;{" "}
       <a className="link" onClick={handleClick}>

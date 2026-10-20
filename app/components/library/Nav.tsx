@@ -36,7 +36,11 @@ export function Nav() {
   const links = (
     <>
       <Link to="/">Pokédex Tracker</Link>
-      <a className="tooltip tooltip-below" onClick={handleNightModeClick}>
+      <a
+        className="tooltip tooltip-below"
+        data-testid="night-mode-toggle"
+        onClick={handleNightModeClick}
+      >
         <FontAwesomeIcon icon={isNightMode ? faSun : faMoon} />
         <span className="tooltip-text">
           Night Mode {isNightMode ? "Off" : "On"}
@@ -56,11 +60,11 @@ export function Nav() {
     return (
       <nav>
         {links}
-        <div className="dropdown">
+        <div className="dropdown" data-testid="nav-dropdown">
           <a href="#">
             {session.username} <FontAwesomeIcon icon={faCaretDown} />
           </a>
-          <ul>
+          <ul data-testid="nav-dropdown-menu">
             <div className="dropdown-scroll">
               {sessionUser.dexes.map((dex) => (
                 <li key={dex.id}>
