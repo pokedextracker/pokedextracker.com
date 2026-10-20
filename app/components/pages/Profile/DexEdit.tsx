@@ -30,6 +30,7 @@ import { useGames } from "../../../hooks/queries/games";
 import type { Customization, Dex, DexType, Game } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
 import { Alert } from "../../library/Alert";
+import { Tooltip } from "../../library/Tooltip";
 import { FormWarning } from "./FormWarning";
 
 const GAME_WARNING = "Any capture info specific to your old game will be lost.";
@@ -417,13 +418,13 @@ export function DexEdit({ dex, onRequestClose }: Props) {
                       </span>
                       {dt.name}
                       {dt.description ? (
-                        <div className="tooltip">
-                          <FontAwesomeIcon
-                            className="tooltip-icon"
-                            icon={faQuestionCircle}
-                          />
-                          <span className="tooltip-text">{dt.description}</span>
-                        </div>
+                        <Tooltip
+                          className="ml-5"
+                          icon={faQuestionCircle}
+                          iconClassName="text-12 text-brand-secondary"
+                        >
+                          {dt.description}
+                        </Tooltip>
                       ) : null}
                     </label>
                   </div>

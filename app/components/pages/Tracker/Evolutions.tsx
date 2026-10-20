@@ -8,6 +8,7 @@ import uniqBy from "lodash/uniqBy";
 
 import type { Evolution } from "../../../types";
 import { capitalize } from "../../../utils/formatting";
+import { Tooltip } from "../../library/Tooltip";
 
 function evolutionKey(evolution: Evolution) {
   return `${evolution.trigger}:${evolution.level}:${evolution.stone}:${evolution.held_item}:${evolution.notes}`;
@@ -49,10 +50,14 @@ export function Evolutions({ evolutions, pokemonId }: Props) {
         notes = <span>{evolution.notes}</span>;
       } else {
         notes = (
-          <div className="tooltip" data-testid="evolution-notes">
-            <FontAwesomeIcon icon={faPlusCircle} />
-            <span className="tooltip-text">{evolution.notes}</span>
-          </div>
+          <Tooltip
+            data-testid="evolution-notes"
+            icon={faPlusCircle}
+            iconClassName="text-11 text-white"
+            variant="light"
+          >
+            {evolution.notes}
+          </Tooltip>
         );
       }
     }

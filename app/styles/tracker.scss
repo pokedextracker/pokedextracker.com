@@ -180,21 +180,6 @@
           margin-bottom: 3px;
           width: unset;
         }
-
-        .tooltip {
-          .fa-plus-circle {
-            color: white;
-          }
-
-          .tooltip-text {
-            color: black;
-            background-color: white;
-
-            &::after {
-              border-color: #fff transparent transparent transparent;
-            }
-          }
-        }
       }
     }
   }

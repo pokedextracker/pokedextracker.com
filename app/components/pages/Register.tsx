@@ -36,6 +36,7 @@ import { Alert } from "../library/Alert";
 import { Footer } from "../library/Footer";
 import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
+import { Tooltip } from "../library/Tooltip";
 
 export function Register() {
   const navigate = useNavigate();
@@ -367,13 +368,10 @@ export function Register() {
             <div className="form-column">
               <h2>
                 First Dex Info
-                <div className="tooltip">
-                  <FontAwesomeIcon icon={faQuestionCircle} />
-                  <span className="tooltip-text">
-                    You can track multiple dexes on our app! This sets the
-                    settings for the first dex on your account.
-                  </span>
-                </div>
+                <Tooltip className="bottom-3 ml-7" icon={faQuestionCircle}>
+                  You can track multiple dexes on our app! This sets the
+                  settings for the first dex on your account.
+                </Tooltip>
               </h2>
               <div className="form-group">
                 <label htmlFor="dex_title">Title</label>
@@ -427,18 +425,14 @@ export function Register() {
                           </span>
                           {dt.name}
                           {dt.description ? (
-                            <div
-                              className="tooltip"
+                            <Tooltip
+                              className="ml-5"
                               data-testid="dex-type-info"
+                              icon={faQuestionCircle}
+                              iconClassName="text-12 text-brand-secondary"
                             >
-                              <FontAwesomeIcon
-                                className="tooltip-icon"
-                                icon={faQuestionCircle}
-                              />
-                              <span className="tooltip-text">
-                                {dt.description}
-                              </span>
-                            </div>
+                              {dt.description}
+                            </Tooltip>
                           ) : null}
                         </label>
                       </div>

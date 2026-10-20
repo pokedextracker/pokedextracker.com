@@ -1,6 +1,7 @@
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { ReactNode } from "react";
+
+import { Tooltip } from "../../library/Tooltip";
 
 interface Props {
   message: ReactNode;
@@ -13,10 +14,16 @@ export function FormWarning({ message }: Props) {
 
   return (
     <div className="form-warning">
-      <div className="tooltip" data-testid="form-warning">
-        <FontAwesomeIcon icon={faExclamationTriangle} />
-        <span className="tooltip-text">{message}</span>
-      </div>
+      <Tooltip
+        className="ml-0"
+        data-testid="form-warning"
+        icon={faExclamationTriangle}
+        iconClassName="text-10 text-error"
+        textClassName="max-550:-ml-20 max-550:after:left-20"
+        variant="error"
+      >
+        {message}
+      </Tooltip>
     </div>
   );
 }

@@ -29,6 +29,7 @@ import { useGames } from "../../../hooks/queries/games";
 import type { Customization, DexType, Game } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
 import { Alert } from "../../library/Alert";
+import { Tooltip } from "../../library/Tooltip";
 
 interface Props {
   onRequestClose: () => void;
@@ -303,13 +304,13 @@ export function DexCreate({ onRequestClose }: Props) {
                       </span>
                       {dt.name}
                       {dt.description ? (
-                        <div className="tooltip">
-                          <FontAwesomeIcon
-                            className="tooltip-icon"
-                            icon={faQuestionCircle}
-                          />
-                          <span className="tooltip-text">{dt.description}</span>
-                        </div>
+                        <Tooltip
+                          className="ml-5"
+                          icon={faQuestionCircle}
+                          iconClassName="text-12 text-brand-secondary"
+                        >
+                          {dt.description}
+                        </Tooltip>
                       ) : null}
                     </label>
                   </div>

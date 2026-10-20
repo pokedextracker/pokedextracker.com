@@ -43,6 +43,7 @@
   --color-brand-primary-lighter: rgb(100%, 97.2441579371%, 84.1176470588%);
   --color-gray-darker: #787878;
   --color-gray-darkest: #454545;
+  --color-error-dark: rgb(90%, 0%, 0%);
   --color-night-mode: #121212;
   --color-night-mode-01dp: rgb(12.0588235294%, 12.0588235294%, 12.0588235294%);
   --color-night-mode-02dp: rgb(14.0588235294%, 14.0588235294%, 14.0588235294%);

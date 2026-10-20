@@ -13,6 +13,7 @@ import { Link } from "react-router";
 import { useLocalStorageContext } from "../../hooks/contexts/use-local-storage-context";
 import { useSession } from "../../hooks/contexts/use-session";
 import { trackEvent } from "../../utils/analytics";
+import { TooltipText } from "./Tooltip";
 
 export function Nav() {
   const { isNightMode, setIsNightMode } = useLocalStorageContext();
@@ -38,14 +39,17 @@ export function Nav() {
     <>
       <Link to="/">Pokédex Tracker</Link>
       <a
-        className="tooltip tooltip-below"
+        className="group relative ml-3"
         data-testid="night-mode-toggle"
         onClick={handleNightModeClick}
       >
-        <FontAwesomeIcon icon={isNightMode ? faSun : faMoon} />
-        <span className="tooltip-text">
+        <FontAwesomeIcon
+          className="text-11"
+          icon={isNightMode ? faSun : faMoon}
+        />
+        <TooltipText variant="nav">
           Night Mode {isNightMode ? "Off" : "On"}
-        </span>
+        </TooltipText>
       </a>
       <a
         href="https://www.patreon.com/pokedextracker"
