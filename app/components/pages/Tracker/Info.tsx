@@ -11,7 +11,7 @@ import { useMemo, type Dispatch, type SetStateAction } from "react";
 import { useLocalStorageContext } from "../../../hooks/contexts/use-local-storage-context";
 import { usePokemon } from "../../../hooks/queries/pokemon";
 import { useUser } from "../../../hooks/queries/users";
-import { useDexParams } from "../../../hooks/use-dex-params";
+import { useUserParams } from "../../../hooks/use-user-params";
 import type { Dex } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
 import { nationalId, padding, serebiiLink } from "../../../utils/formatting";
@@ -43,7 +43,7 @@ interface Props {
 }
 
 export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
-  const { username, slug } = useDexParams();
+  const { username, slug } = useUserParams();
 
   const user = useUser(username).data!;
   const dex = useMemo<Dex>(() => keyBy(user.dexes, "slug")[slug], [user, slug]);

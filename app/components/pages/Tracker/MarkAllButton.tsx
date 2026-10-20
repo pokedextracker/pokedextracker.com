@@ -9,7 +9,7 @@ import {
   useDeleteCapture,
 } from "../../../hooks/queries/captures";
 import { useUser } from "../../../hooks/queries/users";
-import { useDexParams } from "../../../hooks/use-dex-params";
+import { useUserParams } from "../../../hooks/use-user-params";
 import { trackEvent } from "../../../utils/analytics";
 import { padding } from "../../../utils/formatting";
 import { useTrackerContext, type UICapture } from "./use-tracker";
@@ -19,7 +19,7 @@ interface Props {
 }
 
 export function MarkAllButton({ captures }: Props) {
-  const { username, slug } = useDexParams();
+  const { username, slug } = useUserParams();
 
   const { session } = useSession();
   const user = useUser(username).data!;
@@ -103,19 +103,19 @@ export function MarkAllButton({ captures }: Props) {
     );
   };
 
-  const isLoading =
+  const isPending =
     createCapturesMutation.isPending || deleteCapturesMutation.isPending;
 
   return (
     <button
       className="btn btn-blue"
-      disabled={isLoading}
+      disabled={isPending}
       onClick={handleButtonClick}
     >
-      <span className={isLoading ? "hidden" : ""}>
+      <span className={isPending ? "hidden" : ""}>
         {uncaught === 0 ? "Unmark" : "Mark"} All
       </span>
-      {isLoading ? (
+      {isPending ? (
         <span className="spinner">
           <FontAwesomeIcon icon={faCircleNotch} spin />
         </span>

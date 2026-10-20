@@ -12,7 +12,7 @@ import {
 } from "../../../hooks/queries/captures";
 import { useUser } from "../../../hooks/queries/users";
 import { useDelayedRender } from "../../../hooks/use-delayed-render";
-import { useDexParams } from "../../../hooks/use-dex-params";
+import { useUserParams } from "../../../hooks/use-user-params";
 import type { Dex } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
 import { nationalId, padding } from "../../../utils/formatting";
@@ -29,7 +29,7 @@ interface Props {
 export function Pokemon({ capture, delay = 0, setSelectedPokemon }: Props) {
   const render = useDelayedRender(delay);
 
-  const { username, slug } = useDexParams();
+  const { username, slug } = useUserParams();
 
   const { setCaptures } = useTrackerContext();
   const { setShowInfo } = useLocalStorageContext();

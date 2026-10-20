@@ -3,8 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useCaptures } from "../../../hooks/queries/captures";
 import { useUser } from "../../../hooks/queries/users";
-import { useDexParams } from "../../../hooks/use-dex-params";
-import type { Capture } from "../../../types";
+import { useUserParams } from "../../../hooks/use-user-params";
 import { Footer } from "../../library/Footer";
 import { Nav } from "../../library/Nav";
 import { Reload } from "../../library/Reload";
@@ -20,13 +19,12 @@ import { TrackerContextProvider } from "./use-tracker";
 // gets the not-found page. The tracker is keyed by the dex, so moving to
 // another one starts it fresh, like loading that page directly.
 export function Tracker() {
-  const { username, slug } = useDexParams();
+  const { username, slug } = useUserParams();
 
-  const { data: user, isPending: userIsLoading } = useUser(username);
-  const { data: captures, isPending: capturesIsLoading } = useCaptures(
-    username,
-    slug,
-  );
+  const userQuery = useUser(username);
+  const capturesQuery = useCaptures(username, slug);
+  const user = userQuery.data;
+  const captures = capturesQuery.data;
 
   const dex = useMemo(() => keyBy(user?.dexes, "slug")[slug], [user, slug]);
 
@@ -34,8 +32,23 @@ export function Tracker() {
     document.title = `${username}'s Living Dex | Pokédex Tracker`;
   }, [username]);
 
-  if (userIsLoading || capturesIsLoading) {
+  // The tracker keeps its own copy of the captures as Pokémon are marked, and
+  // the cached ones can be from before that (or from before the dex's game
+  // changed), so it waits for this visit's fetch rather than starting from
+  // the cache.
+  if (userQuery.isPending || !capturesQuery.isFetchedAfterMount) {
     return <div className="loading">Loading...</div>;
+  }
+
+  const failed = [userQuery.error, capturesQuery.error].find(
+    (error) => error && error.response?.status !== 404,
+  );
+  if (failed) {
+    return (
+      <div className="loading">
+        Couldn&apos;t load this dex. Try refreshing the page.
+      </div>
+    );
   }
 
   if (!dex || !captures?.length) {
@@ -47,23 +60,23 @@ export function Tracker() {
       initialCaptures={captures}
       key={`${username}/${slug}`}
     >
-      <TrackerInner captures={captures} />
+      <TrackerInner initialSelectedPokemon={captures[0].pokemon.id} />
     </TrackerContextProvider>
   );
 }
 
 interface TrackerInnerProps {
-  captures: Capture[];
+  initialSelectedPokemon: number;
 }
 
-function TrackerInner({ captures }: TrackerInnerProps) {
+function TrackerInner({ initialSelectedPokemon }: TrackerInnerProps) {
   const trackerRef = useRef<HTMLDivElement>(null);
 
   const [query, setQuery] = useState("");
   const [hideCaught, setHideCaught] = useState(false);
   const [showScroll, setShowScroll] = useState(false);
   const [selectedPokemon, setSelectedPokemon] = useState(
-    captures[0].pokemon.id,
+    initialSelectedPokemon,
   );
 
   useEffect(() => {

@@ -5,11 +5,11 @@ import { Link } from "react-router";
 
 import { useSession } from "../../hooks/contexts/use-session";
 import { useUser } from "../../hooks/queries/users";
-import { useDexParams } from "../../hooks/use-dex-params";
+import { useUserParams } from "../../hooks/use-user-params";
 import { trackEvent } from "../../utils/analytics";
 
 export function FriendCode() {
-  const { username } = useDexParams();
+  const { username } = useUserParams();
 
   const { session } = useSession();
   const user = useUser(username).data!;

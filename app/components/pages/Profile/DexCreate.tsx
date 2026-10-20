@@ -31,11 +31,12 @@ import { trackEvent } from "../../../utils/analytics";
 import { Alert } from "../../library/Alert";
 
 interface Props {
-  isOpen: boolean;
   onRequestClose: () => void;
 }
 
-export function DexCreate({ isOpen, onRequestClose }: Props) {
+// DexCreate is only mounted while it's open, so every time it opens, the form
+// starts fresh.
+export function DexCreate({ onRequestClose }: Props) {
   const navigate = useNavigate();
 
   const formRef = useRef<HTMLDivElement>(null);
@@ -163,20 +164,6 @@ export function DexCreate({ isOpen, onRequestClose }: Props) {
     setSelectedCustomizations({});
   }
 
-  const handleRequestClose = () => {
-    createDexMutation.reset();
-    setTitle("");
-    setGame(games![0].id || "");
-    setDexType(
-      dexTypesByGameFamilyId[games![0].game_family.id].find(
-        (dt) => !dt.base_dex_type_id,
-      )!.id,
-    );
-    setShiny(false);
-    setSelectedCustomizations({});
-    onRequestClose();
-  };
-
   const handleGameChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const newGameId = e.target.value;
 
@@ -239,7 +226,6 @@ export function DexCreate({ isOpen, onRequestClose }: Props) {
   };
 
   if (
-    !isOpen ||
     !games ||
     !game ||
     dexType === -1 ||
@@ -253,8 +239,8 @@ export function DexCreate({ isOpen, onRequestClose }: Props) {
     <Modal
       className={`modal ${isNightMode ? "night-mode" : ""}`}
       contentLabel="Create a New Dex"
-      isOpen={isOpen}
-      onRequestClose={handleRequestClose}
+      isOpen
+      onRequestClose={onRequestClose}
       overlayClassName="modal-overlay"
     >
       <div className="form" ref={formRef}>
@@ -386,7 +372,7 @@ export function DexCreate({ isOpen, onRequestClose }: Props) {
         </form>
       </div>
       <p>
-        <a className="link" onClick={handleRequestClose}>
+        <a className="link" onClick={onRequestClose}>
           Go Back
         </a>
       </p>

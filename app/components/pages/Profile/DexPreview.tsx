@@ -5,7 +5,7 @@ import { Link } from "react-router";
 
 import { useSession } from "../../../hooks/contexts/use-session";
 import { useUser } from "../../../hooks/queries/users";
-import { useDexParams } from "../../../hooks/use-dex-params";
+import { useUserParams } from "../../../hooks/use-user-params";
 import type { Dex } from "../../../types";
 import { DexIndicator } from "../../library/DexIndicator";
 import { Progress } from "../../library/Progress";
@@ -16,7 +16,7 @@ interface Props {
 }
 
 export function DexPreview({ dex }: Props) {
-  const { username } = useDexParams();
+  const { username } = useUserParams();
 
   const user = useUser(username).data!;
 

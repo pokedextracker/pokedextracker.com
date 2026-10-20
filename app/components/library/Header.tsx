@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState, type MouseEvent } from "react";
 
 import { useSession } from "../../hooks/contexts/use-session";
 import { useUser } from "../../hooks/queries/users";
-import { useDexParams } from "../../hooks/use-dex-params";
+import { useUserParams } from "../../hooks/use-user-params";
 import type { Dex } from "../../types";
 import { trackEvent } from "../../utils/analytics";
 import { DexIndicator } from "./DexIndicator";
@@ -18,7 +18,7 @@ interface Props {
 }
 
 export function Header({ profile = false }: Props) {
-  const { username, slug } = useDexParams();
+  const { username, slug } = useUserParams();
 
   const { session } = useSession();
   const user = useUser(username).data!;

@@ -209,8 +209,6 @@ export function DexEdit({ dex, onRequestClose }: Props) {
   // values.
   const cancelConfirmingUpdate = () => setIsConfirmingUpdate(false);
 
-  const handleRequestClose = () => onRequestClose();
-
   const handleGameChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const newGameId = e.target.value;
 
@@ -268,7 +266,7 @@ export function DexEdit({ dex, onRequestClose }: Props) {
         slug: dex.slug,
       });
       trackEvent("Dex", "delete");
-      handleRequestClose();
+      onRequestClose();
     } catch {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
       // error besides prevent it from bubbling up.
@@ -305,7 +303,7 @@ export function DexEdit({ dex, onRequestClose }: Props) {
         },
       });
       trackEvent("Dex", "update");
-      handleRequestClose();
+      onRequestClose();
     } catch {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
       // error besides prevent it from bubbling up.
@@ -328,7 +326,7 @@ export function DexEdit({ dex, onRequestClose }: Props) {
       className={`modal ${isNightMode ? "night-mode" : ""}`}
       contentLabel="Edit Dex"
       isOpen
-      onRequestClose={handleRequestClose}
+      onRequestClose={onRequestClose}
       overlayClassName="modal-overlay"
     >
       <div className="dex-delete-container">
@@ -500,7 +498,7 @@ export function DexEdit({ dex, onRequestClose }: Props) {
         </form>
       </div>
       <p>
-        <a className="link" onClick={handleRequestClose}>
+        <a className="link" onClick={onRequestClose}>
           Go Back
         </a>
       </p>

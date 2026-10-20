@@ -8,7 +8,7 @@ import {
 import { Link } from "react-router";
 
 import { useUser } from "../../../hooks/queries/users";
-import { useDexParams } from "../../../hooks/use-dex-params";
+import { useUserParams } from "../../../hooks/use-user-params";
 import { trackEvent } from "../../../utils/analytics";
 import { groupBoxes } from "../../../utils/pokemon";
 import { DonatedFlair } from "../../library/DonatedFlair";
@@ -42,7 +42,7 @@ export function Dex({
   setSelectedPokemon,
   showScrollButton,
 }: Props) {
-  const { username, slug } = useDexParams();
+  const { username, slug } = useUserParams();
 
   const user = useUser(username).data!;
   const dex = useMemo(() => keyBy(user.dexes, "slug")[slug], [user, slug]);

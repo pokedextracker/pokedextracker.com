@@ -91,3 +91,38 @@ test("someone else's dex is read-only", async ({ page, request }) => {
   );
   expect(writes, "requests to change captures").toEqual([]);
 });
+
+test("caught Pokémon stay caught after leaving the dex and coming back", async ({
+  page,
+  request,
+}) => {
+  const user = await createUser(request);
+  await signIn(page, user);
+  await page.goto(`/u/${user.username}/${user.slug}`);
+  await toggleCaught(page, "Chikorita");
+
+  // In-app navigation, so the captures cached from the first visit are still
+  // around when the dex opens again.
+  await page.getByRole("link", { name: `/u/${user.username}` }).click();
+  await page.getByTestId("dex-preview").getByRole("link").first().click();
+
+  await expect(tile(page, "Chikorita")).toHaveAttribute(
+    "data-captured",
+    "true",
+  );
+  await expect(page.getByTestId("progress-count")).toHaveText(
+    "(1 caught, 236 to go)",
+  );
+});
+
+test("a dex whose captures fail to load says so", async ({ page, request }) => {
+  const user = await createUser(request);
+  await page.route("**/captures", (route) => route.fulfill({ status: 500 }));
+  await page.goto(`/u/${user.username}/${user.slug}`);
+
+  // After React Query's retries.
+  await expect(page.getByText("Couldn't load this dex")).toBeVisible({
+    timeout: 20_000,
+  });
+  await expect(page.getByRole("heading", { name: /404 Error/ })).toHaveCount(0);
+});

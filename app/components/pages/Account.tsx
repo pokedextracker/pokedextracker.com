@@ -193,7 +193,7 @@ function AccountForm({ sessionUser }: AccountFormProps) {
             <FontAwesomeIcon className="input-icon" icon={faChevronDown} />
           </div>
           <button className="btn btn-blue" type="submit">
-            {/* The double check for isLoading is necessary because there is a slight delay when applying visibility: hidden onto the icon. */}
+            {/* The double check for isPending is necessary because there is a slight delay when applying visibility: hidden onto the icon. */}
             <span className={updateUserMutation.isPending ? "hidden" : ""}>
               Save{" "}
               {!updateUserMutation.isPending && (

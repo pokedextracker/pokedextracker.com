@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { useSession } from "../../../hooks/contexts/use-session";
 import { useUser } from "../../../hooks/queries/users";
-import { useDexParams } from "../../../hooks/use-dex-params";
+import { useUserParams } from "../../../hooks/use-user-params";
 import { Footer } from "../../library/Footer";
 import { FriendCode } from "../../library/FriendCode";
 import { Header } from "../../library/Header";
@@ -16,9 +16,9 @@ import { DexCreate } from "./DexCreate";
 import { DexPreview } from "./DexPreview";
 
 export function Profile() {
-  const { username } = useDexParams();
+  const { username } = useUserParams();
 
-  const { data: user, isPending: userIsLoading } = useUser(username);
+  const { data: user, isPending: userIsPending } = useUser(username);
 
   const { session } = useSession();
 
@@ -31,7 +31,7 @@ export function Profile() {
   const handleCreateNewDexClick = () => setShowDexCreate(true);
   const handleDexCreateRequestClose = () => setShowDexCreate(false);
 
-  if (userIsLoading) {
+  if (userIsPending) {
     return <div className="loading">Loading...</div>;
   }
 
@@ -62,10 +62,9 @@ export function Profile() {
               <div className="btn btn-blue" onClick={handleCreateNewDexClick}>
                 Create a New Dex <FontAwesomeIcon icon={faLongArrowAltRight} />
               </div>
-              <DexCreate
-                isOpen={showDexCreate}
-                onRequestClose={handleDexCreateRequestClose}
-              />
+              {showDexCreate && (
+                <DexCreate onRequestClose={handleDexCreateRequestClose} />
+              )}
             </div>
           )}
         </div>
