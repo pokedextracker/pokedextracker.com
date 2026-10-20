@@ -18,13 +18,14 @@ import {
 } from "../../utils/formatting";
 import { Alert } from "../library/Alert";
 import { Footer } from "../library/Footer";
+import { LoadError } from "../library/LoadError";
 import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
 
 export function Account() {
   const navigate = useNavigate();
 
-  const { session, sessionUser } = useSession();
+  const { session, sessionUser, sessionUserError } = useSession();
 
   useEffect(() => {
     document.title = "Account | Pokédex Tracker";
@@ -37,7 +38,11 @@ export function Account() {
   }, [session, navigate]);
 
   if (!sessionUser) {
-    return null;
+    // Still loading, or about to go to the login page. If it couldn't be
+    // loaded, say so, with the nav to get somewhere else.
+    return sessionUserError ? (
+      <LoadError error={sessionUserError} thing="account" />
+    ) : null;
   }
 
   // The form only renders once the user has loaded, so its fields start with

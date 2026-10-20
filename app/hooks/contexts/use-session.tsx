@@ -10,7 +10,7 @@ import {
 } from "react";
 
 import type { Session, User } from "../../types";
-import { isNotFound } from "../../utils/api";
+import { isNotFound, type PokedexTrackerError } from "../../utils/api";
 import { tokenToUser } from "../../utils/state";
 import { TOKEN_KEY } from "../../utils/token";
 import { QueryKey as UserQueryKey, useUser } from "../queries/users";
@@ -19,9 +19,11 @@ import { useLocalStorage, type SetLocalStorageFn } from "../use-local-storage";
 interface SessionContextState {
   session: Session | null;
   sessionUser: User | null;
-  // Whether sessionUser is still loading for the first time. Once that's
-  // done, a session without one means the user couldn't be loaded.
+  // Whether sessionUser is still loading for the first time.
   sessionUserIsLoading: boolean;
+  // Why sessionUser couldn't be loaded, like a server error, once loading is
+  // done. The session itself still stands.
+  sessionUserError: PokedexTrackerError | null;
   setToken: SetLocalStorageFn<string | null>;
 }
 
@@ -29,6 +31,7 @@ const SessionContext = createContext<SessionContextState>({
   session: null,
   sessionUser: null,
   sessionUserIsLoading: false,
+  sessionUserError: null,
   setToken: () => {},
 });
 
@@ -55,9 +58,12 @@ export const SessionProvider = ({ children }: Props) => {
     (newToken: string | null) => {
       const newSession = tokenToUser(newToken);
       if (newSession) {
-        queryClient.invalidateQueries({
-          queryKey: [UserQueryKey.RetrieveUser, newSession.username],
-        });
+        // Without cancelling a fetch that's already on its way, like the one
+        // saving the account starts.
+        queryClient.invalidateQueries(
+          { queryKey: [UserQueryKey.RetrieveUser, newSession.username] },
+          { cancelRefetch: false },
+        );
       }
       setStoredToken(newToken);
     },
@@ -82,16 +88,22 @@ export const SessionProvider = ({ children }: Props) => {
   }, [stale]);
 
   const session = stale ? null : tokenSession;
-  const sessionUser = stale ? null : tokenUser || null;
+  // Only the user the token is for: while a new token's user is fetched
+  // again, the cached one can still be another database's.
+  const sessionUser =
+    session && tokenUser?.id === session.id ? tokenUser : null;
+  const sessionUserError =
+    session && !tokenUserIsLoading ? tokenUserError : null;
 
   const contextValue = useMemo<SessionContextState>(
     () => ({
       session,
       sessionUser,
-      sessionUserIsLoading: !stale && tokenUserIsLoading,
+      sessionUserIsLoading: tokenUserIsLoading,
+      sessionUserError,
       setToken,
     }),
-    [session, sessionUser, stale, tokenUserIsLoading, setToken],
+    [session, sessionUser, tokenUserIsLoading, sessionUserError, setToken],
   );
 
   return (

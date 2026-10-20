@@ -110,21 +110,6 @@ test("a token for a user who doesn't exist here counts as signed out", async ({
     .toBeNull();
 });
 
-test("a server error doesn't sign anyone out", async ({ page, request }) => {
-  const user = await createUser(request);
-  await plantToken(page, user.token);
-  await page.route(`**/api/users/${user.username}`, (route) =>
-    route.fulfill(SERVER_ERROR),
-  );
-  await page.goto("/");
-
-  // Past React Query's retries.
-  await page.waitForTimeout(9_000);
-  expect(await page.evaluate(() => localStorage.getItem("token"))).toBe(
-    user.token,
-  );
-});
-
 test("logging in again after the database changed sticks", async ({
   page,
   request,
@@ -156,14 +141,19 @@ test("logging in again after the database changed sticks", async ({
   await page.getByRole("button", { name: "Let's go!" }).click();
 
   await expect(page).toHaveURL(`/u/${user.username}`);
-  await expect(page.getByTestId("nav-dropdown")).toContainText(user.username);
-  await page.waitForTimeout(1_000);
+  // The dropdown lists the dexes once the user fetched again matches the
+  // token, which is when a mismatch would have signed it out.
+  await expect(page.getByTestId("nav-dropdown-menu")).toContainText(
+    "Living Dex",
+  );
   expect(
     await page.evaluate(() => localStorage.getItem("token")),
   ).not.toBeNull();
 });
 
-test("the nav still offers signing out when the user can't be loaded", async ({
+// A server error loading the signed-in user doesn't sign them out, and the nav
+// still gets them to their account (which says it couldn't load) or out.
+test("a server error loading the user keeps the session and a way out", async ({
   page,
   request,
 }) => {
@@ -178,7 +168,18 @@ test("the nav still offers signing out when the user can't be loaded", async ({
   // After React Query's retries.
   const dropdown = page.getByTestId("nav-dropdown");
   await expect(dropdown).toContainText(user.username, { timeout: 20_000 });
+  expect(await page.evaluate(() => localStorage.getItem("token"))).toBe(
+    user.token,
+  );
+
   await dropdown.hover();
+  await page
+    .getByTestId("nav-dropdown-menu")
+    .getByText("Account Settings")
+    .click();
+  await expect(page.getByText("We've been notified")).toBeVisible();
+
+  await page.getByTestId("nav-dropdown").hover();
   await page.getByTestId("nav-dropdown-menu").getByText("Sign Out").click();
   await expect(
     page.locator("nav").getByRole("link", { name: "Login", exact: true }),

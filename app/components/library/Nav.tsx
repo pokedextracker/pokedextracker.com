@@ -58,8 +58,8 @@ export function Nav() {
   );
 
   // Signed in. If the user couldn't be loaded, like during a server error,
-  // the dropdown still offers the profile, account, and signing out, just
-  // without the dexes.
+  // the dropdown still offers the profile, account (which then says it
+  // couldn't load), and signing out, just without the dexes.
   if (session) {
     return (
       <nav>
