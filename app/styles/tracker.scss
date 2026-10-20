@@ -271,116 +271,6 @@
   }
 }
 
-header {
-  .header-row {
-    @include flexbox();
-    @include align-items(center);
-
-    .donated-flair {
-      margin-left: auto;
-      height: 18px;
-    }
-  }
-
-  h1 {
-    position: relative;
-    display: inline-block;
-    margin: 0;
-    color: $brand-secondary;
-    font-size: 40px;
-  }
-
-  h3 {
-    margin: 0 0 8px;
-
-    a {
-      color: lighten(#000, 35%);
-
-      &:hover {
-        color: lighten(#000, 25%);
-      }
-    }
-
-    .donated-flair {
-      margin-left: 4px;
-      height: 15px;
-      vertical-align: middle;
-    }
-  }
-
-  a {
-    font-size: 16px;
-    color: lighten(#000, 25%);
-
-    .svg-inline--fa {
-      position: relative;
-      margin-left: 5px;
-      bottom: 4px;
-      font-size: 14px;
-    }
-
-    .fa-pencil-alt {
-      bottom: 1px;
-      font-size: 12px;
-    }
-
-    &:hover {
-      color: black;
-      cursor: pointer;
-    }
-  }
-
-  .share-container {
-    position: relative;
-    display: inline-block;
-
-    a {
-      position: relative;
-    }
-
-    .share {
-      $share-width: 300px;
-
-      position: absolute;
-      bottom: 200%;
-      left: 50%;
-      width: $share-width;
-      padding: 10px;
-      margin-left: math.div($share-width, -2);
-      z-index: 1;
-      border: 2px solid $gray-light;
-      background-color: lighten($gray-light, 10%);
-      font-size: 14px;
-
-      &::after {
-        content: " ";
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        margin-left: -8px;
-        border-width: 8px;
-        border-style: solid;
-        border-color: $gray-light transparent transparent transparent;
-      }
-    }
-  }
-
-  h2 {
-    margin: 0;
-    font-size: 15px;
-    font-family: $font-secondary;
-    font-weight: 400;
-
-    span.fc-missing {
-      color: $gray-medium;
-    }
-
-    b {
-      font-weight: 500;
-    }
-  }
-}
-
 .box {
   display: block;
   margin-top: 60px;
@@ -608,25 +498,10 @@ header {
 @media (max-width: 750px) {
   .dex {
     padding: 15px;
-
-    .percentage {
-      margin-top: 15px;
-    }
   }
 
-  header,
   .box {
     width: 100%;
-  }
-
-  header {
-    h1 {
-      font-size: 30px;
-    }
-
-    .share-container {
-      display: none;
-    }
   }
 
   .box {

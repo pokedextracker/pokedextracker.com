@@ -47,6 +47,7 @@ import {
   selectIcon,
 } from "../../library/Form";
 import { link } from "../../library/links";
+import { modal, modalFooter, modalOverlay } from "../../library/modal";
 import { Tooltip } from "../../library/Tooltip";
 import { FormWarning } from "./FormWarning";
 
@@ -345,13 +346,13 @@ export function DexEdit({ dex, onRequestClose }: Props) {
 
   return (
     <Modal
-      className={`modal ${isNightMode ? "night-mode" : ""}`}
+      className={`${modal} ${isNightMode ? "night-mode" : ""}`}
       contentLabel="Edit Dex"
       isOpen
       onRequestClose={onRequestClose}
-      overlayClassName="modal-overlay"
+      overlayClassName={modalOverlay}
     >
-      <div className="dex-delete-container">
+      <div className="absolute top-10 right-12 z-1 text-right text-14">
         {isConfirmingDelete ? (
           <>
             Are you sure?&nbsp;
@@ -505,7 +506,7 @@ export function DexEdit({ dex, onRequestClose }: Props) {
           </button>
         </form>
       </div>
-      <p>
+      <p className={modalFooter}>
         <a className={link} onClick={onRequestClose}>
           Go Back
         </a>

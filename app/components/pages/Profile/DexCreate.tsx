@@ -50,6 +50,7 @@ import {
   selectIcon,
 } from "../../library/Form";
 import { link } from "../../library/links";
+import { modal, modalFooter, modalOverlay } from "../../library/modal";
 import { Tooltip } from "../../library/Tooltip";
 
 interface Props {
@@ -259,11 +260,11 @@ export function DexCreate({ onRequestClose }: Props) {
 
   return (
     <Modal
-      className={`modal ${isNightMode ? "night-mode" : ""}`}
+      className={`${modal} ${isNightMode ? "night-mode" : ""}`}
       contentLabel="Create a New Dex"
       isOpen
       onRequestClose={onRequestClose}
-      overlayClassName="modal-overlay"
+      overlayClassName={modalOverlay}
     >
       <div className={formPage} ref={formRef}>
         <h1 className={formTitle}>Create New Dex</h1>
@@ -380,7 +381,7 @@ export function DexCreate({ onRequestClose }: Props) {
           </button>
         </form>
       </div>
-      <p>
+      <p className={modalFooter}>
         <a className={link} onClick={onRequestClose}>
           Go Back
         </a>

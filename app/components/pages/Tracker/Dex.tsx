@@ -13,7 +13,7 @@ import { trackEvent } from "../../../utils/analytics";
 import { groupBoxes } from "../../../utils/pokemon";
 import { DonatedFlair } from "../../library/DonatedFlair";
 import { FriendCode } from "../../library/FriendCode";
-import { Header } from "../../library/Header";
+import { Header, header } from "../../library/Header";
 import { wrapper } from "../../library/layout";
 import { Notification } from "../../library/Notification";
 import { Progress } from "../../library/Progress";
@@ -74,20 +74,21 @@ export function Dex({
       <div className={wrapper}>
         <Scroll onClick={onScrollButtonClick} showScroll={showScrollButton} />
         <Notification />
-        <header>
+        <header className={header}>
           <Header />
-          <h3>
+          <h3 className="mx-0 mt-0 mb-8">
             <Link
+              className="text-16 text-black-lighten-35 hover:cursor-pointer hover:text-black-lighten-25 night:text-night-mode-link-gray night:hover:text-night-mode-link-gray-dark"
               onClick={() => trackEvent("User", "click view profile")}
               to={`/u/${username}`}
             >
               /u/{username}
             </Link>
-            <DonatedFlair user={user} />
+            <DonatedFlair className="ml-4 h-15 align-middle" user={user} />
           </h3>
           <FriendCode />
         </header>
-        <div className="percentage">
+        <div className="mt-20 flex justify-between max-750:mt-15">
           <Progress caught={caught} total={total} />
         </div>
         {query.length > 0 || hideCaught ? (

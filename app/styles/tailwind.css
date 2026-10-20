@@ -48,6 +48,8 @@
   --color-error-darken-5: rgb(90%, 0%, 0%);
   --color-white-darken-1: rgb(99%, 99%, 99%);
   --color-black-lighten-25: rgb(25%, 25%, 25%);
+  --color-black-lighten-35: rgb(35%, 35%, 35%);
+  --color-shiny-star: #d81118;
   --color-gray-light-darken-6: rgb(
     88.5098039216%,
     88.5098039216%,

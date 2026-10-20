@@ -9,19 +9,28 @@ interface Props {
   dex: Dex;
 }
 
+const label =
+  "ml-7 rounded-3 bg-gray-light px-6 py-4 font-secondary text-10 font-medium uppercase night:bg-night-mode-04dp";
+
 export function DexIndicator({ dex }: Props) {
   return (
-    <div className="dex-indicator">
-      {dex.shiny && <FontAwesomeIcon icon={faStar} title="Shiny" />}
+    <div className="ml-auto shrink-0 pl-30 max-500:[display:none]">
+      {dex.shiny && (
+        <FontAwesomeIcon
+          className="text-8 text-shiny-star"
+          icon={faStar}
+          title="Shiny"
+        />
+      )}
       {[
         dex.dex_type.base_dex_type?.name || dex.dex_type.name,
         ...dex.dex_type.tags.filter((tag) => !EXCLUDED_TAGS.includes(tag)),
       ].map((tag) => (
-        <span className="label" key={tag}>
+        <span className={label} key={tag}>
           {tag.replace(/^customization-/g, "")}
         </span>
       ))}
-      <span className="label">{dex.game.name}</span>
+      <span className={label}>{dex.game.name}</span>
     </div>
   );
 }

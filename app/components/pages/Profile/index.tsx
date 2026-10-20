@@ -11,8 +11,8 @@ import { isNotFound } from "../../../utils/api";
 import { buttonClassName, buttonIcon } from "../../library/Button";
 import { Footer } from "../../library/Footer";
 import { FriendCode } from "../../library/FriendCode";
-import { Header } from "../../library/Header";
-import { wrapper } from "../../library/layout";
+import { Header, header } from "../../library/Header";
+import { pageContainer, wrapper } from "../../library/layout";
 import { LoadError } from "../../library/LoadError";
 import { Loading } from "../../library/Loading";
 import { Nav } from "../../library/Nav";
@@ -63,12 +63,12 @@ export function Profile() {
   }
 
   return (
-    <div className="profile-container">
+    <div className={pageContainer}>
       <Nav />
       <Reload />
-      <div className="profile">
+      <div className="relative top-70 flex-[1_0_auto] animate-[slide_0.5s_ease-out_forwards] overflow-y-scroll px-0 pt-100 pb-60 night:bg-night-mode max-750:px-15 max-750:pt-40 max-750:pb-20">
         <div className={wrapper}>
-          <header>
+          <header className={header}>
             <Notification />
             <Header profile />
             <FriendCode />
@@ -79,7 +79,7 @@ export function Profile() {
           ))}
 
           {ownPage && (
-            <div className="dex-create">
+            <div className="mx-0 my-40 text-center">
               <div
                 className={buttonClassName(
                   "blue",

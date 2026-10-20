@@ -34,15 +34,18 @@ export function DexPreview({ dex }: Props) {
   const ownPage = session?.id === user.id;
 
   return (
-    <div className="dex-preview" data-testid="dex-preview">
-      <div className="dex-preview-header">
-        <h3>
-          <Link className={link} to={`/u/${user.username}/${dex.slug}`}>
+    <div className="mt-40 max-750:mb-60" data-testid="dex-preview">
+      <div className="relative mb-8 flex items-baseline">
+        <h3 className="m-0 min-w-0">
+          <Link
+            className={`${link} block truncate pr-10 text-20`}
+            to={`/u/${user.username}/${dex.slug}`}
+          >
             {dex.title}
           </Link>
         </h3>
         {ownPage && (
-          <div className="dex-edit">
+          <div>
             <a
               className="cursor-pointer text-14 font-medium text-black-lighten-25 underline transition-all duration-100 ease-out hover:text-black night:text-night-mode-link-gray night:hover:text-night-mode-link-gray-dark"
               data-testid="dex-edit-toggle"
@@ -57,7 +60,7 @@ export function DexPreview({ dex }: Props) {
         )}
         <DexIndicator dex={dex} />
       </div>
-      <div className="percentage">
+      <div className="mt-0 flex justify-between">
         <Progress caught={dex.caught} total={dex.total} />
       </div>
     </div>

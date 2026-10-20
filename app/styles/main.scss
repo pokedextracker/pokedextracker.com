@@ -27,15 +27,13 @@ body {
 
   height: 100vh;
 
-  .tracker-container,
-  .profile-container {
+  .tracker-container {
     @include flex(1 1 auto);
     @include flexbox();
     @include flex-direction(column);
   }
 
-  .tracker-container,
-  .profile-container {
+  .tracker-container {
     min-height: 0;
   }
 }
@@ -44,46 +42,9 @@ body {
   visibility: hidden;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background-color: rgba(0, 0, 0, 0.35);
-}
-
-.modal {
-  @include overflow-y-scroll();
-
-  position: relative;
-  margin: 10vh auto;
-  width: 500px;
-  max-height: 80vh;
-  border: 2px solid $brand-secondary-light;
-  background: #fff;
-  outline: none;
-
-  p {
-    margin-top: 0;
-    text-align: center;
-    font-size: 14px;
-  }
-
-  &.night-mode {
-    background-color: $night-mode;
-    color: $gray-medium;
-    border-color: $night-mode-secondary-dark;
-  }
-}
-
 .night-mode {
   background-color: $night-mode;
   color: white;
-
-  .profile {
-    background-color: $night-mode;
-  }
 
   a {
     color: $night-mode-link;
@@ -91,36 +52,6 @@ body {
     &:hover {
       color: $night-mode-link-dark;
     }
-  }
-
-  header {
-    h1 {
-      color: white;
-    }
-  }
-
-  header {
-    .share-container .share {
-      background-color: $night-mode;
-      border-color: $night-mode-02dp;
-      color: white;
-
-      &::after {
-        border-color: $night-mode-02dp transparent transparent transparent;
-      }
-    }
-
-    a {
-      color: $night-mode-link-gray;
-
-      &:hover {
-        color: $night-mode-link-gray-dark;
-      }
-    }
-  }
-
-  .dex-indicator .label {
-    background-color: $night-mode-04dp;
   }
 
   .dex .scroll-up {
@@ -181,15 +112,6 @@ body {
     }
   }
 
-  .progress-outer {
-    background-color: $night-mode-01dp;
-    border-color: $night-mode-primary-dark;
-
-    .progress-inner {
-      background-color: $night-mode-primary-dark;
-    }
-  }
-
   .info {
     .info-collapse {
       background-color: $night-mode-secondary-dark;
@@ -218,12 +140,5 @@ body {
         }
       }
     }
-  }
-}
-
-@media (max-width: 550px) {
-  .modal {
-    margin-top: 0;
-    width: 100%;
   }
 }
