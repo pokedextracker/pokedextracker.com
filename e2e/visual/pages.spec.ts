@@ -117,6 +117,19 @@ test.describe("profile", () => {
     await expect(page).toHaveScreenshot("dex-edit.png");
   });
 
+  test("delete dex confirmation", async ({ page }) => {
+    await signIn(page, ash);
+    await page.goto(`/u/${ash}`);
+    await page.getByTestId("dex-edit-toggle").first().click();
+    const dialog = page.getByRole("dialog");
+    // The trash icon, the only link in the corner.
+    await dialog.locator(".dex-delete-container a").click();
+    await expect(dialog.getByText("Are you sure?")).toBeVisible();
+    await settle(page);
+    await scrollToTop(page);
+    await expect(page).toHaveScreenshot("dex-delete-confirm.png");
+  });
+
   test("edit dex confirmation", async ({ page }) => {
     await signIn(page, gary);
     await page.goto(`/u/${gary}`);
@@ -342,5 +355,14 @@ test.describe("buttons", () => {
     await settle(page);
     await page.getByRole("button", { name: "Change" }).hover();
     await expect(page).toHaveScreenshot("button-yellow-hovered.png");
+  });
+});
+
+test.describe("links", () => {
+  test("hovered", async ({ page }) => {
+    await page.goto("/login");
+    await settle(page);
+    await page.getByRole("link", { name: "Register here" }).hover();
+    await expect(page).toHaveScreenshot("link-hovered.png");
   });
 });
