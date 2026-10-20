@@ -7,6 +7,7 @@ import { useUserParams } from "../../../hooks/use-user-params";
 import { isNotFound } from "../../../utils/api";
 import { Footer } from "../../library/Footer";
 import { LoadError } from "../../library/LoadError";
+import { Loading } from "../../library/Loading";
 import { Nav } from "../../library/Nav";
 import { Reload } from "../../library/Reload";
 import { NotFound } from "../NotFound";
@@ -46,7 +47,7 @@ function TrackerPage() {
   // changed), so it waits for this visit's fetch rather than starting from
   // the cache.
   if (userQuery.isPending || !capturesQuery.isFetchedAfterMount) {
-    return <div className="loading">Loading...</div>;
+    return <Loading>Loading...</Loading>;
   }
 
   // A failed refresh of an owner who's already loaded doesn't count: the page

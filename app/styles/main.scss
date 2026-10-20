@@ -29,9 +29,6 @@ body {
 
   .tracker-container,
   .home-container,
-  .register-container,
-  .login-container,
-  .account-container,
   .profile-container {
     @include flex(1 1 auto);
     @include flexbox();
@@ -40,9 +37,6 @@ body {
 
   // All but the home container.
   .tracker-container,
-  .register-container,
-  .login-container,
-  .account-container,
   .profile-container {
     min-height: 0;
   }
@@ -50,22 +44,6 @@ body {
 
 .hidden {
   visibility: hidden;
-}
-
-.loading {
-  margin-top: 47vh;
-  text-align: center;
-  font-family: $font-secondary;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: $brand-secondary;
-}
-
-.wrapper {
-  width: 6 * $pokemon-box-size + 2;
-  margin: 0 auto;
 }
 
 .modal-overlay {
@@ -121,10 +99,6 @@ body {
     h1 {
       color: white;
     }
-  }
-
-  .loading {
-    color: $night-mode-link;
   }
 
   .home-container {
@@ -259,12 +233,6 @@ body {
         }
       }
     }
-  }
-}
-
-@media (max-width: 750px) {
-  .wrapper {
-    width: 100%;
   }
 }
 

@@ -29,6 +29,7 @@ import {
   formTitle,
   inputIcon,
 } from "../library/Form";
+import { pageContainer } from "../library/layout";
 import { link } from "../library/links";
 import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
@@ -83,7 +84,7 @@ export function Login() {
     setPassword(e.target.value);
 
   return (
-    <div className="login-container">
+    <div className={pageContainer}>
       <Nav />
       <Reload />
       <div className={formPage}>

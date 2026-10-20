@@ -34,6 +34,7 @@ import {
   inputIcon,
   selectIcon,
 } from "../library/Form";
+import { pageContainer } from "../library/layout";
 import { LoadError } from "../library/LoadError";
 import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
@@ -128,7 +129,7 @@ function AccountForm({ sessionUser }: AccountFormProps) {
     setFriendCodeSwitch(friendCodeSwitchFormatter(e.target.value));
 
   return (
-    <div className="account-container">
+    <div className={pageContainer}>
       <Nav />
       <Reload />
       <div className={formPage}>

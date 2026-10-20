@@ -51,6 +51,7 @@ import {
   Radio,
   selectIcon,
 } from "../library/Form";
+import { pageContainer } from "../library/layout";
 import { link } from "../library/links";
 import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
@@ -300,10 +301,10 @@ export function Register() {
   }
 
   return (
-    <div className="register-container">
+    <div className={pageContainer}>
       <Nav />
       <Reload />
-      <div className={`${formPage} register`}>
+      <div className={formPage}>
         <h1 className={formTitle}>Register</h1>
         <form className={form} onSubmit={handleSubmit}>
           <div className={formColumn}>

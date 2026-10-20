@@ -14,6 +14,7 @@ import { groupBoxes } from "../../../utils/pokemon";
 import { DonatedFlair } from "../../library/DonatedFlair";
 import { FriendCode } from "../../library/FriendCode";
 import { Header } from "../../library/Header";
+import { wrapper } from "../../library/layout";
 import { Notification } from "../../library/Notification";
 import { Progress } from "../../library/Progress";
 import { Box } from "./Box";
@@ -70,7 +71,7 @@ export function Dex({
 
   return (
     <div className="dex">
-      <div className="wrapper">
+      <div className={wrapper}>
         <Scroll onClick={onScrollButtonClick} showScroll={showScrollButton} />
         <Notification />
         <header>

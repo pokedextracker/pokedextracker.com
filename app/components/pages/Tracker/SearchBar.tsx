@@ -10,6 +10,7 @@ import {
 
 import { trackEvent } from "../../../utils/analytics";
 import { Checkbox, formControl } from "../../library/Form";
+import { wrapper } from "../../library/layout";
 
 interface Props {
   hideCaught: boolean;
@@ -55,7 +56,7 @@ export function SearchBar({
 
   return (
     <div className="border-b border-gray-light bg-white p-10 night:border-night-mode-dark night:bg-night-mode max-400:pr-35">
-      <div className="wrapper">
+      <div className={wrapper}>
         <div className="relative mb-0">
           <FontAwesomeIcon
             className="absolute bottom-15 left-14 text-12 text-brand-secondary night:text-white"

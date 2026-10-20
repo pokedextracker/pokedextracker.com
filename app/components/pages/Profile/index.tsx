@@ -12,7 +12,9 @@ import { buttonClassName, buttonIcon } from "../../library/Button";
 import { Footer } from "../../library/Footer";
 import { FriendCode } from "../../library/FriendCode";
 import { Header } from "../../library/Header";
+import { wrapper } from "../../library/layout";
 import { LoadError } from "../../library/LoadError";
+import { Loading } from "../../library/Loading";
 import { Nav } from "../../library/Nav";
 import { Notification } from "../../library/Notification";
 import { Reload } from "../../library/Reload";
@@ -47,7 +49,7 @@ export function Profile() {
   const handleDexCreateRequestClose = () => setShowDexCreate(false);
 
   if (userIsPending) {
-    return <div className="loading">Loading...</div>;
+    return <Loading>Loading...</Loading>;
   }
 
   // A failed refresh of a user who's already loaded doesn't count: the page can
@@ -65,7 +67,7 @@ export function Profile() {
       <Nav />
       <Reload />
       <div className="profile">
-        <div className="wrapper">
+        <div className={wrapper}>
           <header>
             <Notification />
             <Header profile />
