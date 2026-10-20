@@ -215,6 +215,8 @@
      making an ellipse. */
   --radius-half: 50%;
 
+  /* For box-shadow itself: Tailwind's shadow utilities stack a shadow with
+     empty ones, which WebKit draws a little differently. */
   --shadow-*: initial;
   --shadow-raised: 1px 1px 3px rgba(0, 0, 0, 0.5);
 

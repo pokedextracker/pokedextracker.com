@@ -30,7 +30,7 @@ export const formControlSize = "h-43 py-0 pr-32 pl-10 text-15";
 // formControl styles a text input or select, by default at its size in a
 // field.
 export function formControl(size = formControlSize): string {
-  return `w-full appearance-none rounded-none border-2 border-solid border-brand-secondary-light bg-white font-primary focus:border-brand-secondary-dark invalid:shadow-none night:border-night-mode-02dp night:bg-night-mode-02dp night:text-white night:focus:border-night-mode-02dp ${size}`;
+  return `w-full appearance-none rounded-none border-2 border-solid border-brand-secondary-light bg-white font-primary focus:border-brand-secondary-dark invalid:[box-shadow:none] night:border-night-mode-02dp night:bg-night-mode-02dp night:text-white night:focus:border-night-mode-02dp ${size}`;
 }
 
 // The asterisk on a required input, and the chevron on a select.
