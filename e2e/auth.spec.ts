@@ -1,6 +1,13 @@
 import type { Page } from "@playwright/test";
 
-import { createUser, expect, PASSWORD, test, uniqueUsername } from "./fixtures";
+import {
+  createUser,
+  expect,
+  PASSWORD,
+  SERVER_ERROR,
+  test,
+  uniqueUsername,
+} from "./fixtures";
 
 test("registering creates the first dex and signs in", async ({ page }) => {
   const username = uniqueUsername();
@@ -101,4 +108,57 @@ test("a token for a user who doesn't exist here counts as signed out", async ({
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem("token")))
     .toBeNull();
+});
+
+test("a server error doesn't sign anyone out", async ({ page, request }) => {
+  const user = await createUser(request);
+  await plantToken(page, user.token);
+  await page.route(`**/api/users/${user.username}`, (route) =>
+    route.fulfill(SERVER_ERROR),
+  );
+  await page.goto("/");
+
+  // Past React Query's retries.
+  await page.waitForTimeout(9_000);
+  expect(await page.evaluate(() => localStorage.getItem("token"))).toBe(
+    user.token,
+  );
+});
+
+test("logging in again after the database changed sticks", async ({
+  page,
+  request,
+}) => {
+  const user = await createUser(request);
+  // The user as it was before a reset, with another id, gets cached and the
+  // token that doesn't match it is cleared.
+  await page.route(`**/api/users/${user.username}`, async (route) => {
+    const response = await route.fetch();
+    route.fulfill({
+      response,
+      json: { ...(await response.json()), id: 987654 },
+    });
+  });
+  await plantToken(page, user.token);
+  await page.goto(`/u/${user.username}`);
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem("token")))
+    .toBeNull();
+
+  // In-app, so the user cached with the old id is still there.
+  await page.unroute(`**/api/users/${user.username}`);
+  await page
+    .locator("nav")
+    .getByRole("link", { name: "Login", exact: true })
+    .click();
+  await page.locator("#username").fill(user.username);
+  await page.locator("#password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Let's go!" }).click();
+
+  await expect(page).toHaveURL(`/u/${user.username}`);
+  await expect(page.getByTestId("nav-dropdown")).toContainText(user.username);
+  await page.waitForTimeout(1_000);
+  expect(
+    await page.evaluate(() => localStorage.getItem("token")),
+  ).not.toBeNull();
 });

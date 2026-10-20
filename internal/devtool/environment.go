@@ -46,7 +46,7 @@ func (e Environment) IsMain() bool {
 // browsers keep localStorage per host and port, so worktrees would otherwise
 // share a login, along with a user id from another worktree's database. The
 // main checkout keeps the plain key. A linked worktree gets its directory name
-// and a hash of its path, like its database.
+// and a hash of its path, as its database name does.
 func (e Environment) TokenNamespace() string {
 	if e.IsMain() {
 		return ""

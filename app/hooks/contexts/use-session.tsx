@@ -1,5 +1,7 @@
+import { useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useEffectEvent,
@@ -11,7 +13,7 @@ import type { Session, User } from "../../types";
 import { isNotFound } from "../../utils/api";
 import { tokenToUser } from "../../utils/state";
 import { TOKEN_KEY } from "../../utils/token";
-import { useUser } from "../queries/users";
+import { QueryKey as UserQueryKey, useUser } from "../queries/users";
 import { useLocalStorage, type SetLocalStorageFn } from "../use-local-storage";
 
 interface SessionContextState {
@@ -31,12 +33,30 @@ interface Props {
 }
 
 export const SessionProvider = ({ children }: Props) => {
-  const [token, setToken] = useLocalStorage<string | null>(TOKEN_KEY, {
+  const queryClient = useQueryClient();
+  const [token, setStoredToken] = useLocalStorage<string | null>(TOKEN_KEY, {
     defaultValue: null,
   });
   const tokenSession = useMemo(() => tokenToUser(token), [token]);
-  const { data: tokenUser, error: tokenUserError } = useUser(
-    tokenSession?.username,
+  const {
+    data: tokenUser,
+    error: tokenUserError,
+    isFetching: tokenUserIsFetching,
+  } = useUser(tokenSession?.username);
+
+  // A new token's user is fetched again before it's checked: the cached one
+  // can be from before the database was reset, with a different id.
+  const setToken = useCallback(
+    (newToken: string | null) => {
+      const newSession = tokenToUser(newToken);
+      if (newSession) {
+        queryClient.invalidateQueries({
+          queryKey: [UserQueryKey.RetrieveUser, newSession.username],
+        });
+      }
+      setStoredToken(newToken);
+    },
+    [queryClient, setStoredToken],
   );
 
   // A token from another database, like staging's, can name a user who has a
@@ -45,6 +65,7 @@ export const SessionProvider = ({ children }: Props) => {
   // doesn't count, so an outage can't sign anyone out.
   const stale = Boolean(
     tokenSession &&
+    !tokenUserIsFetching &&
     ((tokenUser && tokenUser.id !== tokenSession.id) ||
       isNotFound(tokenUserError)),
   );
