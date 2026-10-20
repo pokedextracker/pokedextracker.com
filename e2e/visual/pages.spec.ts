@@ -318,3 +318,29 @@ test.describe("tooltips", () => {
     await expect(page).toHaveScreenshot("tooltip-evolution-notes.png");
   });
 });
+
+// Each button color darkens on hover.
+test.describe("buttons", () => {
+  test("blue hovered", async ({ page }) => {
+    await page.goto("/login");
+    await settle(page);
+    await page.getByRole("button", { name: "Let's go!" }).hover();
+    await expect(page).toHaveScreenshot("button-blue-hovered.png");
+  });
+
+  test("white hovered", async ({ page }) => {
+    await page.goto("/");
+    await settle(page);
+    // The nav's Login link comes first.
+    await page.getByRole("link", { name: "Login" }).last().hover();
+    await expect(page).toHaveScreenshot("button-white-hovered.png");
+  });
+
+  test("yellow hovered", async ({ page }) => {
+    await signIn(page, brock);
+    await page.goto("/account");
+    await settle(page);
+    await page.getByRole("button", { name: "Change" }).hover();
+    await expect(page).toHaveScreenshot("button-yellow-hovered.png");
+  });
+});
