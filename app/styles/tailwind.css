@@ -43,7 +43,9 @@
   --color-brand-primary-lighter: rgb(100%, 97.2441579371%, 84.1176470588%);
   --color-gray-darker: #787878;
   --color-gray-darkest: #454545;
-  --color-error-dark: rgb(90%, 0%, 0%);
+  --color-brand-primary-lighten-10: rgb(100%, 88.5683588504%, 34.1176470588%);
+  --color-brand-primary-lighten-15: rgb(100%, 90.3035186677%, 44.1176470588%);
+  --color-error-darken-5: rgb(90%, 0%, 0%);
   --color-night-mode: #121212;
   --color-night-mode-01dp: rgb(12.0588235294%, 12.0588235294%, 12.0588235294%);
   --color-night-mode-02dp: rgb(14.0588235294%, 14.0588235294%, 14.0588235294%);
@@ -169,8 +171,10 @@
 @custom-variant hover (&:hover);
 
 /* The old stylesheets' .no-touch class (set in index.html on devices without
-   touch), for the few hover styles limited to those. */
-@custom-variant no-touch (.no-touch &);
+   touch), for the few hover styles limited to those. It adds no specificity,
+   like night below, so between the two the later utility wins, as the later
+   rule did in the old stylesheets. */
+@custom-variant no-touch (:where(.no-touch) &);
 
 /* Night mode is a class on the app's root. */
 @custom-variant night (&:where(.night-mode, .night-mode *));

@@ -66,104 +66,6 @@ a.link {
   visibility: hidden;
 }
 
-nav {
-  @include flexbox();
-  @include flex(0 0 42px);
-
-  position: relative;
-  background-color: $brand-primary;
-  font-family: $font-secondary;
-
-  a {
-    @include transition(all 0.1s ease-out);
-    @include flexbox();
-
-    align-items: center;
-    padding: 14px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    text-decoration: none;
-
-    color: $brand-secondary;
-
-    &:first-child {
-      margin-right: auto;
-    }
-  }
-
-  .dropdown {
-    @include flexbox();
-
-    &:hover {
-      > a {
-        background-color: lighten($brand-primary, 10%);
-      }
-
-      ul {
-        opacity: 1;
-        visibility: visible;
-        top: 100%;
-      }
-    }
-
-    .svg-inline--fa {
-      margin-left: 3px;
-    }
-
-    .dropdown-scroll {
-      @include overflow-y-scroll();
-
-      max-height: 242px;
-    }
-
-    ul {
-      @include transition(all 0.1s ease-out);
-
-      opacity: 0;
-      visibility: hidden;
-      position: absolute;
-      right: 0;
-      top: 70%;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      text-align: right;
-      z-index: 10;
-      width: 230px;
-
-      li a {
-        display: block;
-        border-top: 2px solid $brand-primary;
-        background-color: lighten($brand-primary, 10%);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-
-        &:hover {
-          background-color: lighten($brand-primary, 15%);
-        }
-
-        .svg-inline--fa {
-          float: left;
-          margin-top: 2px;
-          margin-left: 0;
-          margin-right: 15px;
-        }
-      }
-    }
-  }
-}
-
-.no-touch nav a {
-  &:hover,
-  &:focus {
-    background-color: lighten($brand-primary, 10%);
-    cursor: pointer;
-  }
-}
-
 .btn {
   @include transition(all 0.1s ease-out);
 
@@ -580,34 +482,6 @@ select {
     }
   }
 
-  nav {
-    background-color: $night-mode-03dp;
-
-    a {
-      color: white;
-
-      &:hover {
-        background-color: $night-mode-06dp;
-        color: $night-mode-primary;
-      }
-    }
-
-    .dropdown {
-      &:hover > a {
-        background-color: $night-mode-04dp;
-      }
-
-      ul li a {
-        border-color: $night-mode-03dp;
-        background-color: $night-mode-04dp;
-
-        &:hover {
-          background-color: $night-mode-06dp;
-        }
-      }
-    }
-  }
-
   header {
     h1 {
       color: white;
@@ -848,11 +722,6 @@ select {
     .form-group:last-child {
       margin-bottom: 25px;
     }
-  }
-
-  nav a {
-    padding: 14px 10px;
-    font-size: 10px;
   }
 }
 

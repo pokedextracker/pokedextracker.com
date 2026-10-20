@@ -9,7 +9,7 @@ const variants = {
     "bottom-27 bg-brand-secondary text-white after:top-full after:border-t-brand-secondary",
   // In night mode it takes night mode's red.
   error:
-    "bottom-27 bg-error-dark text-white after:top-full after:border-t-error-dark night:bg-night-mode-error night:after:border-t-night-mode-error",
+    "bottom-27 bg-error-darken-5 text-white after:top-full after:border-t-error-darken-5 night:bg-night-mode-error night:after:border-t-night-mode-error",
   light: "bottom-27 bg-white text-black after:top-full after:border-t-white",
   // Below the trigger, in the nav's colors in night mode.
   nav: "top-47 bg-brand-secondary text-white after:bottom-full after:border-b-brand-secondary night:bg-night-mode-primary night:text-night-mode-03dp night:after:border-b-night-mode-primary",
