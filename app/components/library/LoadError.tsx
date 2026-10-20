@@ -36,8 +36,3 @@ export function LoadError({ error, thing }: Props) {
     </div>
   );
 }
-
-// isNotFound reports whether a failed request was a 404.
-export function isNotFound(error: FailedRequest | null): boolean {
-  return error?.response?.status === 404;
-}

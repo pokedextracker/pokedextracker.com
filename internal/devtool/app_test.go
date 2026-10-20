@@ -322,6 +322,29 @@ func TestStartWebStagingUsesTheStagingAPI(t *testing.T) {
 	assert.Equal(t, stagingURL, h.processes.servers.APIURL)
 }
 
+func TestStartGivesEachWorktreeItsOwnLoginToken(t *testing.T) {
+	main := newHarness(t, true)
+	main.database.databases["pdt"] = true
+	require.NoError(t, main.app.Run(context.Background(), []string{"start"}))
+	assert.Empty(t, main.processes.servers.TokenNamespace, "the main checkout keeps the plain key")
+
+	linked := newHarness(t, false)
+	linked.database.databases["pdt_worktree"] = true
+	require.NoError(t, linked.app.Run(context.Background(), []string{"start"}))
+	assert.Equal(t, linked.env.TokenNamespace(), linked.processes.servers.TokenNamespace)
+	assert.Regexp(t, `^worktree_[0-9a-f]{8}$`, linked.processes.servers.TokenNamespace)
+}
+
+func TestStartWebStagingKeepsItsLoginApart(t *testing.T) {
+	main := newHarness(t, true)
+	require.NoError(t, main.app.Run(context.Background(), []string{"start", "web-staging"}))
+	assert.Equal(t, "staging", main.processes.servers.TokenNamespace)
+
+	linked := newHarness(t, false)
+	require.NoError(t, linked.app.Run(context.Background(), []string{"start", "web-staging"}))
+	assert.Equal(t, linked.env.TokenNamespace()+"_staging", linked.processes.servers.TokenNamespace)
+}
+
 func TestStartPreviewRunsOnlyTheBinary(t *testing.T) {
 	h := newHarness(t, false)
 	h.database.databases["pdt_worktree"] = true

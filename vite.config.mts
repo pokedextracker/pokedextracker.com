@@ -22,6 +22,13 @@ function developmentVersion(): Plugin {
 }
 
 export default defineConfig({
+  // The dev launcher sets this per worktree (see app/utils/token.ts). Builds
+  // for production and the tests leave it empty.
+  define: {
+    __TOKEN_NAMESPACE__: JSON.stringify(
+      process.env.POKEDEXTRACKER_TOKEN_NAMESPACE ?? "",
+    ),
+  },
   root: "app",
   publicDir: "../public",
   build: {

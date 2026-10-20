@@ -1,5 +1,5 @@
 // Based on https://www.30secondsofcode.org/react/s/use-local-storage
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { localStorage } from "../utils/local-storage";
 
@@ -29,18 +29,22 @@ export function useLocalStorage<T>(
     }
   });
 
-  const setValue = (newValue: T) => {
-    if (newValue === null) {
-      localStorage.removeItem(key);
-    } else {
-      const serialized =
-        options.parseAsJson || typeof newValue !== "string"
-          ? JSON.stringify(newValue)
-          : newValue;
-      localStorage.setItem(key, serialized);
-    }
-    setStoredValue(newValue);
-  };
+  const { parseAsJson } = options;
+  const setValue = useCallback(
+    (newValue: T) => {
+      if (newValue === null) {
+        localStorage.removeItem(key);
+      } else {
+        const serialized =
+          parseAsJson || typeof newValue !== "string"
+            ? JSON.stringify(newValue)
+            : newValue;
+        localStorage.setItem(key, serialized);
+      }
+      setStoredValue(newValue);
+    },
+    [key, parseAsJson],
+  );
 
   return [storedValue, setValue];
 }

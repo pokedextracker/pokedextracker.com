@@ -36,6 +36,9 @@ type Servers struct {
 	WebPort  int
 	// APIURL is where the frontend dev server proxies /api.
 	APIURL string
+	// TokenNamespace keeps the frontend's login token apart from other dev
+	// servers' on the same localhost port (see Environment.TokenNamespace).
+	TokenNamespace string
 }
 
 // ProcessManager runs the development servers, migrations, and Go tests.
@@ -332,7 +335,9 @@ func (p *OSProcesses) CheckoutReference(ctx context.Context, env Environment, re
 // serveAndTest builds the site in siteRoot, serves it on port against target,
 // and calls run while it's up.
 func serveAndTest(ctx context.Context, siteRoot, name, logPath string, target DatabaseTarget, port int, run func(context.Context) error) error {
-	environment := append(apiEnvironment(target), "PORT="+strconv.Itoa(port))
+	// The specs set the login token under the plain key, so the build uses it
+	// whatever the shell exports.
+	environment := append(apiEnvironment(target), "PORT="+strconv.Itoa(port), "POKEDEXTRACKER_TOKEN_NAMESPACE=")
 	binary, err := buildSite(ctx, siteRoot, environment, name)
 	if err != nil {
 		return err
@@ -432,6 +437,8 @@ func serverEnvironment(servers Servers) []string {
 	if servers.APIURL != "" {
 		values = append(values, "API_URL="+servers.APIURL)
 	}
+	// Always set, so one exported in the shell can't leak in.
+	values = append(values, "POKEDEXTRACKER_TOKEN_NAMESPACE="+servers.TokenNamespace)
 	return values
 }
 
