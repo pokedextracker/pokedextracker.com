@@ -29,6 +29,7 @@ import {
   formTitle,
   inputIcon,
 } from "../library/Form";
+import { link } from "../library/links";
 import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
 
@@ -140,7 +141,7 @@ export function Login() {
           </button>
           <p className={formText}>
             Don&apos;t have an account yet?{" "}
-            <Link className="link" to="/register">
+            <Link className={link} to="/register">
               Register here
             </Link>
             !

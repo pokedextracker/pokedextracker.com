@@ -1,6 +1,7 @@
 import { useMemo, type Dispatch, type SetStateAction } from "react";
 
 import { nationalId, padding } from "../../../utils/formatting";
+import { link } from "../../library/links";
 import { Pokemon } from "./Pokemon";
 import type { UICapture } from "./use-tracker";
 
@@ -56,7 +57,7 @@ export function SearchResults({
     let message = (
       <p>
         No results.{" "}
-        <a className="link" onClick={handleClearClick}>
+        <a className={link} onClick={handleClearClick}>
           Clear your search?
         </a>
       </p>
@@ -67,11 +68,11 @@ export function SearchResults({
         message = (
           <p>
             No results in uncaught Pokémon.{" "}
-            <a className="link" onClick={handleClearCaughtFilter}>
+            <a className={link} onClick={handleClearCaughtFilter}>
               Include caught Pokémon
             </a>{" "}
             or{" "}
-            <a className="link" onClick={handleClearClick}>
+            <a className={link} onClick={handleClearClick}>
               clear your search
             </a>
             ?
@@ -81,7 +82,7 @@ export function SearchResults({
         message = (
           <p>
             No uncaught Pokémon.{" "}
-            <a className="link" onClick={handleClearCaughtFilter}>
+            <a className={link} onClick={handleClearCaughtFilter}>
               Show all Pokémon?
             </a>
           </p>

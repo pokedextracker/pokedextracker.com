@@ -8,6 +8,7 @@ import { useUser } from "../../../hooks/queries/users";
 import { useUserParams } from "../../../hooks/use-user-params";
 import type { Dex } from "../../../types";
 import { DexIndicator } from "../../library/DexIndicator";
+import { link } from "../../library/links";
 import { Progress } from "../../library/Progress";
 import { DexEdit } from "./DexEdit";
 
@@ -36,14 +37,14 @@ export function DexPreview({ dex }: Props) {
     <div className="dex-preview" data-testid="dex-preview">
       <div className="dex-preview-header">
         <h3>
-          <Link className="link" to={`/u/${user.username}/${dex.slug}`}>
+          <Link className={link} to={`/u/${user.username}/${dex.slug}`}>
             {dex.title}
           </Link>
         </h3>
         {ownPage && (
           <div className="dex-edit">
             <a
-              className="link"
+              className="cursor-pointer text-14 font-medium text-black-lighten-25 underline transition-all duration-100 ease-out hover:text-black night:text-night-mode-link-gray night:hover:text-night-mode-link-gray-dark"
               data-testid="dex-edit-toggle"
               onClick={handleEditClick}
             >

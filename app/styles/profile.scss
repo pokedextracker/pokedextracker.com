@@ -36,15 +36,6 @@
       font-size: 20px;
     }
   }
-
-  .dex-edit a.link {
-    color: lighten(#000, 25%);
-    font-size: 14px;
-
-    &:hover {
-      color: black;
-    }
-  }
 }
 
 .dex-indicator {
@@ -82,15 +73,6 @@
   right: 12px;
   z-index: 1;
   font-size: 14px;
-
-  a:first-child {
-    color: $error;
-    margin: 0 3px;
-
-    &:hover {
-      color: darken($error, 5%);
-    }
-  }
 }
 
 .percentage {

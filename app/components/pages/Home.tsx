@@ -6,6 +6,7 @@ import { Link } from "react-router";
 
 import { useSession } from "../../hooks/contexts/use-session";
 import { buttonClassName, buttonIcon } from "../library/Button";
+import { link } from "../library/links";
 
 // The buttons under the list, side by side.
 const homeButton =
@@ -35,14 +36,14 @@ export function Home() {
             <li>
               <h2>
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/legends-z-a-mega-dimension-full-lumiose-living-dex"
                 >
                   Pokémon Legends: Z-A (Mega Dimension) Full Lumiose Dex
                 </Link>{" "}
                 &amp;{" "}
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/legends-z-a-mega-dimension-hyperspace-living-dex"
                 >
                   Hyperspace Dex
@@ -52,7 +53,7 @@ export function Home() {
             <li>
               <h2>
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/legends-z-a-lumiose-living-dex"
                 >
                   Pokémon Legends: Z-A Lumiose Dex
@@ -62,21 +63,21 @@ export function Home() {
             <li>
               <h2>
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/scarlet-expansion-living-dex"
                 >
                   Pokémon Scarlet &amp; Violet (Expansion Pass) Full Paldea Dex
                 </Link>
                 ,{" "}
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/scarlet-kitakami-living-dex"
                 >
                   Kitakami Dex
                 </Link>
                 , &amp;{" "}
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/scarlet-blueberry-living-dex"
                 >
                   Blueberry Dex
@@ -86,7 +87,7 @@ export function Home() {
             <li>
               <h2>
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/scarlet-regional-living-dex"
                 >
                   Pokémon Scarlet &amp; Violet Regional Dex
@@ -96,7 +97,7 @@ export function Home() {
             <li>
               <h2>
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/home-national-living-dex"
                 >
                   HOME Generation 9 National Dex
@@ -107,7 +108,7 @@ export function Home() {
             <li>
               <h2>
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/legends-arceus-regional-living-dex"
                 >
                   Pokémon Legends: Arceus Regional Dex
@@ -118,14 +119,14 @@ export function Home() {
               <h2>
                 Pokémon Brilliant Diamond &amp; Shining Pearl{" "}
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/brilliant-diamond-regional-living-dex"
                 >
                   Regional Dex
                 </Link>{" "}
                 and{" "}
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/brilliant-diamond-national-living-dex"
                 >
                   National Dex
@@ -135,7 +136,7 @@ export function Home() {
             <li>
               <h2>
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/sword-expansion-pass-regional-living-dex"
                 >
                   Pokémon Sword &amp; Shield (Expansion Pass) Regional Dex
@@ -145,7 +146,7 @@ export function Home() {
             <li>
               <h2>
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/sword-regional-living-dex"
                 >
                   Pokémon Sword &amp; Shield Regional Dex
@@ -156,35 +157,35 @@ export function Home() {
               <h2>
                 Previous Games:{" "}
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/lets-go-pikachu-regional-living-dex"
                 >
                   Let&apos;s Go, Pikachu &amp; Let&apos;s Go, Eevee
                 </Link>
                 ,{" "}
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/ultra-sun-regional-living-dex"
                 >
                   Ultra Sun &amp; Ultra Moon
                 </Link>
                 ,{" "}
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/sun-regional-living-dex"
                 >
                   Sun &amp; Moon
                 </Link>
                 ,{" "}
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/omega-ruby-regional-living-dex"
                 >
                   Omega Ruby &amp; Alpha Sapphire
                 </Link>
                 , and{" "}
                 <Link
-                  className="link"
+                  className={link}
                   to="/u/ashketchum10/x-regional-living-dex"
                 >
                   X &amp; Y
@@ -193,7 +194,7 @@ export function Home() {
             </li>
             <li>
               <h2>
-                <Link className="link" to="/u/ashketchum10/shinies">
+                <Link className={link} to="/u/ashketchum10/shinies">
                   Shiny Dexes
                 </Link>{" "}
                 for all of the above!
@@ -242,7 +243,7 @@ export function Home() {
           <h2>
             Easily toggle between and track your captured Pokémon, find the
             locations of those left to be captured, manage all your dexes on one{" "}
-            <Link className="link" to="/u/ashketchum10">
+            <Link className={link} to="/u/ashketchum10">
               profile
             </Link>
             , and share a public link with others to see how you can help each
@@ -252,7 +253,7 @@ export function Home() {
           <p>
             This project is open source, and you can find the code on{" "}
             <a
-              className="link"
+              className={link}
               href="https://github.com/pokedextracker"
               rel="noopener noreferrer"
               target="_blank"
@@ -262,7 +263,7 @@ export function Home() {
             . Feel free to report issues, suggest features, or even submit a
             pull request. Help support this project financially by{" "}
             <a
-              className="link"
+              className={link}
               href="https://www.patreon.com/pokedextracker"
               rel="noopener noreferrer"
               target="_blank"
@@ -274,7 +275,7 @@ export function Home() {
 
           <div className="social">
             <a
-              className="link"
+              className={link}
               href="https://twitter.com/PokedexTracker"
               rel="noopener noreferrer"
               target="_blank"
@@ -282,7 +283,7 @@ export function Home() {
               <FontAwesomeIcon icon={faTwitter} />
             </a>
             <a
-              className="link"
+              className={link}
               href="/blog/"
               rel="noopener noreferrer"
               target="_blank"

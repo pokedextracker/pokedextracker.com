@@ -46,6 +46,7 @@ import {
   Radio,
   selectIcon,
 } from "../../library/Form";
+import { link } from "../../library/links";
 import { Tooltip } from "../../library/Tooltip";
 import { FormWarning } from "./FormWarning";
 
@@ -62,6 +63,10 @@ interface Props {
 
 // DexEdit is only mounted while it's open, so every time it opens, the form
 // starts from the dex as it is then.
+// The link that deletes the dex, and the one that confirms it, in red.
+const deleteLink =
+  "mx-3 my-0 cursor-pointer font-medium text-error underline transition-all duration-100 ease-out hover:text-error-darken-5 night:text-night-mode-error night:hover:text-night-mode-error-dark";
+
 export function DexEdit({ dex, onRequestClose }: Props) {
   const formRef = useRef<HTMLDivElement>(null);
 
@@ -350,16 +355,16 @@ export function DexEdit({ dex, onRequestClose }: Props) {
         {isConfirmingDelete ? (
           <>
             Are you sure?&nbsp;
-            <a className="link" onClick={handleDeleteClick}>
+            <a className={deleteLink} onClick={handleDeleteClick}>
               Yes
             </a>
             &nbsp;
-            <a className="link" onClick={() => setIsConfirmingDelete(false)}>
+            <a className={link} onClick={() => setIsConfirmingDelete(false)}>
               No
             </a>
           </>
         ) : (
-          <a className="link" onClick={handleDeleteClick}>
+          <a className={deleteLink} onClick={handleDeleteClick}>
             <FontAwesomeIcon icon={faTrashAlt} />
           </a>
         )}
@@ -501,7 +506,7 @@ export function DexEdit({ dex, onRequestClose }: Props) {
         </form>
       </div>
       <p>
-        <a className="link" onClick={onRequestClose}>
+        <a className={link} onClick={onRequestClose}>
           Go Back
         </a>
       </p>

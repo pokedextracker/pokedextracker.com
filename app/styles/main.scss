@@ -48,20 +48,6 @@ body {
   }
 }
 
-a.link {
-  @include transition(all 0.1s ease-out);
-
-  color: $brand-secondary-light;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: underline;
-
-  &:hover,
-  &:focus {
-    color: $brand-secondary-dark;
-  }
-}
-
 .hidden {
   visibility: hidden;
 }
@@ -182,14 +168,6 @@ a.link {
     background-color: $night-mode-06dp;
   }
 
-  .dex-preview-header .dex-edit a.link {
-    color: $night-mode-link-gray;
-
-    &:hover {
-      color: $night-mode-link-gray-dark;
-    }
-  }
-
   .box .box-container,
   .set-captured,
   .set-captured-mobile,
@@ -280,14 +258,6 @@ a.link {
           }
         }
       }
-    }
-  }
-
-  .dex-delete-container a:first-child {
-    color: $night-mode-error;
-
-    &:hover {
-      color: $night-mode-error-dark;
     }
   }
 }

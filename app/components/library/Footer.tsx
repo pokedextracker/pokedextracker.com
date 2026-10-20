@@ -1,7 +1,9 @@
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-const link = "link font-bold no-underline";
+import { linkColor } from "./links";
+
+const link = `${linkColor} font-bold no-underline`;
 const separator = "mx-10 align-middle text-5 text-gray-medium";
 
 export function Footer() {

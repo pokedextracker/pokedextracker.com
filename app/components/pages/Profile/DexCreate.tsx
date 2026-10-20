@@ -49,6 +49,7 @@ import {
   Radio,
   selectIcon,
 } from "../../library/Form";
+import { link } from "../../library/links";
 import { Tooltip } from "../../library/Tooltip";
 
 interface Props {
@@ -380,7 +381,7 @@ export function DexCreate({ onRequestClose }: Props) {
         </form>
       </div>
       <p>
-        <a className="link" onClick={onRequestClose}>
+        <a className={link} onClick={onRequestClose}>
           Go Back
         </a>
       </p>

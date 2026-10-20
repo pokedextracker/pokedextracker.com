@@ -51,6 +51,7 @@ import {
   Radio,
   selectIcon,
 } from "../library/Form";
+import { link } from "../library/links";
 import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
 import { Tooltip } from "../library/Tooltip";
@@ -521,7 +522,7 @@ export function Register() {
             </button>
             <p className={formText}>
               Already have an account?{" "}
-              <Link className="link" to="/login">
+              <Link className={link} to="/login">
                 Login here
               </Link>
               !
