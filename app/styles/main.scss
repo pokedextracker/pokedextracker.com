@@ -689,45 +689,6 @@ select {
   color: $brand-secondary;
 }
 
-.not-found {
-  text-align: center;
-
-  img {
-    @include animation(slide 1s cubic-bezier(0, 0, 0.05, 1) forwards);
-
-    position: relative;
-    top: -100px;
-    margin-top: 50px;
-    height: 35vh;
-  }
-
-  .not-found-caption {
-    @include animation(slide 1s cubic-bezier(0, 0, 0.05, 1) forwards);
-
-    position: relative;
-    top: 100px;
-  }
-
-  h1 {
-    margin: 15px 0 0;
-    font-family: $font-secondary;
-    font-size: 50px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    text-decoration: none;
-    color: $brand-secondary;
-  }
-
-  p {
-    max-width: 600px;
-    margin: 25px auto 0;
-    padding: 0 15px;
-    font-size: 16px;
-    font-weight: 400;
-  }
-}
-
 .reload {
   text-align: center;
   padding: 10px 30px;
@@ -1137,12 +1098,6 @@ select {
 
   .main-footer {
     padding: 50px 20px;
-  }
-}
-
-@media (max-width: 700px) {
-  .not-found h1 {
-    font-size: 35px;
   }
 }
 
