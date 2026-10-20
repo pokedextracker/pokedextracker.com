@@ -128,6 +128,9 @@ test("a dex whose captures hit a server error says we've been notified", async (
     timeout: 20_000,
   });
   await expect(page.getByRole("heading", { name: /404 Error/ })).toHaveCount(0);
+  // The nav stays, so there's a way out.
+  await expect(page.locator("nav")).toBeVisible();
+  await expect(page).toHaveTitle("Error | Pokédex Tracker");
 });
 
 test("a dex whose captures can't be reached says to refresh", async ({
