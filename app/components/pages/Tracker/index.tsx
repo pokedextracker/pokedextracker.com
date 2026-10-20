@@ -41,11 +41,11 @@ export function Tracker() {
     return <div className="loading">Loading...</div>;
   }
 
-  const failed = [userQuery.error, capturesQuery.error].some(
+  const failed = [userQuery.error, capturesQuery.error].find(
     (error) => error && !isNotFound(error),
   );
   if (failed) {
-    return <LoadError thing="dex" />;
+    return <LoadError error={failed} thing="dex" />;
   }
 
   if (!dex || !captures?.length) {

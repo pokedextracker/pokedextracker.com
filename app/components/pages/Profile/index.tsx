@@ -41,7 +41,7 @@ export function Profile() {
   }
 
   if (userError && !isNotFound(userError)) {
-    return <LoadError thing="profile" />;
+    return <LoadError error={userError} thing="profile" />;
   }
 
   if (!user) {

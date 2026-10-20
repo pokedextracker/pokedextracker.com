@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-import { createUser, expect, signIn, test } from "./fixtures";
+import { createUser, expect, SERVER_ERROR, signIn, test } from "./fixtures";
 
 function tile(page: Page, name: string) {
   return page.getByTestId("pokemon").filter({ hasText: name });
@@ -115,14 +115,30 @@ test("caught Pokémon stay caught after leaving the dex and coming back", async 
   );
 });
 
-test("a dex whose captures fail to load says so", async ({ page, request }) => {
+test("a dex whose captures hit a server error says we've been notified", async ({
+  page,
+  request,
+}) => {
   const user = await createUser(request);
-  await page.route("**/captures", (route) => route.fulfill({ status: 500 }));
+  await page.route("**/captures", (route) => route.fulfill(SERVER_ERROR));
   await page.goto(`/u/${user.username}/${user.slug}`);
 
   // After React Query's retries.
-  await expect(page.getByText("Couldn't load this dex")).toBeVisible({
+  await expect(page.getByText("We've been notified")).toBeVisible({
     timeout: 20_000,
   });
   await expect(page.getByRole("heading", { name: /404 Error/ })).toHaveCount(0);
+});
+
+test("a dex whose captures can't be reached says to refresh", async ({
+  page,
+  request,
+}) => {
+  const user = await createUser(request);
+  await page.route("**/captures", (route) => route.abort("timedout"));
+  await page.goto(`/u/${user.username}/${user.slug}`);
+
+  await expect(
+    page.getByText("Couldn't load this dex. Try refreshing the page."),
+  ).toBeVisible({ timeout: 20_000 });
 });

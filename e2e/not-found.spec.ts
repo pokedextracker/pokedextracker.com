@@ -1,4 +1,4 @@
-import { createUser, expect, test } from "./fixtures";
+import { createUser, expect, SERVER_ERROR, test } from "./fixtures";
 
 test("an unknown page shows the not found page", async ({ page }) => {
   await page.goto("/this/page/does/not/exist");
@@ -34,15 +34,28 @@ test("a dex of a user who doesn't exist shows the not found page", async ({
 
 // Only a missing user or dex is "not found". Any other failure says it
 // couldn't load, rather than claiming it doesn't exist.
-test("a profile that fails to load says so", async ({ page }) => {
+test("a profile that hits a server error says we've been notified", async ({
+  page,
+}) => {
   await page.route("**/api/users/e2e_down", (route) =>
-    route.fulfill({ status: 500 }),
+    route.fulfill(SERVER_ERROR),
   );
   await page.goto("/u/e2e_down");
 
   // After React Query's retries.
-  await expect(page.getByText("Couldn't load this profile")).toBeVisible({
+  await expect(page.getByText("We've been notified")).toBeVisible({
     timeout: 20_000,
   });
   await expect(page.getByRole("heading", { name: /404 Error/ })).toHaveCount(0);
+});
+
+test("a profile that can't be reached says to refresh", async ({ page }) => {
+  await page.route("**/api/users/e2e_down", (route) =>
+    route.fulfill({ status: 503 }),
+  );
+  await page.goto("/u/e2e_down");
+
+  await expect(
+    page.getByText("Couldn't load this profile. Try refreshing the page."),
+  ).toBeVisible({ timeout: 20_000 });
 });
