@@ -62,8 +62,18 @@ async function cached(...paths: string[]): Promise<boolean> {
   }
 }
 
-export const test = base.extend({
-  page: async ({ baseURL, browserName, page }, use) => {
+// VisualOptions are the options a project can set (playwright.visual.config.ts).
+export interface VisualOptions {
+  // Turns night mode on for every spec.
+  night: boolean;
+}
+
+export const test = base.extend<{ page: Page }, VisualOptions>({
+  night: [false, { option: true, scope: "worker" }],
+  page: async ({ baseURL, browserName, night, page }, use) => {
+    if (night) {
+      await nightMode(page);
+    }
     const { host, origin } = new URL(baseURL!);
     await page.route(
       (url) => url.origin !== origin,

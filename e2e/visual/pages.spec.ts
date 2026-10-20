@@ -1,12 +1,5 @@
 import { slugOf } from "../slug";
-import {
-  expect,
-  nightMode,
-  scrollToTop,
-  settle,
-  signIn,
-  test,
-} from "./fixtures";
+import { expect, scrollToTop, settle, signIn, test } from "./fixtures";
 import { USERS } from "./setup";
 
 const ash = USERS.ash.username;
@@ -259,47 +252,5 @@ test.describe("account and navigation", () => {
     await page.getByTestId("nav-dropdown").hover();
     await expect(page.getByTestId("nav-dropdown-menu")).toBeVisible();
     await expect(page).toHaveScreenshot("nav-dropdown.png");
-  });
-});
-
-test.describe("night mode", () => {
-  test("not found", async ({ page }) => {
-    await nightMode(page);
-    await page.goto("/this/page/does/not/exist");
-    await settle(page);
-    await expect(page).toHaveScreenshot("night-not-found.png", {
-      fullPage: true,
-    });
-  });
-
-  test("home", async ({ page }) => {
-    await nightMode(page);
-    await page.goto("/");
-    await settle(page);
-    await expect(page).toHaveScreenshot("night-home.png", { fullPage: true });
-  });
-
-  test("profile", async ({ page }) => {
-    await nightMode(page);
-    await signIn(page, ash);
-    await page.goto(`/u/${ash}`);
-    await expect(
-      page.getByTestId("dex-preview").filter({
-        hasText: "Shiny Hunt",
-      }),
-    ).toBeVisible();
-    await settle(page);
-    await expect(page).toHaveScreenshot("night-profile.png", {
-      fullPage: true,
-    });
-  });
-
-  test("dex", async ({ page }) => {
-    await nightMode(page);
-    await signIn(page, ash);
-    await page.goto(livingDex);
-    await expect(page.getByTestId("progress-count")).toContainText("7 caught");
-    await settle(page);
-    await expect(page).toHaveScreenshot("night-dex.png");
   });
 });

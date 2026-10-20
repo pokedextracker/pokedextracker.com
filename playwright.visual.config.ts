@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+import type { VisualOptions } from "./e2e/visual/fixtures";
+
 // The visual comparison (mise test:visual). The dev launcher serves the
 // reference build and then this branch's, runs this config in Playwright's
 // Linux image, and passes the address and which side it is. The reference
@@ -16,7 +18,7 @@ if (!baseURL || !side) {
 const desktop = { width: 1280, height: 800 };
 const phone = { width: 390, height: 844 };
 
-export default defineConfig({
+export default defineConfig<VisualOptions>({
   expect: {
     // Generous, since a busy machine shouldn't need a retry.
     timeout: 10_000,
@@ -87,6 +89,16 @@ export default defineConfig({
         hasTouch: true,
         isMobile: true,
       },
+    },
+    // Every spec again in night mode, which is CSS overrides on the same
+    // pages, so one browser covers it.
+    {
+      name: "chromium-desktop-night",
+      use: { ...devices["Desktop Chrome"], viewport: desktop, night: true },
+    },
+    {
+      name: "chromium-phone-night",
+      use: { ...devices["Desktop Chrome"], viewport: phone, night: true },
     },
   ],
   reporter: [
