@@ -1,6 +1,5 @@
 import { slugOf } from "../slug";
 import {
-  byTestId,
   expect,
   nightMode,
   scrollToTop,
@@ -39,7 +38,7 @@ test.describe("signed out", () => {
     await page.locator("#username").fill(ash);
     await page.locator("#password").fill("not-the-password");
     await page.getByRole("button", { name: "Let's go!" }).click();
-    await expect(byTestId(page, "alert-error", ".alert-error")).toBeVisible();
+    await expect(page.getByTestId("alert-error")).toBeVisible();
     await settle(page);
     await expect(page).toHaveScreenshot("login-error.png", { fullPage: true });
   });
@@ -57,7 +56,7 @@ test.describe("signed out", () => {
     await page.locator("#password_confirm").fill("something-else");
     await page.locator("#dex_title").fill("Living Dex");
     await page.getByRole("button", { name: "Let's go!" }).click();
-    await expect(byTestId(page, "alert-error", ".alert-error")).toBeVisible();
+    await expect(page.getByTestId("alert-error")).toBeVisible();
     await settle(page);
     await expect(page).toHaveScreenshot("register-error.png", {
       fullPage: true,
@@ -66,7 +65,7 @@ test.describe("signed out", () => {
       // screenshot of the nav.
       mask:
         browserName === "firefox"
-          ? [byTestId(page, "night-mode-toggle", "nav a.tooltip")]
+          ? [page.getByTestId("night-mode-toggle")]
           : [],
     });
   });
@@ -83,7 +82,7 @@ test.describe("profile", () => {
     await signIn(page, ash);
     await page.goto(`/u/${ash}`);
     await expect(
-      byTestId(page, "dex-preview", ".dex-preview").filter({
+      page.getByTestId("dex-preview").filter({
         hasText: "Shiny Hunt",
       }),
     ).toBeVisible();
@@ -95,7 +94,7 @@ test.describe("profile", () => {
     await signIn(page, ash);
     await page.goto(`/u/${misty}`);
     await expect(
-      byTestId(page, "dex-preview", ".dex-preview").filter({
+      page.getByTestId("dex-preview").filter({
         hasText: "Water Dex",
       }),
     ).toBeVisible();
@@ -118,9 +117,7 @@ test.describe("profile", () => {
   test("edit dex modal", async ({ page }) => {
     await signIn(page, ash);
     await page.goto(`/u/${ash}`);
-    await byTestId(page, "dex-edit-toggle", ".dex-preview .dex-edit a")
-      .first()
-      .click();
+    await page.getByTestId("dex-edit-toggle").first().click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await settle(page);
     await scrollToTop(page);
@@ -130,9 +127,7 @@ test.describe("profile", () => {
   test("edit dex confirmation", async ({ page }) => {
     await signIn(page, gary);
     await page.goto(`/u/${gary}`);
-    await byTestId(page, "dex-edit-toggle", ".dex-preview .dex-edit a")
-      .first()
-      .click();
+    await page.getByTestId("dex-edit-toggle").first().click();
     const dialog = page.getByRole("dialog");
     await dialog.locator("#dex_title").fill("Renamed Dex");
     await dialog.getByRole("button", { name: "Edit" }).click();
@@ -147,9 +142,7 @@ test.describe("tracker", () => {
   test("own dex", async ({ page }) => {
     await signIn(page, ash);
     await page.goto(livingDex);
-    await expect(
-      byTestId(page, "progress-count", ".percentage h3"),
-    ).toContainText("7 caught");
+    await expect(page.getByTestId("progress-count")).toContainText("7 caught");
     await settle(page);
     await expect(page).toHaveScreenshot("dex-own.png");
   });
@@ -157,10 +150,8 @@ test.describe("tracker", () => {
   test("a box further down", async ({ page }) => {
     await signIn(page, ash);
     await page.goto(livingDex);
-    await expect(
-      byTestId(page, "progress-count", ".percentage h3"),
-    ).toContainText("7 caught");
-    const box = byTestId(page, "box", ".box").nth(2);
+    await expect(page.getByTestId("progress-count")).toContainText("7 caught");
+    const box = page.getByTestId("box").nth(2);
     await box.scrollIntoViewIfNeeded();
     await settle(page);
     await expect(box).toHaveScreenshot("dex-box.png");
@@ -171,19 +162,14 @@ test.describe("tracker", () => {
   test("info panel toggled", async ({ page }) => {
     await signIn(page, ash);
     await page.goto(livingDex);
-    await expect(
-      byTestId(page, "progress-count", ".percentage h3"),
-    ).toContainText("7 caught");
-    const info = byTestId(page, "info", ".info");
-    const wasCollapsed = /collapsed/.test(
-      (await info.getAttribute("class")) ?? "",
+    await expect(page.getByTestId("progress-count")).toContainText("7 caught");
+    const info = page.getByTestId("info");
+    const wasCollapsed = await info.getAttribute("data-collapsed");
+    await page.getByTestId("info-toggle").click();
+    await expect(info).toHaveAttribute(
+      "data-collapsed",
+      String(wasCollapsed !== "true"),
     );
-    await byTestId(page, "info-toggle", ".info-collapse").click();
-    if (wasCollapsed) {
-      await expect(info).not.toHaveClass(/collapsed/);
-    } else {
-      await expect(info).toHaveClass(/collapsed/);
-    }
     await settle(page);
     await expect(page).toHaveScreenshot("dex-info-toggled.png");
   });
@@ -211,7 +197,7 @@ test.describe("tracker", () => {
     );
     await signIn(page, ash);
     await page.goto(livingDex);
-    await byTestId(page, "share-toggle", ".share-container a").first().click();
+    await page.getByTestId("share-toggle").first().click();
     await settle(page);
     await expect(page).toHaveScreenshot("dex-share.png");
   });
@@ -219,9 +205,7 @@ test.describe("tracker", () => {
   test("someone else's dex", async ({ page }) => {
     await signIn(page, ash);
     await page.goto(waterDex);
-    await expect(
-      byTestId(page, "progress-count", ".percentage h3"),
-    ).toContainText("3 caught");
+    await expect(page.getByTestId("progress-count")).toContainText("3 caught");
     await settle(page);
     await expect(page).toHaveScreenshot("dex-other.png");
   });
@@ -236,12 +220,10 @@ test.describe("tracker", () => {
     const firstCheck = page.waitForResponse("**/version");
     await page.goto(livingDex);
     await firstCheck;
-    await expect(
-      byTestId(page, "progress-count", ".percentage h3"),
-    ).toContainText("7 caught");
+    await expect(page.getByTestId("progress-count")).toContainText("7 caught");
     version = "second";
     await page.clock.fastForward(31_000);
-    await expect(byTestId(page, "reload-banner", ".reload")).toBeVisible();
+    await expect(page.getByTestId("reload-banner")).toBeVisible();
     await settle(page);
     await expect(page).toHaveScreenshot("dex-new-version.png");
   });
@@ -260,9 +242,7 @@ test.describe("account and navigation", () => {
     await page.goto("/account");
     await page.locator("#friend_code_switch").fill("SW-1111-2222-3333");
     await page.getByRole("button", { name: "Save" }).click();
-    await expect(
-      byTestId(page, "alert-success", ".alert-success"),
-    ).toBeVisible();
+    await expect(page.getByTestId("alert-success")).toBeVisible();
     await settle(page);
     await expect(page).toHaveScreenshot("account-saved.png", {
       fullPage: true,
@@ -274,10 +254,8 @@ test.describe("account and navigation", () => {
     await page.goto(`/u/${ash}`);
     await settle(page);
     // After settle, which moves the mouse away.
-    await byTestId(page, "nav-dropdown", "nav .dropdown").hover();
-    await expect(
-      byTestId(page, "nav-dropdown-menu", "nav .dropdown ul"),
-    ).toBeVisible();
+    await page.getByTestId("nav-dropdown").hover();
+    await expect(page.getByTestId("nav-dropdown-menu")).toBeVisible();
     await expect(page).toHaveScreenshot("nav-dropdown.png");
   });
 });
@@ -295,7 +273,7 @@ test.describe("night mode", () => {
     await signIn(page, ash);
     await page.goto(`/u/${ash}`);
     await expect(
-      byTestId(page, "dex-preview", ".dex-preview").filter({
+      page.getByTestId("dex-preview").filter({
         hasText: "Shiny Hunt",
       }),
     ).toBeVisible();
@@ -309,9 +287,7 @@ test.describe("night mode", () => {
     await nightMode(page);
     await signIn(page, ash);
     await page.goto(livingDex);
-    await expect(
-      byTestId(page, "progress-count", ".percentage h3"),
-    ).toContainText("7 caught");
+    await expect(page.getByTestId("progress-count")).toContainText("7 caught");
     await settle(page);
     await expect(page).toHaveScreenshot("night-dex.png");
   });
