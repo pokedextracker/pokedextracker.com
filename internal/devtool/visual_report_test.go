@@ -106,6 +106,12 @@ func TestVisualReportPassesTestsRetriedForHiccups(t *testing.T) {
 						{"errors": []}
 					]}
 				]},
+				{"title": "night home", "tests": [
+					{"projectName": "webkit-desktop", "status": "flaky", "results": [
+						{"errors": [{"message": "Error: page.goto: Operation was cancelled; maybe frame was detached?\nCall log: ..."}]},
+						{"errors": []}
+					]}
+				]},
 				{"title": "own dex", "tests": [
 					{"projectName": "firefox-desktop", "status": "flaky", "results": [
 						{"errors": [{"message": "Error: expect(page).toHaveScreenshot(expected) failed\n\nTimeout: 10000ms\n  Timeout 10000ms exceeded."}]},
@@ -124,6 +130,7 @@ func TestVisualReportPassesTestsRetriedForHiccups(t *testing.T) {
 	assert.Equal(t, []string{
 		"[webkit-phone] tracker › search (Test timeout of 60000ms exceeded.)",
 		"[webkit-desktop] tracker › hide caught (Error: page.goto: Connection terminated unexpectedly)",
+		"[webkit-desktop] tracker › night home (Error: page.goto: Operation was cancelled; maybe frame was detached?)",
 	}, retried, "a busy machine or a dropped connection isn't a difference")
 }
 
