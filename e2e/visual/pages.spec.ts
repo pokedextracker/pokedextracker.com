@@ -211,28 +211,21 @@ test.describe("tracker", () => {
   });
 
   test("new version banner", async ({ page }) => {
-    // The app checks /version every 30 seconds and shows the banner when it
-    // changes. The clock is fast-forwarded past the next check.
+    // The app checks /version every 30 seconds, and whenever the page becomes
+    // visible again, and shows the banner when the answer changes. The test
+    // uses the second: waiting on the timer is at the mercy of a busy machine.
     let version = "first";
     await page.route("**/version", (route) => route.fulfill({ body: version }));
-    await page.clock.install();
     await signIn(page, ash);
     const firstCheck = page.waitForResponse("**/version");
     await page.goto(livingDex);
     await firstCheck;
     await expect(page.getByTestId("progress-count")).toContainText("7 caught");
     version = "second";
-    // Past the next check, again if it hadn't been set up yet when a busy
-    // machine got here.
-    await expect
-      .poll(
-        async () => {
-          await page.clock.fastForward(31_000);
-          return page.getByTestId("reload-banner").isVisible();
-        },
-        { timeout: 20_000 },
-      )
-      .toBe(true);
+    await page.evaluate(() =>
+      window.dispatchEvent(new Event("visibilitychange")),
+    );
+    await expect(page.getByTestId("reload-banner")).toBeVisible();
     await settle(page);
     await expect(page).toHaveScreenshot("dex-new-version.png");
   });
@@ -270,6 +263,15 @@ test.describe("account and navigation", () => {
 });
 
 test.describe("night mode", () => {
+  test("not found", async ({ page }) => {
+    await nightMode(page);
+    await page.goto("/this/page/does/not/exist");
+    await settle(page);
+    await expect(page).toHaveScreenshot("night-not-found.png", {
+      fullPage: true,
+    });
+  });
+
   test("home", async ({ page }) => {
     await nightMode(page);
     await page.goto("/");
