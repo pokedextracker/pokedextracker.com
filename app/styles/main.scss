@@ -26,16 +26,6 @@ body {
   @include flex-direction(column);
 
   height: 100vh;
-
-  .tracker-container {
-    @include flex(1 1 auto);
-    @include flexbox();
-    @include flex-direction(column);
-  }
-
-  .tracker-container {
-    min-height: 0;
-  }
 }
 
 .hidden {
@@ -51,94 +41,6 @@ body {
 
     &:hover {
       color: $night-mode-link-dark;
-    }
-  }
-
-  .dex .scroll-up {
-    background-color: $night-mode-06dp;
-  }
-
-  .box .box-container,
-  .set-captured,
-  .set-captured-mobile,
-  .pokemon .set-info {
-    border-color: $night-mode-01dp;
-
-    .fa-info {
-      border-color: $night-mode-link;
-      color: $night-mode-link;
-    }
-  }
-
-  .pokemon {
-    &.pending {
-      background: rgba($night-mode-primary, 0.5);
-    }
-
-    &.captured {
-      background-color: $night-mode-primary;
-      color: black;
-
-      .set-captured,
-      .set-captured-mobile,
-      .set-info {
-        border-color: $night-mode-primary-dark;
-      }
-
-      .pkicon.game-family-legends_arceus {
-        background-color: rgba(#ffffff, 0.35);
-      }
-    }
-
-    &:not(.empty):not(.disabled):hover {
-      .set-info {
-        &:hover {
-          .fa-info {
-            border-color: $night-mode-link-dark;
-            color: $night-mode-link-dark;
-          }
-        }
-      }
-
-      &:not(.viewing) {
-        .set-captured {
-          border-color: $night-mode-primary-dark;
-        }
-      }
-    }
-
-    .pkicon.game-family-legends_arceus {
-      background-color: rgba($gray-light, 0.2);
-    }
-  }
-
-  .info {
-    .info-collapse {
-      background-color: $night-mode-secondary-dark;
-    }
-
-    .info-main {
-      background-color: $night-mode-02dp;
-
-      .info-header,
-      .info-locations,
-      .info-evolutions,
-      .info-footer {
-        background-color: $night-mode-secondary;
-        border-color: $night-mode-secondary-dark;
-      }
-
-      .info-footer {
-        a {
-          background-color: darken($night-mode-secondary, 4%);
-          border-color: $night-mode-secondary-dark;
-
-          &:hover {
-            background-color: darken($night-mode-secondary, 6%);
-            color: white;
-          }
-        }
-      }
     }
   }
 }

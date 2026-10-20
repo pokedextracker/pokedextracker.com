@@ -90,16 +90,17 @@ export function SearchResults({
       }
     }
 
-    return <div className="search-results search-results-empty">{message}</div>;
+    return <div className="mt-60 flex flex-wrap justify-center">{message}</div>;
   }
 
   return (
-    <div className="search-results">
+    <div className="mt-60 flex flex-wrap max-750:border max-750:border-gray-light">
       {filteredCaptures.map((capture, i) => (
         <Pokemon
           capture={capture}
           delay={i > DEFER_CUTOFF ? 5 : 0}
           key={capture.pokemon.id}
+          searchResult
           setSelectedPokemon={setSelectedPokemon}
         />
       ))}

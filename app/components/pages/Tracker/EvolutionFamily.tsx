@@ -12,6 +12,11 @@ interface Props {
   setSelectedPokemon: Dispatch<SetStateAction<number>>;
 }
 
+// A column of a family's Pokémon, spread out unless it sits at the bottom.
+// Melmetal's icon sits a little to the right.
+const pokemonColumn = "flex flex-col [&_.pkicon-809]:ml-3";
+const pokemonLink = "cursor-pointer px-5 py-0";
+
 export function EvolutionFamily({ family, setSelectedPokemon }: Props) {
   const { username, slug } = useUserParams();
 
@@ -23,9 +28,10 @@ export function EvolutionFamily({ family, setSelectedPokemon }: Props) {
 
   if (family.pokemon.length > 1) {
     column1 = (
-      <div className="evolution-pokemon-column">
+      <div className={`${pokemonColumn} justify-around`}>
         {family.pokemon[1].map((pokemon) => (
           <a
+            className={pokemonLink}
             key={pokemon.id}
             onClick={() => setSelectedPokemon(pokemon.id)}
             title={pokemon.name}
@@ -41,10 +47,11 @@ export function EvolutionFamily({ family, setSelectedPokemon }: Props) {
     column2 = (
       // styling hack for mr.rime
       <div
-        className={`evolution-pokemon-column ${family.pokemon[2][0].national_id === 866 ? "push" : ""}`}
+        className={`${pokemonColumn} ${family.pokemon[2][0].national_id === 866 ? "justify-end" : "justify-around"}`}
       >
         {family.pokemon[2].map((pokemon) => (
           <a
+            className={pokemonLink}
             key={pokemon.id}
             onClick={() => setSelectedPokemon(pokemon.id)}
             title={pokemon.name}
@@ -57,9 +64,10 @@ export function EvolutionFamily({ family, setSelectedPokemon }: Props) {
   }
 
   return (
-    <div className="info-evolutions">
-      <div className="evolution-pokemon-column">
+    <div className="flex shrink-0 justify-center bg-brand-secondary p-20 text-center text-13 night:border-night-mode-secondary-dark night:bg-night-mode-secondary">
+      <div className={`${pokemonColumn} justify-around`}>
         <a
+          className={pokemonLink}
           onClick={() => setSelectedPokemon(family.pokemon[0][0].id)}
           title={family.pokemon[0][0].name}
         >

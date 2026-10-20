@@ -8,11 +8,11 @@
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
-/* Class names the old stylesheets use for something else, which Tailwind
-   would otherwise turn into utilities that win over them: .hidden is
-   visibility: hidden there (Tailwind's is display: none), and .visible slides
-   in the scroll button. Each comes off this list when its old rule goes. */
-@source not inline("hidden visible");
+/* A class name the old stylesheets use for something else, which Tailwind
+   would otherwise turn into a utility that wins over it: .hidden is
+   visibility: hidden there (Tailwind's is display: none). It comes off this
+   list when its old rule goes. */
+@source not inline("hidden");
 
 @theme {
   /* Only the site's colors, copied from variables.scss as Sass computes them,
@@ -50,6 +50,26 @@
   --color-black-lighten-25: rgb(25%, 25%, 25%);
   --color-black-lighten-35: rgb(35%, 35%, 35%);
   --color-shiny-star: #d81118;
+  --color-brand-secondary-dark-darken-3: rgb(
+    6.1902881958%,
+    17.5391498881%,
+    32.2410843532%
+  );
+  --color-brand-secondary-dark-darken-5: rgb(
+    5.5459928938%,
+    15.7136465324%,
+    28.8853796552%
+  );
+  --color-night-mode-secondary-darken-4: rgb(
+    4.9683873549%,
+    13.9735894358%,
+    25.4629851941%
+  );
+  --color-night-mode-secondary-darken-6: rgb(
+    4.3153261305%,
+    12.1368547419%,
+    22.1160464186%
+  );
   --color-gray-light-darken-6: rgb(
     88.5098039216%,
     88.5098039216%,
@@ -189,12 +209,14 @@
 @custom-variant night (&:where(.night-mode, .night-mode *));
 
 /* The old stylesheets' breakpoints, exactly. Tailwind's max-* variants use
-   width < N rather than max-width: N, a pixel off. */
-@custom-variant max-400 (@media (max-width: 400px));
-@custom-variant max-500 (@media (max-width: 500px));
-@custom-variant max-550 (@media (max-width: 550px));
-@custom-variant max-600 (@media (max-width: 600px));
-@custom-variant max-700 (@media (max-width: 700px));
-@custom-variant max-750 (@media (max-width: 750px));
+   width < N rather than max-width: N, a pixel off. Widest first: utilities
+   come out in this order, so a narrower one wins where both apply, as the
+   later rule did in the old stylesheets. */
 @custom-variant max-1100 (@media (max-width: 1100px));
+@custom-variant max-750 (@media (max-width: 750px));
+@custom-variant max-700 (@media (max-width: 700px));
+@custom-variant max-600 (@media (max-width: 600px));
+@custom-variant max-550 (@media (max-width: 550px));
+@custom-variant max-500 (@media (max-width: 500px));
+@custom-variant max-400 (@media (max-width: 400px));
 @custom-variant min-751 (@media (min-width: 751px));

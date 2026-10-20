@@ -70,7 +70,7 @@ export function Dex({
   }, [groupedCaptures, dex.total, setSelectedPokemon]);
 
   return (
-    <div className="dex">
+    <div className="flex-[1_0_auto] px-0 py-100 max-750:p-15 max-400:pr-35">
       <div className={wrapper}>
         <Scroll onClick={onScrollButtonClick} showScroll={showScrollButton} />
         <Notification />

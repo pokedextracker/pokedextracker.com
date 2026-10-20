@@ -63,8 +63,12 @@ export function Evolutions({ evolutions, pokemonId }: Props) {
     }
 
     return (
-      <div className="evolution-trigger" key={key}>
+      <div
+        className="mx-0 my-8 flex flex-col justify-center first:mt-0 last:mb-0"
+        key={key}
+      >
         <FontAwesomeIcon
+          className="mb-3 w-[unset]"
           icon={
             evolution.trigger === "breed"
               ? faLongArrowAltLeft
@@ -85,7 +89,7 @@ export function Evolutions({ evolutions, pokemonId }: Props) {
   return (
     // styling hack for mr.rime
     <div
-      className={`evolution-trigger-column ${pokemonId === 866 ? "push" : ""}`}
+      className={`flex max-w-90 grow flex-col ${pokemonId === 866 ? "justify-end" : "justify-around"}`}
     >
       {elements}
     </div>
