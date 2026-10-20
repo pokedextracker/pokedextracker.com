@@ -136,8 +136,8 @@ test.describe("profile", () => {
     await page.goto(`/u/${ash}`);
     await page.getByTestId("dex-edit-toggle").first().click();
     const dialog = page.getByRole("dialog");
-    // The trash icon, the only link in the corner.
-    await dialog.locator(".dex-delete-container a").click();
+    // The trash icon, the first link in the modal.
+    await dialog.locator("a").first().click();
     await expect(dialog.getByText("Are you sure?")).toBeVisible();
     await settle(page);
     await scrollToTop(page);
@@ -373,6 +373,22 @@ test.describe("buttons", () => {
 });
 
 test.describe("links", () => {
+  test("friend code pencil hovered", async ({ page }) => {
+    await signIn(page, ash);
+    await page.goto(`/u/${ash}`);
+    await settle(page);
+    await hover(page.locator('header a[href="/account"]').first());
+    await expect(page).toHaveScreenshot("link-friend-code-hovered.png");
+  });
+
+  test("dex edit pencil hovered", async ({ page }) => {
+    await signIn(page, ash);
+    await page.goto(`/u/${ash}`);
+    await settle(page);
+    await hover(page.getByTestId("dex-edit-toggle").first());
+    await expect(page).toHaveScreenshot("link-dex-edit-hovered.png");
+  });
+
   test("hovered", async ({ page }) => {
     await page.goto("/login");
     await settle(page);
