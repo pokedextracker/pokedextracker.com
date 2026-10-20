@@ -1,5 +1,5 @@
 import { slugOf } from "../slug";
-import { expect, scrollToTop, settle, signIn, test } from "./fixtures";
+import { expect, hover, scrollToTop, settle, signIn, test } from "./fixtures";
 import { USERS } from "./setup";
 
 const ash = USERS.ash.username;
@@ -262,7 +262,7 @@ test.describe("account and navigation", () => {
     await page.goto(`/u/${ash}`);
     await settle(page);
     // After settle, which moves the mouse away.
-    await page.getByTestId("nav-dropdown").hover();
+    await hover(page.getByTestId("nav-dropdown"));
     await expect(page.getByTestId("nav-dropdown-menu")).toBeVisible();
     await expect(page).toHaveScreenshot("nav-dropdown.png");
   });
@@ -271,10 +271,10 @@ test.describe("account and navigation", () => {
     await signIn(page, ash);
     await page.goto(`/u/${ash}`);
     await settle(page);
-    await page.getByTestId("nav-dropdown").hover();
+    await hover(page.getByTestId("nav-dropdown"));
     const menu = page.getByTestId("nav-dropdown-menu");
     await expect(menu).toBeVisible();
-    await menu.getByRole("link", { name: "Profile" }).hover();
+    await hover(menu.getByRole("link", { name: "Profile" }));
     await expect(page).toHaveScreenshot("nav-dropdown-item.png");
   });
 });
@@ -285,17 +285,16 @@ test.describe("tooltips", () => {
   test("night mode toggle", async ({ page }) => {
     await page.goto("/login");
     await settle(page);
-    await page.getByTestId("night-mode-toggle").hover();
+    await hover(page.getByTestId("night-mode-toggle"));
     await expect(page).toHaveScreenshot("tooltip-night-mode.png");
   });
 
   test("register heading", async ({ page }) => {
     await page.goto("/register");
     await settle(page);
-    await page
-      .getByRole("heading", { name: "First Dex Info" })
-      .locator("svg")
-      .hover();
+    await hover(
+      page.getByRole("heading", { name: "First Dex Info" }).locator("svg"),
+    );
     await expect(page).toHaveScreenshot("tooltip-register-heading.png");
   });
 
@@ -304,7 +303,7 @@ test.describe("tooltips", () => {
     // The first game has no dex types with a description.
     await page.locator("select").selectOption("scarlet_expansion_pass");
     await settle(page);
-    await page.getByTestId("dex-type-info").first().locator("svg").hover();
+    await hover(page.getByTestId("dex-type-info").first().locator("svg"));
     await expect(page).toHaveScreenshot("tooltip-register-dex-type.png");
   });
 
@@ -315,7 +314,8 @@ test.describe("tooltips", () => {
     const dialog = page.getByRole("dialog");
     await dialog.locator("#dex_title").fill("Renamed Dex");
     await settle(page);
-    await dialog.getByTestId("form-warning").first().locator("svg").hover();
+    await scrollToTop(page);
+    await hover(dialog.getByTestId("form-warning").first().locator("svg"));
     await expect(page).toHaveScreenshot("tooltip-dex-warning.png");
   });
 
@@ -327,7 +327,7 @@ test.describe("tooltips", () => {
     const notes = page.getByTestId("evolution-notes").first();
     await expect(notes).toBeVisible();
     await settle(page);
-    await notes.locator("svg").hover();
+    await hover(notes.locator("svg"));
     await expect(page).toHaveScreenshot("tooltip-evolution-notes.png");
   });
 });
@@ -337,7 +337,7 @@ test.describe("buttons", () => {
   test("blue hovered", async ({ page }) => {
     await page.goto("/login");
     await settle(page);
-    await page.getByRole("button", { name: "Let's go!" }).hover();
+    await hover(page.getByRole("button", { name: "Let's go!" }));
     await expect(page).toHaveScreenshot("button-blue-hovered.png");
   });
 
@@ -345,7 +345,7 @@ test.describe("buttons", () => {
     await page.goto("/");
     await settle(page);
     // The nav's Login link comes first.
-    await page.getByRole("link", { name: "Login" }).last().hover();
+    await hover(page.getByRole("link", { name: "Login" }).last());
     await expect(page).toHaveScreenshot("button-white-hovered.png");
   });
 
@@ -353,7 +353,7 @@ test.describe("buttons", () => {
     await signIn(page, brock);
     await page.goto("/account");
     await settle(page);
-    await page.getByRole("button", { name: "Change" }).hover();
+    await hover(page.getByRole("button", { name: "Change" }));
     await expect(page).toHaveScreenshot("button-yellow-hovered.png");
   });
 });
@@ -362,7 +362,7 @@ test.describe("links", () => {
   test("hovered", async ({ page }) => {
     await page.goto("/login");
     await settle(page);
-    await page.getByRole("link", { name: "Register here" }).hover();
+    await hover(page.getByRole("link", { name: "Register here" }));
     await expect(page).toHaveScreenshot("link-hovered.png");
   });
 });

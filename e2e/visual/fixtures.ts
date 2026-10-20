@@ -1,7 +1,13 @@
 import { createHash, randomUUID } from "node:crypto";
 import { access, link, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { test as base, expect, type Page, type Route } from "@playwright/test";
+import {
+  test as base,
+  expect,
+  type Locator,
+  type Page,
+  type Route,
+} from "@playwright/test";
 
 import { cancelledByNavigation } from "../fixtures";
 import { PASSWORD } from "./setup";
@@ -163,4 +169,24 @@ export async function settle(page: Page): Promise<void> {
 // depending on timing.
 export async function scrollToTop(page: Page): Promise<void> {
   await page.evaluate(() => window.scrollTo(0, 0));
+}
+
+// hover moves the mouse onto what a spec screenshots hovered, once the page
+// has stopped moving. A page that slides in, like a form, can be partway when
+// hovering scrolls to what it hovers, and leave the page scrolled further than
+// it would be otherwise. Animations that never end, like a spinner, don't
+// count.
+export async function hover(locator: Locator): Promise<void> {
+  await locator
+    .page()
+    .waitForFunction(() =>
+      document
+        .getAnimations()
+        .every(
+          (animation) =>
+            animation.playState !== "running" ||
+            animation.effect?.getTiming().iterations === Infinity,
+        ),
+    );
+  await locator.hover();
 }
