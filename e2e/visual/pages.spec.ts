@@ -1,3 +1,4 @@
+import { SERVER_ERROR } from "../fixtures";
 import { slugOf } from "../slug";
 import { expect, hover, scrollToTop, settle, signIn, test } from "./fixtures";
 import { USERS } from "./setup";
@@ -95,6 +96,19 @@ test.describe("profile", () => {
     await expect(page).toHaveScreenshot("profile-other.png", {
       fullPage: true,
     });
+  });
+
+  test("profile that fails to load", async ({ page }) => {
+    await page.route(`**/api/users/${misty}`, (route) =>
+      route.fulfill(SERVER_ERROR),
+    );
+    await page.goto(`/u/${misty}`);
+    // After React Query's retries.
+    await expect(page.getByText("We've been notified")).toBeVisible({
+      timeout: 20_000,
+    });
+    await settle(page);
+    await expect(page).toHaveScreenshot("profile-load-error.png");
   });
 
   test("create dex modal", async ({ page }) => {
