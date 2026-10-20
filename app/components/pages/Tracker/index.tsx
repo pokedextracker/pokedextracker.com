@@ -5,6 +5,7 @@ import { useCaptures } from "../../../hooks/queries/captures";
 import { useUser } from "../../../hooks/queries/users";
 import { useUserParams } from "../../../hooks/use-user-params";
 import { Footer } from "../../library/Footer";
+import { isNotFound, LoadError } from "../../library/LoadError";
 import { Nav } from "../../library/Nav";
 import { Reload } from "../../library/Reload";
 import { NotFound } from "../NotFound";
@@ -40,15 +41,11 @@ export function Tracker() {
     return <div className="loading">Loading...</div>;
   }
 
-  const failed = [userQuery.error, capturesQuery.error].find(
-    (error) => error && error.response?.status !== 404,
+  const failed = [userQuery.error, capturesQuery.error].some(
+    (error) => error && !isNotFound(error),
   );
   if (failed) {
-    return (
-      <div className="loading">
-        Couldn&apos;t load this dex. Try refreshing the page.
-      </div>
-    );
+    return <LoadError thing="dex" />;
   }
 
   if (!dex || !captures?.length) {

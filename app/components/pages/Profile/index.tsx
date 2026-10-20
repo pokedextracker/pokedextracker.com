@@ -8,6 +8,7 @@ import { useUserParams } from "../../../hooks/use-user-params";
 import { Footer } from "../../library/Footer";
 import { FriendCode } from "../../library/FriendCode";
 import { Header } from "../../library/Header";
+import { isNotFound, LoadError } from "../../library/LoadError";
 import { Nav } from "../../library/Nav";
 import { Notification } from "../../library/Notification";
 import { Reload } from "../../library/Reload";
@@ -18,7 +19,11 @@ import { DexPreview } from "./DexPreview";
 export function Profile() {
   const { username } = useUserParams();
 
-  const { data: user, isPending: userIsPending } = useUser(username);
+  const {
+    data: user,
+    error: userError,
+    isPending: userIsPending,
+  } = useUser(username);
 
   const { session } = useSession();
 
@@ -33,6 +38,10 @@ export function Profile() {
 
   if (userIsPending) {
     return <div className="loading">Loading...</div>;
+  }
+
+  if (userError && !isNotFound(userError)) {
+    return <LoadError thing="profile" />;
   }
 
   if (!user) {

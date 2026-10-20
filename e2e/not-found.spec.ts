@@ -31,3 +31,18 @@ test("a dex of a user who doesn't exist shows the not found page", async ({
 
   await expect(page.getByRole("heading", { name: /404 Error/ })).toBeVisible();
 });
+
+// Only a missing user or dex is "not found". Any other failure says it
+// couldn't load, rather than claiming it doesn't exist.
+test("a profile that fails to load says so", async ({ page }) => {
+  await page.route("**/api/users/e2e_down", (route) =>
+    route.fulfill({ status: 500 }),
+  );
+  await page.goto("/u/e2e_down");
+
+  // After React Query's retries.
+  await expect(page.getByText("Couldn't load this profile")).toBeVisible({
+    timeout: 20_000,
+  });
+  await expect(page.getByRole("heading", { name: /404 Error/ })).toHaveCount(0);
+});
