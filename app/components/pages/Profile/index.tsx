@@ -1,10 +1,10 @@
 import { faLongArrowAltRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
 
 import { useSession } from "../../../hooks/contexts/use-session";
 import { useUser } from "../../../hooks/queries/users";
+import { useDexParams } from "../../../hooks/use-dex-params";
 import { Footer } from "../../library/Footer";
 import { FriendCode } from "../../library/FriendCode";
 import { Header } from "../../library/Header";
@@ -16,7 +16,7 @@ import { DexCreate } from "./DexCreate";
 import { DexPreview } from "./DexPreview";
 
 export function Profile() {
-  const { username } = useParams<{ username: string }>();
+  const { username } = useDexParams();
 
   const { data: user, isPending: userIsLoading } = useUser(username);
 

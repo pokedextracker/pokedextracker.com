@@ -1,10 +1,10 @@
 import keyBy from "lodash/keyBy";
 import throttle from "lodash/throttle";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "react-router";
 
 import { useCaptures } from "../../../hooks/queries/captures";
 import { useUser } from "../../../hooks/queries/users";
+import { useDexParams } from "../../../hooks/use-dex-params";
 import { Footer } from "../../library/Footer";
 import { Nav } from "../../library/Nav";
 import { Reload } from "../../library/Reload";
@@ -26,7 +26,7 @@ export function Tracker() {
 }
 
 export function TrackerInner() {
-  const { username, slug } = useParams<{ username: string; slug: string }>();
+  const { username, slug } = useDexParams();
 
   const trackerRef = useRef<HTMLDivElement>(null);
 

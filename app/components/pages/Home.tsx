@@ -2,7 +2,7 @@ import { faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { faLongArrowAltRight, faRss } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { useSession } from "../../hooks/contexts/use-session";
 

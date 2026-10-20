@@ -1,6 +1,6 @@
 import { useRef } from "react";
-import { useParams } from "react-router";
 
+import { useDexParams } from "../../hooks/use-dex-params";
 import { trackEvent } from "../../utils/analytics";
 
 interface Props {
@@ -8,7 +8,7 @@ interface Props {
 }
 
 export function Share({ profile }: Props) {
-  const { username, slug } = useParams<{ username: string; slug: string }>();
+  const { username, slug } = useDexParams();
 
   const inputRef = useRef<HTMLInputElement>(null);
 

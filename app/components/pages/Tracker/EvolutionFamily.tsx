@@ -1,8 +1,8 @@
 import keyBy from "lodash/keyBy";
 import { useMemo, type Dispatch, type SetStateAction } from "react";
-import { useParams } from "react-router";
 
 import { useUser } from "../../../hooks/queries/users";
+import { useDexParams } from "../../../hooks/use-dex-params";
 import type { EvolutionFamily as EvolutionFamilyType } from "../../../types";
 import { iconClass } from "../../../utils/pokemon";
 import { Evolutions } from "./Evolutions";
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function EvolutionFamily({ family, setSelectedPokemon }: Props) {
-  const { username, slug } = useParams<{ username: string; slug: string }>();
+  const { username, slug } = useDexParams();
 
   const user = useUser(username).data!;
   const dex = useMemo(() => keyBy(user.dexes, "slug")[slug], [user, slug]);

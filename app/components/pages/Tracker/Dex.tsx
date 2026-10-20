@@ -5,10 +5,10 @@ import {
   type MouseEventHandler,
   type SetStateAction,
 } from "react";
-import { useParams } from "react-router";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { useUser } from "../../../hooks/queries/users";
+import { useDexParams } from "../../../hooks/use-dex-params";
 import { trackEvent } from "../../../utils/analytics";
 import { groupBoxes } from "../../../utils/pokemon";
 import { DonatedFlair } from "../../library/DonatedFlair";
@@ -42,7 +42,7 @@ export function Dex({
   setSelectedPokemon,
   showScrollButton,
 }: Props) {
-  const { username, slug } = useParams<{ username: string; slug: string }>();
+  const { username, slug } = useDexParams();
 
   const user = useUser(username).data!;
   const dex = useMemo(() => keyBy(user.dexes, "slug")[slug], [user, slug]);

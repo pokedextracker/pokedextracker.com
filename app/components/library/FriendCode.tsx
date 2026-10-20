@@ -1,15 +1,15 @@
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { ReactNode } from "react";
-import { useParams } from "react-router";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { useSession } from "../../hooks/contexts/use-session";
 import { useUser } from "../../hooks/queries/users";
+import { useDexParams } from "../../hooks/use-dex-params";
 import { trackEvent } from "../../utils/analytics";
 
 export function FriendCode() {
-  const { username } = useParams<{ username: string }>();
+  const { username } = useDexParams();
 
   const { session } = useSession();
   const user = useUser(username).data!;

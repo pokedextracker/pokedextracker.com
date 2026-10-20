@@ -2,7 +2,6 @@ import { faCircleNotch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import keyBy from "lodash/keyBy";
 import { useMemo } from "react";
-import { useParams } from "react-router";
 
 import { useSession } from "../../../hooks/contexts/use-session";
 import {
@@ -10,6 +9,7 @@ import {
   useDeleteCapture,
 } from "../../../hooks/queries/captures";
 import { useUser } from "../../../hooks/queries/users";
+import { useDexParams } from "../../../hooks/use-dex-params";
 import { trackEvent } from "../../../utils/analytics";
 import { padding } from "../../../utils/formatting";
 import { useTrackerContext, type UICapture } from "./use-tracker";
@@ -19,7 +19,7 @@ interface Props {
 }
 
 export function MarkAllButton({ captures }: Props) {
-  const { username, slug } = useParams<{ username: string; slug: string }>();
+  const { username, slug } = useDexParams();
 
   const { session } = useSession();
   const user = useUser(username).data!;

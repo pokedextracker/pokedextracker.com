@@ -19,7 +19,7 @@ import {
   type FormEvent,
 } from "react";
 import Modal from "react-modal";
-import { useHistory } from "react-router";
+import { useNavigate } from "react-router";
 import slug from "slug";
 
 import { useLocalStorageContext } from "../../../hooks/contexts/use-local-storage-context";
@@ -37,7 +37,7 @@ interface Props {
 }
 
 export function DexCreate({ isOpen, onRequestClose }: Props) {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const formRef = useRef<HTMLDivElement>(null);
 
@@ -231,7 +231,7 @@ export function DexCreate({ isOpen, onRequestClose }: Props) {
         },
       });
       trackEvent("Dex", "create");
-      history.push(`/u/${session!.username}/${dex.slug}`);
+      navigate(`/u/${session!.username}/${dex.slug}`);
     } catch {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
       // error besides prevent it from bubbling up.

@@ -17,8 +17,7 @@ import {
   type ChangeEvent,
   type FormEvent,
 } from "react";
-import { useHistory } from "react-router";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 import slug from "slug";
 
 import { useLocalStorageContext } from "../../hooks/contexts/use-local-storage-context";
@@ -38,7 +37,7 @@ import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
 
 export function Register() {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const { setHideNotification } = useLocalStorageContext();
 
@@ -157,7 +156,7 @@ export function Register() {
 
   useEffect(() => {
     if (session) {
-      history.push(`/u/${session.username}`);
+      navigate(`/u/${session.username}`);
     }
   }, []);
 
@@ -210,7 +209,7 @@ export function Register() {
       setToken(token);
       trackEvent("Session", "register");
       setHideNotification(true);
-      history.push(`/u/${username}/${payload.slug}`);
+      navigate(`/u/${username}/${payload.slug}`);
     } catch {
       // Since React Query catches the error and attaches it to the mutation, we don't need to do anything with this
       // error besides prevent it from bubbling up.

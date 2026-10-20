@@ -6,7 +6,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
-import { useHistory } from "react-router";
+import { useNavigate } from "react-router";
 
 import { useSession } from "../../hooks/contexts/use-session";
 import { useUpdateUser } from "../../hooks/queries/users";
@@ -22,7 +22,7 @@ import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
 
 export function Account() {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const { session, sessionUser } = useSession();
 
@@ -32,7 +32,7 @@ export function Account() {
 
   useEffect(() => {
     if (!session) {
-      history.push("/login");
+      navigate("/login");
     }
   }, [session]);
 
