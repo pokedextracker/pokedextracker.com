@@ -9,6 +9,7 @@ import {
 } from "react";
 
 import { trackEvent } from "../../../utils/analytics";
+import { Checkbox, formControl } from "../../library/Form";
 
 interface Props {
   hideCaught: boolean;
@@ -53,15 +54,18 @@ export function SearchBar({
   };
 
   return (
-    <div className="dex-search-bar">
+    <div className="border-b border-gray-light bg-white p-10 night:border-night-mode-dark night:bg-night-mode max-400:pr-35">
       <div className="wrapper">
-        <div className="form-group">
-          <FontAwesomeIcon icon={faSearch} />
+        <div className="relative mb-0">
+          <FontAwesomeIcon
+            className="absolute bottom-15 left-14 text-12 text-brand-secondary night:text-white"
+            icon={faSearch}
+          />
           <input
             autoCapitalize="off"
             autoComplete="off"
             autoCorrect="off"
-            className="form-control"
+            className={formControl("h-43 py-0 pr-32 pl-32 text-15")}
             id="search"
             name="search"
             onChange={handleInputChange}
@@ -72,28 +76,27 @@ export function SearchBar({
             value={query}
           />
           {query.length > 0 ? (
-            <a className="clear-btn" onClick={handleClearClick}>
-              <FontAwesomeIcon className="input-icon" icon={faTimes} />
+            <a
+              className="group absolute top-0 right-0 flex h-full w-30 cursor-pointer items-center justify-center"
+              onClick={handleClearClick}
+            >
+              <FontAwesomeIcon
+                className="static text-10 text-gray-medium group-hover:text-gray-dark"
+                icon={faTimes}
+              />
             </a>
           ) : null}
         </div>
-        <div className="dex-search-bar-filters">
-          <div className="form-group">
-            <div className="checkbox">
-              <label>
-                <input
-                  checked={hideCaught}
-                  id="hide-caught"
-                  name="hide-caught"
-                  onChange={handleHideCaughtChange}
-                  type="checkbox"
-                />
-                <span className="checkbox-custom">
-                  <span />
-                </span>
-                Hide Caught Pokémon
-              </label>
-            </div>
+        <div className="pt-10">
+          <div className="relative mb-0">
+            <Checkbox
+              checked={hideCaught}
+              id="hide-caught"
+              name="hide-caught"
+              onChange={handleHideCaughtChange}
+            >
+              Hide Caught Pokémon
+            </Checkbox>
           </div>
         </div>
       </div>

@@ -18,6 +18,17 @@ import { trackEvent } from "../../utils/analytics";
 import { Alert } from "../library/Alert";
 import { buttonClassName, buttonIcon, buttonLayout } from "../library/Button";
 import { Footer } from "../library/Footer";
+import {
+  form,
+  formColumn,
+  formControl,
+  formGroup,
+  formLabel,
+  formPage,
+  formText,
+  formTitle,
+  inputIcon,
+} from "../library/Form";
 import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
 
@@ -74,17 +85,19 @@ export function Login() {
     <div className="login-container">
       <Nav />
       <Reload />
-      <div className="form">
-        <h1>Login</h1>
-        <form className="form-column" onSubmit={handleSubmit}>
+      <div className={formPage}>
+        <h1 className={formTitle}>Login</h1>
+        <form className={`${form} ${formColumn}`} onSubmit={handleSubmit}>
           <Alert message={loginMutation.error?.message} type="error" />
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
+          <div className={formGroup}>
+            <label className={formLabel} htmlFor="username">
+              Username
+            </label>
             <input
               autoCapitalize="off"
               autoComplete="off"
               autoCorrect="off"
-              className="form-control"
+              className={formControl()}
               id="username"
               maxLength={20}
               name="username"
@@ -95,12 +108,14 @@ export function Login() {
               type="text"
               value={username}
             />
-            <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
+            <FontAwesomeIcon className={inputIcon} icon={faAsterisk} />
           </div>
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
+          <div className={formGroup}>
+            <label className={formLabel} htmlFor="password">
+              Password
+            </label>
             <input
-              className="form-control"
+              className={`${formControl()} tracking-2`}
               id="password"
               maxLength={72}
               name="password"
@@ -110,7 +125,7 @@ export function Login() {
               type="password"
               value={password}
             />
-            <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
+            <FontAwesomeIcon className={inputIcon} icon={faAsterisk} />
           </div>
           <button
             className={buttonClassName("blue", `${buttonLayout} mt-40`)}
@@ -123,7 +138,7 @@ export function Login() {
               icon={faLongArrowAltRight}
             />
           </button>
-          <p>
+          <p className={formText}>
             Don&apos;t have an account yet?{" "}
             <Link className="link" to="/register">
               Register here

@@ -31,6 +31,21 @@ import type { Customization, Dex, DexType, Game } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
 import { Alert } from "../../library/Alert";
 import { buttonClassName, buttonIcon } from "../../library/Button";
+import {
+  Checkbox,
+  form,
+  formColumn,
+  formControl,
+  formGroup,
+  formLabel,
+  formNote,
+  formOption,
+  formPage,
+  formTitle,
+  inputIcon,
+  Radio,
+  selectIcon,
+} from "../../library/Form";
 import { Tooltip } from "../../library/Tooltip";
 import { FormWarning } from "./FormWarning";
 
@@ -349,9 +364,9 @@ export function DexEdit({ dex, onRequestClose }: Props) {
           </a>
         )}
       </div>
-      <div className="form" ref={formRef}>
-        <h1>Edit a Dex</h1>
-        <form className="form-column" onSubmit={handleUpdateSubmit}>
+      <div className={formPage} ref={formRef}>
+        <h1 className={formTitle}>Edit a Dex</h1>
+        <form className={`${form} ${formColumn}`} onSubmit={handleUpdateSubmit}>
           <Alert
             message={
               updateDexMutation.error?.message ||
@@ -359,15 +374,17 @@ export function DexEdit({ dex, onRequestClose }: Props) {
             }
             type="error"
           />
-          <div className="form-group">
-            <div className="form-note">
+          <div className={formGroup}>
+            <div className={formNote}>
               /u/{session!.username}/
               {slug(title || "Living Dex", { lower: true })}
             </div>
-            <label htmlFor="dex_title">Title</label>
+            <label className={formLabel} htmlFor="dex_title">
+              Title
+            </label>
             <FormWarning message={showUrlWarning && URL_WARNING} />
             <input
-              className="form-control"
+              className={formControl()}
               id="dex_title"
               maxLength={300}
               name="dex_title"
@@ -377,13 +394,15 @@ export function DexEdit({ dex, onRequestClose }: Props) {
               type="text"
               value={title}
             />
-            <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
+            <FontAwesomeIcon className={inputIcon} icon={faAsterisk} />
           </div>
-          <div className="form-group">
+          <div className={formGroup}>
             <FormWarning message={showGameWarning && GAME_WARNING} />
-            <label htmlFor="game">Game</label>
+            <label className={formLabel} htmlFor="game">
+              Game
+            </label>
             <select
-              className="form-control"
+              className={formControl()}
               onChange={handleGameChange}
               value={game}
             >
@@ -393,89 +412,68 @@ export function DexEdit({ dex, onRequestClose }: Props) {
                 </option>
               ))}
             </select>
-            <FontAwesomeIcon className="input-icon" icon={faChevronDown} />
+            <FontAwesomeIcon className={selectIcon} icon={faChevronDown} />
           </div>
-          <div className="form-group">
+          <div className={formGroup}>
             <FormWarning message={dexTypeWarning} />
-            <label htmlFor="dex-type">Dex Type</label>
+            <label className={formLabel} htmlFor="dex-type">
+              Dex Type
+            </label>
             {dexTypesByGameFamilyId[gamesById[game].game_family.id]
               .filter((dt) => !dt.base_dex_type_id)
               .map((dt) => (
-                <div className="form-option" key={dt.id}>
-                  <div className="radio">
-                    <label>
-                      <input
-                        checked={dexType === dt.id}
-                        name="dex-type"
-                        onChange={() => {
-                          setDexType(dt.id);
-                          setSelectedCustomizations({});
-                          cancelConfirmingUpdate();
-                        }}
-                        type="radio"
-                      />
-                      <span className="radio-custom">
-                        <span />
-                      </span>
-                      {dt.name}
-                      {dt.description ? (
-                        <Tooltip
-                          className="ml-5"
-                          icon={faQuestionCircle}
-                          iconClassName="text-12 text-brand-secondary"
-                        >
-                          {dt.description}
-                        </Tooltip>
-                      ) : null}
-                    </label>
-                  </div>
+                <div className={formOption} key={dt.id}>
+                  <Radio
+                    checked={dexType === dt.id}
+                    name="dex-type"
+                    onChange={() => {
+                      setDexType(dt.id);
+                      setSelectedCustomizations({});
+                      cancelConfirmingUpdate();
+                    }}
+                  >
+                    {dt.name}
+                    {dt.description ? (
+                      <Tooltip
+                        className="ml-5"
+                        icon={faQuestionCircle}
+                        iconClassName="text-12 text-brand-secondary"
+                      >
+                        {dt.description}
+                      </Tooltip>
+                    ) : null}
+                  </Radio>
                 </div>
               ))}
           </div>
-          <div className="form-group">
-            <label>Customizations</label>
-            <div className="form-option">
-              <div className="checkbox">
-                <label>
-                  <input
-                    checked={shiny}
-                    id="customization-shiny"
-                    name="customization-shiny"
-                    onChange={handleShinyChange}
-                    type="checkbox"
-                  />
-                  <span className="checkbox-custom">
-                    <span />
-                  </span>
-                  Shiny
-                </label>
-              </div>
+          <div className={formGroup}>
+            <label className={formLabel}>Customizations</label>
+            <div className={formOption}>
+              <Checkbox
+                checked={shiny}
+                id="customization-shiny"
+                name="customization-shiny"
+                onChange={handleShinyChange}
+              >
+                Shiny
+              </Checkbox>
             </div>
             {customizationsByBaseDexTypeId[dexType]?.map((customization) => (
-              <div className="form-option" key={customization.value}>
-                <div className="checkbox">
-                  <label>
-                    <input
-                      checked={
-                        selectedCustomizations[customization.value] || false
-                      }
-                      id={customization.value.replace(/ /g, "-")}
-                      name={customization.value.replace(/ /g, "-")}
-                      onChange={(e) => {
-                        setSelectedCustomizations((prev) => ({
-                          ...prev,
-                          [customization.value]: e.target.checked,
-                        }));
-                        cancelConfirmingUpdate();
-                      }}
-                      type="checkbox"
-                    />
-                    <span className="checkbox-custom">
-                      <span />
-                    </span>
-                    {customization.label}
-                  </label>
-                </div>
+              <div className={formOption} key={customization.value}>
+                <Checkbox
+                  checked={selectedCustomizations[customization.value] || false}
+                  id={customization.value.replace(/ /g, "-")}
+                  name={customization.value.replace(/ /g, "-")}
+                  onChange={(e) => {
+                    setSelectedCustomizations((prev) => ({
+                      ...prev,
+                      [customization.value]: e.target.checked,
+                    }));
+                    cancelConfirmingUpdate();
+                  }}
+                >
+                  {customization.label}
+                </Checkbox>
               </div>
             ))}
           </div>

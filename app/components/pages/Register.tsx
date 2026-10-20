@@ -35,9 +35,30 @@ import {
 import { Alert } from "../library/Alert";
 import { buttonClassName, buttonIcon, buttonLayout } from "../library/Button";
 import { Footer } from "../library/Footer";
+import {
+  Checkbox,
+  form,
+  formColumn,
+  formControl,
+  formGroup,
+  formHeading,
+  formLabel,
+  formOption,
+  formPage,
+  formText,
+  formTitle,
+  inputIcon,
+  Radio,
+  selectIcon,
+} from "../library/Form";
 import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
 import { Tooltip } from "../library/Tooltip";
+
+// The account and dex columns, side by side unless the screen is narrow. The
+// last field in each has no space under it while they're side by side.
+const rowColumn = "mx-15 my-0 w-280";
+const rowGroup = `${formGroup} last:mb-0 max-600:last:mb-25`;
 
 export function Register() {
   const navigate = useNavigate();
@@ -281,26 +302,28 @@ export function Register() {
     <div className="register-container">
       <Nav />
       <Reload />
-      <div className="form register">
-        <h1>Register</h1>
-        <form onSubmit={handleSubmit}>
-          <div className="form-column">
+      <div className={`${formPage} register`}>
+        <h1 className={formTitle}>Register</h1>
+        <form className={form} onSubmit={handleSubmit}>
+          <div className={formColumn}>
             <Alert
               message={error || createUserMutation.error?.message}
               type="error"
             />
           </div>
 
-          <div className="form-row">
-            <div className="form-column">
-              <h2>Account Info</h2>
-              <div className="form-group">
-                <label htmlFor="username">Username</label>
+          <div className="flex max-600:block">
+            <div className={rowColumn}>
+              <h2 className={formHeading}>Account Info</h2>
+              <div className={rowGroup}>
+                <label className={formLabel} htmlFor="username">
+                  Username
+                </label>
                 <input
                   autoCapitalize="off"
                   autoComplete="off"
                   autoCorrect="off"
-                  className="form-control"
+                  className={formControl()}
                   id="username"
                   name="username"
                   onChange={handleUsernameChange}
@@ -310,12 +333,14 @@ export function Register() {
                   type="text"
                   value={username}
                 />
-                <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
+                <FontAwesomeIcon className={inputIcon} icon={faAsterisk} />
               </div>
-              <div className="form-group">
-                <label htmlFor="password">Password</label>
+              <div className={rowGroup}>
+                <label className={formLabel} htmlFor="password">
+                  Password
+                </label>
                 <input
-                  className="form-control"
+                  className={`${formControl()} tracking-2`}
                   id="password"
                   name="password"
                   onChange={handlePasswordChange}
@@ -324,12 +349,14 @@ export function Register() {
                   type="password"
                   value={password}
                 />
-                <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
+                <FontAwesomeIcon className={inputIcon} icon={faAsterisk} />
               </div>
-              <div className="form-group">
-                <label htmlFor="password_confirm">Confirm Password</label>
+              <div className={rowGroup}>
+                <label className={formLabel} htmlFor="password_confirm">
+                  Confirm Password
+                </label>
                 <input
-                  className="form-control"
+                  className={`${formControl()} tracking-2`}
                   id="password_confirm"
                   name="password_confirm"
                   onChange={handlePasswordConfirmChange}
@@ -338,12 +365,14 @@ export function Register() {
                   type="password"
                   value={passwordConfirm}
                 />
-                <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
+                <FontAwesomeIcon className={inputIcon} icon={faAsterisk} />
               </div>
-              <div className="form-group">
-                <label htmlFor="friend_code_3ds">3DS Friend Code</label>
+              <div className={rowGroup}>
+                <label className={formLabel} htmlFor="friend_code_3ds">
+                  3DS Friend Code
+                </label>
                 <input
-                  className="form-control"
+                  className={formControl()}
                   id="friend_code_3ds"
                   name="friend_code_3ds"
                   onChange={handleFriendCode3dsChange}
@@ -352,10 +381,12 @@ export function Register() {
                   value={friendCode3ds}
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="friend_code_switch">Switch Friend Code</label>
+              <div className={rowGroup}>
+                <label className={formLabel} htmlFor="friend_code_switch">
+                  Switch Friend Code
+                </label>
                 <input
-                  className="form-control"
+                  className={formControl()}
                   id="friend_code_switch"
                   name="friend_code_switch"
                   onChange={handleFriendCodeSwitchChange}
@@ -366,18 +397,20 @@ export function Register() {
               </div>
             </div>
 
-            <div className="form-column">
-              <h2>
+            <div className={rowColumn}>
+              <h2 className={formHeading}>
                 First Dex Info
                 <Tooltip className="bottom-3 ml-7" icon={faQuestionCircle}>
                   You can track multiple dexes on our app! This sets the
                   settings for the first dex on your account.
                 </Tooltip>
               </h2>
-              <div className="form-group">
-                <label htmlFor="dex_title">Title</label>
+              <div className={rowGroup}>
+                <label className={formLabel} htmlFor="dex_title">
+                  Title
+                </label>
                 <input
-                  className="form-control"
+                  className={formControl()}
                   id="dex_title"
                   maxLength={300}
                   name="dex_title"
@@ -387,12 +420,14 @@ export function Register() {
                   type="text"
                   value={title}
                 />
-                <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
+                <FontAwesomeIcon className={inputIcon} icon={faAsterisk} />
               </div>
-              <div className="form-group">
-                <label htmlFor="game">Game</label>
+              <div className={rowGroup}>
+                <label className={formLabel} htmlFor="game">
+                  Game
+                </label>
                 <select
-                  className="form-control"
+                  className={formControl()}
                   onChange={handleGameChange}
                   value={game}
                 >
@@ -402,89 +437,69 @@ export function Register() {
                     </option>
                   ))}
                 </select>
-                <FontAwesomeIcon className="input-icon" icon={faChevronDown} />
+                <FontAwesomeIcon className={selectIcon} icon={faChevronDown} />
               </div>
-              <div className="form-group">
-                <label htmlFor="dex-type">Dex Type</label>
+              <div className={rowGroup}>
+                <label className={formLabel} htmlFor="dex-type">
+                  Dex Type
+                </label>
                 {dexTypesByGameFamilyId[gamesById[game].game_family.id]
                   .filter((dt) => !dt.base_dex_type_id)
                   .map((dt) => (
-                    <div className="form-option" key={dt.id}>
-                      <div className="radio">
-                        <label>
-                          <input
-                            checked={dexType === dt.id}
-                            name="dex-type"
-                            onChange={() => {
-                              setDexType(dt.id);
-                              setSelectedCustomizations({});
-                            }}
-                            type="radio"
-                          />
-                          <span className="radio-custom">
-                            <span />
-                          </span>
-                          {dt.name}
-                          {dt.description ? (
-                            <Tooltip
-                              className="ml-5"
-                              data-testid="dex-type-info"
-                              icon={faQuestionCircle}
-                              iconClassName="text-12 text-brand-secondary"
-                            >
-                              {dt.description}
-                            </Tooltip>
-                          ) : null}
-                        </label>
-                      </div>
+                    <div className={formOption} key={dt.id}>
+                      <Radio
+                        checked={dexType === dt.id}
+                        name="dex-type"
+                        onChange={() => {
+                          setDexType(dt.id);
+                          setSelectedCustomizations({});
+                        }}
+                      >
+                        {dt.name}
+                        {dt.description ? (
+                          <Tooltip
+                            className="ml-5"
+                            data-testid="dex-type-info"
+                            icon={faQuestionCircle}
+                            iconClassName="text-12 text-brand-secondary"
+                          >
+                            {dt.description}
+                          </Tooltip>
+                        ) : null}
+                      </Radio>
                     </div>
                   ))}
               </div>
-              <div className="form-group">
-                <label>Customizations</label>
-                <div className="form-option">
-                  <div className="checkbox">
-                    <label>
-                      <input
-                        checked={shiny}
-                        id="customization-shiny"
-                        name="customization-shiny"
-                        onChange={handleShinyChange}
-                        type="checkbox"
-                      />
-                      <span className="checkbox-custom">
-                        <span />
-                      </span>
-                      Shiny
-                    </label>
-                  </div>
+              <div className={rowGroup}>
+                <label className={formLabel}>Customizations</label>
+                <div className={formOption}>
+                  <Checkbox
+                    checked={shiny}
+                    id="customization-shiny"
+                    name="customization-shiny"
+                    onChange={handleShinyChange}
+                  >
+                    Shiny
+                  </Checkbox>
                 </div>
                 {customizationsByBaseDexTypeId[dexType]?.map(
                   (customization) => (
-                    <div className="form-option" key={customization.value}>
-                      <div className="checkbox">
-                        <label>
-                          <input
-                            checked={
-                              selectedCustomizations[customization.value] ||
-                              false
-                            }
-                            id={customization.value.replace(/ /g, "-")}
-                            name={customization.value.replace(/ /g, "-")}
-                            onChange={(e) => {
-                              setSelectedCustomizations((prev) => ({
-                                ...prev,
-                                [customization.value]: e.target.checked,
-                              }));
-                            }}
-                            type="checkbox"
-                          />
-                          <span className="checkbox-custom">
-                            <span />
-                          </span>
-                          {customization.label}
-                        </label>
-                      </div>
+                    <div className={formOption} key={customization.value}>
+                      <Checkbox
+                        checked={
+                          selectedCustomizations[customization.value] || false
+                        }
+                        id={customization.value.replace(/ /g, "-")}
+                        name={customization.value.replace(/ /g, "-")}
+                        onChange={(e) => {
+                          setSelectedCustomizations((prev) => ({
+                            ...prev,
+                            [customization.value]: e.target.checked,
+                          }));
+                        }}
+                      >
+                        {customization.label}
+                      </Checkbox>
                     </div>
                   ),
                 )}
@@ -492,7 +507,7 @@ export function Register() {
             </div>
           </div>
 
-          <div className="form-column">
+          <div className={formColumn}>
             <button
               className={buttonClassName("blue", `${buttonLayout} mt-40`)}
               disabled={createUserMutation.isPending}
@@ -504,7 +519,7 @@ export function Register() {
                 icon={faLongArrowAltRight}
               />
             </button>
-            <p>
+            <p className={formText}>
               Already have an account?{" "}
               <Link className="link" to="/login">
                 Login here

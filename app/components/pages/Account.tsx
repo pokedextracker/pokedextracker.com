@@ -23,6 +23,17 @@ import {
   ButtonSpinner,
 } from "../library/Button";
 import { Footer } from "../library/Footer";
+import {
+  form,
+  formColumn,
+  formControl,
+  formGroup,
+  formLabel,
+  formPage,
+  formTitle,
+  inputIcon,
+  selectIcon,
+} from "../library/Form";
 import { LoadError } from "../library/LoadError";
 import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
@@ -120,9 +131,9 @@ function AccountForm({ sessionUser }: AccountFormProps) {
     <div className="account-container">
       <Nav />
       <Reload />
-      <div className="form">
-        <h1>{sessionUser.username}&apos;s Account</h1>
-        <form className="form-column" onSubmit={handleSubmit}>
+      <div className={formPage}>
+        <h1 className={formTitle}>{sessionUser.username}&apos;s Account</h1>
+        <form className={`${form} ${formColumn}`} onSubmit={handleSubmit}>
           <Alert
             message={error || updateUserMutation.error?.message}
             type="error"
@@ -131,8 +142,10 @@ function AccountForm({ sessionUser }: AccountFormProps) {
             message={updateUserMutation.isSuccess && "Account settings saved!"}
             type="success"
           />
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
+          <div className={formGroup}>
+            <label className={formLabel} htmlFor="password">
+              Password
+            </label>
             <button
               className={buttonClassName("yellow")}
               onClick={handleChangePasswordClick}
@@ -143,9 +156,9 @@ function AccountForm({ sessionUser }: AccountFormProps) {
           </div>
           {isEditingPassword && (
             <div>
-              <div className="form-group">
+              <div className={formGroup}>
                 <input
-                  className="form-control"
+                  className={`${formControl()} tracking-2`}
                   id="password"
                   name="password"
                   onChange={handlePasswordChange}
@@ -154,11 +167,11 @@ function AccountForm({ sessionUser }: AccountFormProps) {
                   type="password"
                   value={password}
                 />
-                <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
+                <FontAwesomeIcon className={inputIcon} icon={faAsterisk} />
               </div>
-              <div className="form-group">
+              <div className={formGroup}>
                 <input
-                  className="form-control"
+                  className={`${formControl()} tracking-2`}
                   id="password_confirm"
                   name="password_confirm"
                   onChange={handlePasswordConfirmChange}
@@ -167,14 +180,16 @@ function AccountForm({ sessionUser }: AccountFormProps) {
                   type="password"
                   value={passwordConfirm}
                 />
-                <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
+                <FontAwesomeIcon className={inputIcon} icon={faAsterisk} />
               </div>
             </div>
           )}
-          <div className="form-group">
-            <label htmlFor="friend_code_3ds">3DS Friend Code</label>
+          <div className={formGroup}>
+            <label className={formLabel} htmlFor="friend_code_3ds">
+              3DS Friend Code
+            </label>
             <input
-              className="form-control"
+              className={formControl()}
               id="friend_code_3ds"
               name="friend_code_3ds"
               onChange={handleFriendCode3dsChange}
@@ -183,10 +198,12 @@ function AccountForm({ sessionUser }: AccountFormProps) {
               value={friendCode3ds}
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="friend_code_switch">Switch Friend Code</label>
+          <div className={formGroup}>
+            <label className={formLabel} htmlFor="friend_code_switch">
+              Switch Friend Code
+            </label>
             <input
-              className="form-control"
+              className={formControl()}
               id="friend_code_switch"
               name="friend_code_switch"
               onChange={handleFriendCodeSwitchChange}
@@ -195,12 +212,14 @@ function AccountForm({ sessionUser }: AccountFormProps) {
               value={friendCodeSwitch}
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="language">Pokémon Name Language</label>
-            <select className="form-control">
+          <div className={formGroup}>
+            <label className={formLabel} htmlFor="language">
+              Pokémon Name Language
+            </label>
+            <select className={formControl()}>
               <option>English</option>
             </select>
-            <FontAwesomeIcon className="input-icon" icon={faChevronDown} />
+            <FontAwesomeIcon className={selectIcon} icon={faChevronDown} />
           </div>
           <button
             className={buttonClassName("blue", `${buttonLayout} mt-40`)}

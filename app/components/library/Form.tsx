@@ -1,0 +1,102 @@
+import type { InputHTMLAttributes, ReactNode } from "react";
+
+// The page a form takes up, like the login page, or a dex modal.
+export const formPage =
+  "flex flex-[1_0_auto] flex-col items-center overflow-y-scroll px-0 pt-50 pb-100";
+
+// The form page's title.
+export const formTitle =
+  "mb-17 text-brand-secondary night:text-night-mode-link";
+
+// A form slides up into place.
+export const form = "relative top-60 animate-[slide_0.5s_ease-out_forwards]";
+
+// A column of fields, centered on the page.
+export const formColumn = "mx-auto my-0 w-280";
+
+// A heading between fields, and text under them.
+export const formHeading = "mx-0 mt-30 mb-15 text-center first:mt-0";
+export const formText = "mx-0 mt-20 mb-0 text-center text-14";
+
+// A field: its label, its input, and the icon in the input.
+export const formGroup = "relative mb-25";
+export const formLabel =
+  "mb-7 block font-secondary text-11 font-bold tracking-1 uppercase";
+
+// A text input or select's size in a field. Its text starts 10px in, and
+// leaves room on the right for an icon.
+export const formControlSize = "h-43 py-0 pr-32 pl-10 text-15";
+
+// formControl styles a text input or select, by default at its size in a
+// field.
+export function formControl(size = formControlSize): string {
+  return `w-full appearance-none rounded-none border-2 border-solid border-brand-secondary-light bg-white font-primary focus:border-brand-secondary-dark invalid:shadow-none night:border-night-mode-02dp night:bg-night-mode-02dp night:text-white night:focus:border-night-mode-02dp ${size}`;
+}
+
+// The asterisk on a required input, and the chevron on a select.
+export const inputIcon =
+  "absolute right-15 bottom-16 text-10 text-brand-primary";
+export const selectIcon =
+  "absolute right-15 bottom-17 text-9 text-brand-secondary";
+
+// A note across from a field's label, like the URL a title makes.
+export const formNote =
+  "relative bottom-2 float-right w-240 truncate text-right text-13 text-gray-dark";
+
+// One option in a list of radios or checkboxes.
+export const formOption = "mb-5 flex";
+
+interface ChoiceProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "type"
+> {
+  children: ReactNode;
+}
+
+interface ChoiceInputProps extends ChoiceProps {
+  // The box's shape and what's in it when it's checked.
+  box: string;
+  mark: string;
+  type: "checkbox" | "radio";
+}
+
+// ChoiceInput is a radio or checkbox drawn as a box before its label. The
+// input itself is hidden.
+function ChoiceInput({
+  box,
+  children,
+  mark,
+  type,
+  ...props
+}: ChoiceInputProps) {
+  return (
+    <div className="mx-13 my-0 inline-block">
+      <label className="mb-0 block cursor-pointer font-primary text-15 font-normal tracking-0 normal-case">
+        <input {...props} className="[display:none]" type={type} />
+        <span
+          className={`relative top-3 right-7 inline-block h-16 w-16 border border-gray-medium bg-white night:border-night-mode-24dp night:bg-night-mode-24dp ${box}`}
+        >
+          <span
+            className={`absolute top-1/2 left-1/2 -mt-5 -ml-5 inline-block h-10 w-10 bg-brand-primary opacity-0 transition-all duration-150 ease-out [:checked+*>&]:opacity-100 ${mark}`}
+          />
+        </span>
+        {children}
+      </label>
+    </div>
+  );
+}
+
+export function Radio(props: ChoiceProps) {
+  return (
+    <ChoiceInput
+      box="rounded-half"
+      mark="rounded-half"
+      type="radio"
+      {...props}
+    />
+  );
+}
+
+export function Checkbox(props: ChoiceProps) {
+  return <ChoiceInput box="" mark="" type="checkbox" {...props} />;
+}
