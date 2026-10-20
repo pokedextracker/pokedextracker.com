@@ -19,12 +19,16 @@ import { useLocalStorage, type SetLocalStorageFn } from "../use-local-storage";
 interface SessionContextState {
   session: Session | null;
   sessionUser: User | null;
+  // Whether sessionUser is still loading for the first time. Once that's
+  // done, a session without one means the user couldn't be loaded.
+  sessionUserIsLoading: boolean;
   setToken: SetLocalStorageFn<string | null>;
 }
 
 const SessionContext = createContext<SessionContextState>({
   session: null,
   sessionUser: null,
+  sessionUserIsLoading: false,
   setToken: () => {},
 });
 
@@ -42,6 +46,7 @@ export const SessionProvider = ({ children }: Props) => {
     data: tokenUser,
     error: tokenUserError,
     isFetching: tokenUserIsFetching,
+    isLoading: tokenUserIsLoading,
   } = useUser(tokenSession?.username);
 
   // A new token's user is fetched again before it's checked: the cached one
@@ -83,9 +88,10 @@ export const SessionProvider = ({ children }: Props) => {
     () => ({
       session,
       sessionUser,
+      sessionUserIsLoading: !stale && tokenUserIsLoading,
       setToken,
     }),
-    [session, sessionUser, setToken],
+    [session, sessionUser, stale, tokenUserIsLoading, setToken],
   );
 
   return (

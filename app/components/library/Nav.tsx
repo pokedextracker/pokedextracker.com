@@ -16,7 +16,7 @@ import { trackEvent } from "../../utils/analytics";
 
 export function Nav() {
   const { isNightMode, setIsNightMode } = useLocalStorageContext();
-  const { session, sessionUser, setToken } = useSession();
+  const { session, sessionUser, sessionUserIsLoading, setToken } = useSession();
 
   const handleNightModeClick = () => setIsNightMode(!isNightMode);
 
@@ -25,7 +25,8 @@ export function Nav() {
     setToken(null);
   };
 
-  if (session && !sessionUser) {
+  // While the signed-in user loads, there's nothing to show beyond the logo.
+  if (session && sessionUserIsLoading) {
     return (
       <nav>
         <Link to="/">Pokédex Tracker</Link>
@@ -56,7 +57,10 @@ export function Nav() {
     </>
   );
 
-  if (session && sessionUser) {
+  // Signed in. If the user couldn't be loaded, like during a server error,
+  // the dropdown still offers the profile, account, and signing out, just
+  // without the dexes.
+  if (session) {
     return (
       <nav>
         {links}
@@ -66,7 +70,7 @@ export function Nav() {
           </a>
           <ul data-testid="nav-dropdown-menu">
             <div className="dropdown-scroll">
-              {sessionUser.dexes.map((dex) => (
+              {sessionUser?.dexes.map((dex) => (
                 <li key={dex.id}>
                   <Link to={`/u/${session.username}/${dex.slug}`}>
                     <FontAwesomeIcon icon={faTh} /> {dex.title}

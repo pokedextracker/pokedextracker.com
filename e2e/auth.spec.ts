@@ -162,3 +162,25 @@ test("logging in again after the database changed sticks", async ({
     await page.evaluate(() => localStorage.getItem("token")),
   ).not.toBeNull();
 });
+
+test("the nav still offers signing out when the user can't be loaded", async ({
+  page,
+  request,
+}) => {
+  const user = await createUser(request);
+  const other = await createUser(request);
+  await plantToken(page, user.token);
+  await page.route(`**/api/users/${user.username}`, (route) =>
+    route.fulfill(SERVER_ERROR),
+  );
+  await page.goto(`/u/${other.username}`);
+
+  // After React Query's retries.
+  const dropdown = page.getByTestId("nav-dropdown");
+  await expect(dropdown).toContainText(user.username, { timeout: 20_000 });
+  await dropdown.hover();
+  await page.getByTestId("nav-dropdown-menu").getByText("Sign Out").click();
+  await expect(
+    page.locator("nav").getByRole("link", { name: "Login", exact: true }),
+  ).toBeVisible();
+});
