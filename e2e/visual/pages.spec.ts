@@ -253,6 +253,17 @@ test.describe("account and navigation", () => {
     await expect(page.getByTestId("nav-dropdown-menu")).toBeVisible();
     await expect(page).toHaveScreenshot("nav-dropdown.png");
   });
+
+  test("nav dropdown item hovered", async ({ page }) => {
+    await signIn(page, ash);
+    await page.goto(`/u/${ash}`);
+    await settle(page);
+    await page.getByTestId("nav-dropdown").hover();
+    const menu = page.getByTestId("nav-dropdown-menu");
+    await expect(menu).toBeVisible();
+    await menu.getByRole("link", { name: "Profile" }).hover();
+    await expect(page).toHaveScreenshot("nav-dropdown-item.png");
+  });
 });
 
 // Tooltips show on hover, after settle, which moves the mouse away. Each one
