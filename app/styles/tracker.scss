@@ -453,16 +453,6 @@ header {
       font-size: 25px;
       font-weight: 700;
     }
-
-    .btn {
-      @include align-self(center);
-
-      height: auto;
-      width: auto;
-      padding: 8px 12px;
-      margin-left: 10px;
-      font-size: 10px;
-    }
   }
 
   .box-container {

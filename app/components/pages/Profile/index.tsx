@@ -8,6 +8,7 @@ import { useGames } from "../../../hooks/queries/games";
 import { useUser } from "../../../hooks/queries/users";
 import { useUserParams } from "../../../hooks/use-user-params";
 import { isNotFound } from "../../../utils/api";
+import { buttonClassName, buttonIcon } from "../../library/Button";
 import { Footer } from "../../library/Footer";
 import { FriendCode } from "../../library/FriendCode";
 import { Header } from "../../library/Header";
@@ -77,8 +78,18 @@ export function Profile() {
 
           {ownPage && (
             <div className="dex-create">
-              <div className="btn btn-blue" onClick={handleCreateNewDexClick}>
-                Create a New Dex <FontAwesomeIcon icon={faLongArrowAltRight} />
+              <div
+                className={buttonClassName(
+                  "blue",
+                  "inline-block w-200 p-12 text-11 max-500:w-full",
+                )}
+                onClick={handleCreateNewDexClick}
+              >
+                Create a New Dex{" "}
+                <FontAwesomeIcon
+                  className={buttonIcon}
+                  icon={faLongArrowAltRight}
+                />
               </div>
               {showDexCreate && (
                 <DexCreate onRequestClose={handleDexCreateRequestClose} />

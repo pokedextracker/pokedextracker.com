@@ -66,84 +66,6 @@ a.link {
   visibility: hidden;
 }
 
-.btn {
-  @include transition(all 0.1s ease-out);
-
-  display: block;
-  position: relative;
-  width: 100%;
-  padding: 15px;
-  border: 0;
-  border-radius: 0;
-  font-family: $font-secondary;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  text-decoration: none;
-
-  &.btn-blue {
-    background-color: $brand-secondary-light;
-    color: #fff;
-  }
-
-  &.btn-yellow {
-    background-color: $brand-primary;
-    color: $brand-secondary;
-  }
-
-  &.btn-white {
-    color: $brand-secondary;
-    background-color: #fff;
-  }
-
-  .svg-inline--fa {
-    @include transition(all 0.1s ease-out);
-
-    font-size: 10px;
-    margin-left: 3px;
-  }
-
-  .spinner {
-    @include flexbox();
-    @include align-items(center);
-    @include justify-content(center);
-
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-
-    .svg-inline--fa {
-      margin: 0;
-    }
-  }
-}
-
-.no-touch .btn {
-  &:hover,
-  &:focus {
-    cursor: pointer;
-
-    .fa-long-arrow-right {
-      margin-left: 7px;
-    }
-
-    &.btn-blue {
-      background-color: $brand-secondary;
-    }
-
-    &.btn-yellow {
-      background-color: $brand-primary-dark;
-    }
-
-    &.btn-white {
-      background-color: darken(#fff, 1%);
-    }
-  }
-}
-
 .form {
   @include flex(1 0 auto);
   @include flexbox();
@@ -195,14 +117,6 @@ form {
     margin: 20px 0 0;
     text-align: center;
     font-size: 14px;
-  }
-
-  .btn:not(.btn-inline) {
-    margin-top: 40px;
-
-    &.form-confirm {
-      margin-top: 0;
-    }
   }
 }
 
@@ -663,41 +577,6 @@ select {
   .form-group .checkbox .checkbox-custom {
     background-color: $night-mode-24dp;
     border-color: $night-mode-24dp;
-  }
-
-  .btn {
-    &.btn-blue {
-      background-color: $night-mode-secondary;
-      color: white;
-    }
-
-    &.btn-white {
-      background-color: $gray-light;
-      color: $night-mode-secondary;
-    }
-
-    &.btn-yellow {
-      background-color: $night-mode-primary;
-      color: white;
-    }
-
-    &:hover,
-    &:focus {
-      &.btn-blue {
-        background-color: $night-mode-secondary-dark;
-        color: white;
-      }
-
-      &.btn-white {
-        background-color: darken($gray-light, 6%);
-        color: $night-mode-secondary;
-      }
-
-      &.btn-yellow {
-        background-color: $night-mode-primary-dark;
-        color: white;
-      }
-    }
   }
 
   .dex-delete-container a:first-child {

@@ -73,12 +73,6 @@
 .dex-create {
   margin: 40px 0;
   text-align: center;
-
-  .btn {
-    display: inline-block;
-    padding: 12px;
-    width: 200px;
-  }
 }
 
 .dex-delete-container {
@@ -173,9 +167,5 @@
 
   .dex-indicator {
     display: none;
-  }
-
-  .dex-create .btn {
-    width: 100%;
   }
 }

@@ -30,6 +30,7 @@ import { useGames } from "../../../hooks/queries/games";
 import type { Customization, Dex, DexType, Game } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
 import { Alert } from "../../library/Alert";
+import { buttonClassName, buttonIcon } from "../../library/Button";
 import { Tooltip } from "../../library/Tooltip";
 import { FormWarning } from "./FormWarning";
 
@@ -487,14 +488,17 @@ export function DexEdit({ dex, onRequestClose }: Props) {
             type="error"
           />
           <button
-            className="btn btn-blue form-confirm"
+            className={buttonClassName("blue")}
             disabled={
               updateDexMutation.isPending || deleteDexMutation.isPending
             }
             type="submit"
           >
             {isConfirmingUpdate ? "Confirm" : ""} Edit{" "}
-            <FontAwesomeIcon icon={faLongArrowAltRight} />
+            <FontAwesomeIcon
+              className={buttonIcon}
+              icon={faLongArrowAltRight}
+            />
           </button>
         </form>
       </div>

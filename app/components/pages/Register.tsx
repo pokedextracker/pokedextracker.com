@@ -33,6 +33,7 @@ import {
   friendCodeSwitchFormatter,
 } from "../../utils/formatting";
 import { Alert } from "../library/Alert";
+import { buttonClassName, buttonIcon, buttonLayout } from "../library/Button";
 import { Footer } from "../library/Footer";
 import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
@@ -493,11 +494,15 @@ export function Register() {
 
           <div className="form-column">
             <button
-              className="btn btn-blue"
+              className={buttonClassName("blue", `${buttonLayout} mt-40`)}
               disabled={createUserMutation.isPending}
               type="submit"
             >
-              Let&apos;s go! <FontAwesomeIcon icon={faLongArrowAltRight} />
+              Let&apos;s go!{" "}
+              <FontAwesomeIcon
+                className={buttonIcon}
+                icon={faLongArrowAltRight}
+              />
             </button>
             <p>
               Already have an account?{" "}

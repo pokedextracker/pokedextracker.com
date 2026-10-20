@@ -46,6 +46,12 @@
   --color-brand-primary-lighten-10: rgb(100%, 88.5683588504%, 34.1176470588%);
   --color-brand-primary-lighten-15: rgb(100%, 90.3035186677%, 44.1176470588%);
   --color-error-darken-5: rgb(90%, 0%, 0%);
+  --color-white-darken-1: rgb(99%, 99%, 99%);
+  --color-gray-light-darken-6: rgb(
+    88.5098039216%,
+    88.5098039216%,
+    88.5098039216%
+  );
   --color-night-mode: #121212;
   --color-night-mode-01dp: rgb(12.0588235294%, 12.0588235294%, 12.0588235294%);
   --color-night-mode-02dp: rgb(14.0588235294%, 14.0588235294%, 14.0588235294%);

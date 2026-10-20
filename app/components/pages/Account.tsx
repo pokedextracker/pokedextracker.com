@@ -1,7 +1,6 @@
 import {
   faAsterisk,
   faChevronDown,
-  faCircleNotch,
   faLongArrowAltRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -17,6 +16,12 @@ import {
   friendCodeSwitchFormatter,
 } from "../../utils/formatting";
 import { Alert } from "../library/Alert";
+import {
+  buttonClassName,
+  buttonIcon,
+  buttonLayout,
+  ButtonSpinner,
+} from "../library/Button";
 import { Footer } from "../library/Footer";
 import { LoadError } from "../library/LoadError";
 import { Nav } from "../library/Nav";
@@ -129,7 +134,7 @@ function AccountForm({ sessionUser }: AccountFormProps) {
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <button
-              className="btn btn-inline btn-yellow"
+              className={buttonClassName("yellow")}
               onClick={handleChangePasswordClick}
               type="button"
             >
@@ -197,19 +202,21 @@ function AccountForm({ sessionUser }: AccountFormProps) {
             </select>
             <FontAwesomeIcon className="input-icon" icon={faChevronDown} />
           </div>
-          <button className="btn btn-blue" type="submit">
+          <button
+            className={buttonClassName("blue", `${buttonLayout} mt-40`)}
+            type="submit"
+          >
             {/* The double check for isPending is necessary because there is a slight delay when applying visibility: hidden onto the icon. */}
             <span className={updateUserMutation.isPending ? "hidden" : ""}>
               Save{" "}
               {!updateUserMutation.isPending && (
-                <FontAwesomeIcon icon={faLongArrowAltRight} />
+                <FontAwesomeIcon
+                  className={buttonIcon}
+                  icon={faLongArrowAltRight}
+                />
               )}
             </span>
-            {updateUserMutation.isPending ? (
-              <span className="spinner">
-                <FontAwesomeIcon icon={faCircleNotch} spin />
-              </span>
-            ) : null}
+            {updateUserMutation.isPending ? <ButtonSpinner /> : null}
           </button>
         </form>
       </div>

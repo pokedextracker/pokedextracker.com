@@ -16,6 +16,7 @@ import { useSession } from "../../hooks/contexts/use-session";
 import { useLogin } from "../../hooks/queries/sessions";
 import { trackEvent } from "../../utils/analytics";
 import { Alert } from "../library/Alert";
+import { buttonClassName, buttonIcon, buttonLayout } from "../library/Button";
 import { Footer } from "../library/Footer";
 import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
@@ -112,11 +113,15 @@ export function Login() {
             <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
           </div>
           <button
-            className="btn btn-blue"
+            className={buttonClassName("blue", `${buttonLayout} mt-40`)}
             disabled={loginMutation.isPending}
             type="submit"
           >
-            Let&apos;s go! <FontAwesomeIcon icon={faLongArrowAltRight} />
+            Let&apos;s go!{" "}
+            <FontAwesomeIcon
+              className={buttonIcon}
+              icon={faLongArrowAltRight}
+            />
           </button>
           <p>
             Don&apos;t have an account yet?{" "}

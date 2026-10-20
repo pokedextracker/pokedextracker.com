@@ -29,6 +29,11 @@ import { useGames } from "../../../hooks/queries/games";
 import type { Customization, DexType, Game } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
 import { Alert } from "../../library/Alert";
+import {
+  buttonClassName,
+  buttonIcon,
+  buttonLayout,
+} from "../../library/Button";
 import { Tooltip } from "../../library/Tooltip";
 
 interface Props {
@@ -364,11 +369,15 @@ export function DexCreate({ onRequestClose }: Props) {
             ))}
           </div>
           <button
-            className="btn btn-blue"
+            className={buttonClassName("blue", `${buttonLayout} mt-40`)}
             disabled={createDexMutation.isPending}
             type="submit"
           >
-            Create <FontAwesomeIcon icon={faLongArrowAltRight} />
+            Create{" "}
+            <FontAwesomeIcon
+              className={buttonIcon}
+              icon={faLongArrowAltRight}
+            />
           </button>
         </form>
       </div>

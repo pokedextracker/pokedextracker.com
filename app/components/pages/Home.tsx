@@ -5,6 +5,11 @@ import { useEffect } from "react";
 import { Link } from "react-router";
 
 import { useSession } from "../../hooks/contexts/use-session";
+import { buttonClassName, buttonIcon } from "../library/Button";
+
+// The buttons under the list, side by side.
+const homeButton =
+  "mx-8 mt-20 mb-0 inline-block w-180 p-15 text-11 max-400:w-150";
 
 export function Home() {
   const { session } = useSession();
@@ -198,17 +203,38 @@ export function Home() {
 
           {session ? (
             <div>
-              <Link className="btn btn-blue" to={`/u/${session.username}`}>
-                View Profile <FontAwesomeIcon icon={faLongArrowAltRight} />
+              <Link
+                className={buttonClassName("blue", homeButton)}
+                to={`/u/${session.username}`}
+              >
+                View Profile{" "}
+                <FontAwesomeIcon
+                  className={buttonIcon}
+                  icon={faLongArrowAltRight}
+                />
               </Link>
             </div>
           ) : (
             <div>
-              <Link className="btn btn-blue" to="/register">
-                Register <FontAwesomeIcon icon={faLongArrowAltRight} />
+              <Link
+                className={buttonClassName("blue", homeButton)}
+                to="/register"
+              >
+                Register{" "}
+                <FontAwesomeIcon
+                  className={buttonIcon}
+                  icon={faLongArrowAltRight}
+                />
               </Link>
-              <Link className="btn btn-white" to="/login">
-                Login <FontAwesomeIcon icon={faLongArrowAltRight} />
+              <Link
+                className={buttonClassName("white", homeButton)}
+                to="/login"
+              >
+                Login{" "}
+                <FontAwesomeIcon
+                  className={buttonIcon}
+                  icon={faLongArrowAltRight}
+                />
               </Link>
             </div>
           )}
