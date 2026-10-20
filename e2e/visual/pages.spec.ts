@@ -205,6 +205,9 @@ test.describe("tracker", () => {
     await signIn(page, ash);
     await page.goto(livingDex);
     await expect(page.getByTestId("progress-count")).toContainText("7 caught");
+    // In view first, so the screenshot doesn't scroll another tile under the
+    // mouse.
+    await page.getByTestId("box").first().scrollIntoViewIfNeeded();
     await settle(page);
     await hover(uncaught(page));
     await expect(page.getByTestId("box").first()).toHaveScreenshot(
@@ -216,6 +219,9 @@ test.describe("tracker", () => {
     await signIn(page, ash);
     await page.goto(livingDex);
     await expect(page.getByTestId("progress-count")).toContainText("7 caught");
+    // In view first, so the screenshot doesn't scroll another tile under the
+    // mouse.
+    await page.getByTestId("box").first().scrollIntoViewIfNeeded();
     await settle(page);
     await hover(uncaught(page).getByTestId("set-info"));
     await expect(page.getByTestId("box").first()).toHaveScreenshot(
@@ -223,10 +229,17 @@ test.describe("tracker", () => {
     );
   });
 
-  // A tile shows it's pending while marking it waits on the server, which
-  // here never answers.
+  // A tile shows it's pending while marking it waits on the server. The spec
+  // holds the request, and then answers it itself, so the capture is never
+  // saved for the specs after it. (Left hanging, WebKit sends it once the
+  // page closes.)
   test("tile pending", async ({ page }) => {
-    await page.route("**/api/captures", () => {});
+    let answer!: () => void;
+    const answered = new Promise<void>((resolve) => (answer = resolve));
+    await page.route("**/api/captures", async (route) => {
+      await answered;
+      await route.fulfill({ json: [] });
+    });
     await signIn(page, ash);
     await page.goto(livingDex);
     await expect(page.getByTestId("progress-count")).toContainText("7 caught");
@@ -239,6 +252,9 @@ test.describe("tracker", () => {
     await expect(page.getByTestId("box").first()).toHaveScreenshot(
       "dex-tile-pending.png",
     );
+    const response = page.waitForResponse("**/api/captures");
+    answer();
+    await response;
   });
 
   test("scroll button", async ({ page }) => {
