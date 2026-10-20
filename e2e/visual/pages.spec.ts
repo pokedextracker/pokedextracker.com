@@ -1,3 +1,5 @@
+import type { Locator, Page } from "@playwright/test";
+
 import { SERVER_ERROR } from "../fixtures";
 import { slugOf } from "../slug";
 import { expect, hover, scrollToTop, settle, signIn, test } from "./fixtures";
@@ -9,6 +11,11 @@ const brock = USERS.brock.username;
 const gary = USERS.gary.username;
 const livingDex = `/u/${ash}/${slugOf("Living Dex")}`;
 const waterDex = `/u/${misty}/${slugOf("Water Dex")}`;
+
+// uncaught is the first tile on the page that isn't caught.
+function uncaught(page: Page): Locator {
+  return page.locator('[data-testid="pokemon"][data-captured="false"]').first();
+}
 
 // Each test opens one page in one state and screenshots it: the whole page
 // where it scrolls as a whole, and just the visible window for modals, the
@@ -192,6 +199,79 @@ test.describe("tracker", () => {
     );
     await settle(page);
     await expect(page).toHaveScreenshot("dex-info-toggled.png");
+  });
+
+  test("tile hovered", async ({ page }) => {
+    await signIn(page, ash);
+    await page.goto(livingDex);
+    await expect(page.getByTestId("progress-count")).toContainText("7 caught");
+    await settle(page);
+    await hover(uncaught(page));
+    await expect(page.getByTestId("box").first()).toHaveScreenshot(
+      "dex-tile-hovered.png",
+    );
+  });
+
+  test("info button hovered", async ({ page }) => {
+    await signIn(page, ash);
+    await page.goto(livingDex);
+    await expect(page.getByTestId("progress-count")).toContainText("7 caught");
+    await settle(page);
+    await hover(uncaught(page).getByTestId("set-info"));
+    await expect(page.getByTestId("box").first()).toHaveScreenshot(
+      "dex-info-button-hovered.png",
+    );
+  });
+
+  // A tile shows it's pending while marking it waits on the server, which
+  // here never answers.
+  test("tile pending", async ({ page }) => {
+    await page.route("**/api/captures", () => {});
+    await signIn(page, ash);
+    await page.goto(livingDex);
+    await expect(page.getByTestId("progress-count")).toContainText("7 caught");
+    await settle(page);
+    const marking = page.waitForRequest("**/api/captures");
+    await uncaught(page).click();
+    await marking;
+    // Not settle, which would wait on the request.
+    await page.mouse.move(-1, -1);
+    await expect(page.getByTestId("box").first()).toHaveScreenshot(
+      "dex-tile-pending.png",
+    );
+  });
+
+  test("scroll button", async ({ page }) => {
+    await signIn(page, ash);
+    await page.goto(livingDex);
+    await expect(page.getByTestId("progress-count")).toContainText("7 caught");
+    await page.getByTestId("box").nth(3).scrollIntoViewIfNeeded();
+    await settle(page);
+    await expect(page).toHaveScreenshot("dex-scroll-button.png");
+  });
+
+  test("info tab hovered", async ({ page }) => {
+    await signIn(page, ash);
+    await page.goto(livingDex);
+    await expect(page.getByTestId("progress-count")).toContainText("7 caught");
+    await settle(page);
+    await hover(page.getByTestId("info-toggle"));
+    await expect(page).toHaveScreenshot("dex-info-tab-hovered.png");
+  });
+
+  test("info link hovered", async ({ page }) => {
+    await signIn(page, ash);
+    await page.goto(livingDex);
+    await expect(page.getByTestId("progress-count")).toContainText("7 caught");
+    // The panel starts collapsed on a phone.
+    if (
+      (await page.getByTestId("info").getAttribute("data-collapsed")) === "true"
+    ) {
+      await page.getByTestId("info-toggle").click();
+    }
+    await settle(page);
+    await hover(page.getByRole("link", { name: "Bulbapedia" }));
+    await expect(page).toHaveScreenshot("dex-info-link-hovered.png");
   });
 
   test("search", async ({ page }) => {
