@@ -254,3 +254,56 @@ test.describe("account and navigation", () => {
     await expect(page).toHaveScreenshot("nav-dropdown.png");
   });
 });
+
+// Tooltips show on hover, after settle, which moves the mouse away. Each one
+// sits in a different place with its own styles.
+test.describe("tooltips", () => {
+  test("night mode toggle", async ({ page }) => {
+    await page.goto("/login");
+    await settle(page);
+    await page.getByTestId("night-mode-toggle").hover();
+    await expect(page).toHaveScreenshot("tooltip-night-mode.png");
+  });
+
+  test("register heading", async ({ page }) => {
+    await page.goto("/register");
+    await settle(page);
+    await page
+      .getByRole("heading", { name: "First Dex Info" })
+      .locator("svg")
+      .hover();
+    await expect(page).toHaveScreenshot("tooltip-register-heading.png");
+  });
+
+  test("register dex type", async ({ page }) => {
+    await page.goto("/register");
+    // The first game has no dex types with a description.
+    await page.locator("select").selectOption("scarlet_expansion_pass");
+    await settle(page);
+    await page.getByTestId("dex-type-info").first().locator("svg").hover();
+    await expect(page).toHaveScreenshot("tooltip-register-dex-type.png");
+  });
+
+  test("edit dex warning", async ({ page }) => {
+    await signIn(page, gary);
+    await page.goto(`/u/${gary}`);
+    await page.getByTestId("dex-edit-toggle").first().click();
+    const dialog = page.getByRole("dialog");
+    await dialog.locator("#dex_title").fill("Renamed Dex");
+    await settle(page);
+    await dialog.getByTestId("form-warning").first().locator("svg").hover();
+    await expect(page).toHaveScreenshot("tooltip-dex-warning.png");
+  });
+
+  test("evolution notes", async ({ page }) => {
+    await signIn(page, ash);
+    await page.goto(livingDex);
+    await page.getByPlaceholder(/Search/).fill("eevee");
+    await page.getByTestId("set-info").first().click();
+    const notes = page.getByTestId("evolution-notes").first();
+    await expect(notes).toBeVisible();
+    await settle(page);
+    await notes.locator("svg").hover();
+    await expect(page).toHaveScreenshot("tooltip-evolution-notes.png");
+  });
+});

@@ -49,7 +49,7 @@ export function Evolutions({ evolutions, pokemonId }: Props) {
         notes = <span>{evolution.notes}</span>;
       } else {
         notes = (
-          <div className="tooltip">
+          <div className="tooltip" data-testid="evolution-notes">
             <FontAwesomeIcon icon={faPlusCircle} />
             <span className="tooltip-text">{evolution.notes}</span>
           </div>

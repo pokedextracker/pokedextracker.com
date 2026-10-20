@@ -13,7 +13,7 @@ export function FormWarning({ message }: Props) {
 
   return (
     <div className="form-warning">
-      <div className="tooltip">
+      <div className="tooltip" data-testid="form-warning">
         <FontAwesomeIcon icon={faExclamationTriangle} />
         <span className="tooltip-text">{message}</span>
       </div>

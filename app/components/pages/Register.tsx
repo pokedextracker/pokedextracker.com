@@ -427,7 +427,10 @@ export function Register() {
                           </span>
                           {dt.name}
                           {dt.description ? (
-                            <div className="tooltip">
+                            <div
+                              className="tooltip"
+                              data-testid="dex-type-info"
+                            >
                               <FontAwesomeIcon
                                 className="tooltip-icon"
                                 icon={faQuestionCircle}
