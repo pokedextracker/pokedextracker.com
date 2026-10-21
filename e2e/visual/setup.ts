@@ -9,8 +9,11 @@ export const PASSWORD = "visual-password";
 interface DexSpec {
   title: string;
   shiny: boolean;
-  // Pokémon ids, all from the Legends: Z-A regional dex.
+  // Pokémon ids, all from the dex's dex type.
   captures: number[];
+  // Legends: Z-A's regional dex by default.
+  game?: string;
+  dexType?: number;
 }
 
 interface UserSpec {
@@ -20,7 +23,8 @@ interface UserSpec {
   dexes: DexSpec[];
 }
 
-// Legends: Z-A's regional dex (dex type 23), which every dex here uses.
+// Legends: Z-A's regional dex (dex type 23), which the dexes use unless they
+// say otherwise.
 const GAME = "legends_za";
 const DEX_TYPE = 23;
 
@@ -52,6 +56,20 @@ export const USERS = {
   brock: {
     username: "visual_brock",
     dexes: [{ title: "Rock Dex", shiny: false, captures: [] }],
+  },
+  // Legends: Arceus icons sit in a circle, which no other game's do.
+  dawn: {
+    username: "visual_dawn",
+    dexes: [
+      {
+        title: "Hisui Dex",
+        shiny: false,
+        // Rowlet, Dartrix, and Cyndaquil.
+        captures: [722, 723, 155],
+        game: "legends_arceus",
+        dexType: 16,
+      },
+    ],
   },
 } satisfies Record<string, UserSpec>;
 
@@ -136,8 +154,8 @@ export default async function setup() {
           title: dex.title,
           slug: slugOf(dex.title),
           shiny: dex.shiny,
-          game: GAME,
-          dex_type: DEX_TYPE,
+          game: dex.game ?? GAME,
+          dex_type: dex.dexType ?? DEX_TYPE,
         },
         token,
       );

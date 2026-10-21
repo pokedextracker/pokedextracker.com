@@ -9,8 +9,10 @@ const ash = USERS.ash.username;
 const misty = USERS.misty.username;
 const brock = USERS.brock.username;
 const gary = USERS.gary.username;
+const dawn = USERS.dawn.username;
 const livingDex = `/u/${ash}/${slugOf("Living Dex")}`;
 const waterDex = `/u/${misty}/${slugOf("Water Dex")}`;
+const hisuiDex = `/u/${dawn}/${slugOf("Hisui Dex")}`;
 
 // uncaught is the first tile on the page that isn't caught.
 function uncaught(page: Page): Locator {
@@ -199,6 +201,16 @@ test.describe("tracker", () => {
     );
     await settle(page);
     await expect(page).toHaveScreenshot("dex-info-toggled.png");
+  });
+
+  // Its icons sit in circles, gray behind an uncaught one and white behind a
+  // caught one, as do the info panel's.
+  test("legends: arceus dex", async ({ page }) => {
+    await signIn(page, dawn);
+    await page.goto(hisuiDex);
+    await expect(page.getByTestId("progress-count")).toContainText("3 caught");
+    await settle(page);
+    await expect(page).toHaveScreenshot("dex-legends-arceus.png");
   });
 
   test("tile hovered", async ({ page }) => {
