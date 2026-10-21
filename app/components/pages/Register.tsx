@@ -515,7 +515,7 @@ export function Register() {
               disabled={createUserMutation.isPending}
               type="submit"
             >
-              Let&apos;s go!{" "}
+              {"Let's go! "}
               <FontAwesomeIcon
                 className={buttonIcon}
                 icon={faLongArrowAltRight}

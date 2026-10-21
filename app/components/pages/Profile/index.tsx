@@ -87,7 +87,7 @@ export function Profile() {
                 )}
                 onClick={handleCreateNewDexClick}
               >
-                Create a New Dex{" "}
+                {"Create a New Dex "}
                 <FontAwesomeIcon
                   className={buttonIcon}
                   icon={faLongArrowAltRight}

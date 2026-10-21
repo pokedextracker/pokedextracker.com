@@ -220,7 +220,7 @@ export function Home() {
                 className={buttonClassName("blue", homeButton)}
                 to={`/u/${session.username}`}
               >
-                View Profile{" "}
+                {"View Profile "}
                 <FontAwesomeIcon
                   className={buttonIcon}
                   icon={faLongArrowAltRight}
@@ -233,7 +233,7 @@ export function Home() {
                 className={buttonClassName("blue", homeButton)}
                 to="/register"
               >
-                Register{" "}
+                {"Register "}
                 <FontAwesomeIcon
                   className={buttonIcon}
                   icon={faLongArrowAltRight}
@@ -243,7 +243,7 @@ export function Home() {
                 className={buttonClassName("white", homeButton)}
                 to="/login"
               >
-                Login{" "}
+                {"Login "}
                 <FontAwesomeIcon
                   className={buttonIcon}
                   icon={faLongArrowAltRight}
@@ -306,7 +306,7 @@ export function Home() {
         </div>
       </div>
       <div className="z-1 mt-auto w-full bg-brand-primary-light p-10 font-secondary text-11 font-bold tracking-1 text-brand-secondary uppercase night:bg-night-mode-dark">
-        Made with{" "}
+        {"Made with "}
         <i className="pkicon pkicon-ball-love mx-3 my-5 align-middle" /> in San
         Francisco
       </div>

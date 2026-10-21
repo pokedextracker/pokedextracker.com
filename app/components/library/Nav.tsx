@@ -130,8 +130,8 @@ export function Nav() {
             </li>
             <li>
               <a className={item} onClick={handleSignOutClick}>
-                <FontAwesomeIcon className={itemIcon} icon={faSignOutAlt} />{" "}
-                Sign Out
+                <FontAwesomeIcon className={itemIcon} icon={faSignOutAlt} />
+                {" Sign Out"}
               </a>
             </li>
           </ul>
