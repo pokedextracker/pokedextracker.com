@@ -129,7 +129,7 @@ export async function signIn(page: Page, username: string): Promise<void> {
 }
 
 // nightMode turns night mode on before the page loads.
-export async function nightMode(page: Page): Promise<void> {
+async function nightMode(page: Page): Promise<void> {
   await page.addInitScript(() => {
     window.localStorage.setItem("nightMode", "true");
   });

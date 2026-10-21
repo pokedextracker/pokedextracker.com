@@ -259,14 +259,18 @@ test.describe("tracker", () => {
     const marking = page.waitForRequest("**/api/captures");
     await uncaught(page).click();
     await marking;
-    // Not settle, which would wait on the request.
-    await page.mouse.move(-1, -1);
-    await expect(page.getByTestId("box").first()).toHaveScreenshot(
-      "dex-tile-pending.png",
-    );
-    const response = page.waitForResponse("**/api/captures");
-    answer();
-    await response;
+    try {
+      // Not settle, which would wait on the request.
+      await page.mouse.move(-1, -1);
+      await expect(page.getByTestId("box").first()).toHaveScreenshot(
+        "dex-tile-pending.png",
+      );
+    } finally {
+      // Even if the screenshot fails, so the capture isn't saved.
+      const response = page.waitForResponse("**/api/captures");
+      answer();
+      await response;
+    }
   });
 
   test("scroll button", async ({ page }) => {
@@ -276,6 +280,18 @@ test.describe("tracker", () => {
     await page.getByTestId("box").nth(3).scrollIntoViewIfNeeded();
     await settle(page);
     await expect(page).toHaveScreenshot("dex-scroll-button.png");
+  });
+
+  // In night mode too, it takes the day's darker blue on hover.
+  test("scroll button hovered", async ({ page }) => {
+    await signIn(page, ash);
+    await page.goto(livingDex);
+    await expect(page.getByTestId("progress-count")).toContainText("7 caught");
+    await page.getByTestId("box").nth(3).scrollIntoViewIfNeeded();
+    await settle(page);
+    // The button's arrow, which hovers the button.
+    await hover(page.locator(".fa-long-arrow-alt-up"));
+    await expect(page).toHaveScreenshot("dex-scroll-button-hovered.png");
   });
 
   test("info tab hovered", async ({ page }) => {
@@ -471,8 +487,9 @@ test.describe("buttons", () => {
     await expect(page).toHaveScreenshot("button-white-hovered.png");
   });
 
+  // Ash, whose account no spec saves, unlike brock's.
   test("yellow hovered", async ({ page }) => {
-    await signIn(page, brock);
+    await signIn(page, ash);
     await page.goto("/account");
     await settle(page);
     await hover(page.getByRole("button", { name: "Change" }));
