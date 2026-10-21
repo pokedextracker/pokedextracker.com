@@ -16,7 +16,7 @@ import { useUserParams } from "../../../hooks/use-user-params";
 import type { Dex } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
 import { nationalId, padding, serebiiLink } from "../../../utils/formatting";
-import { iconClass } from "../../../utils/pokemon";
+import { iconClass, infoIconCircle } from "../../../utils/pokemon";
 import { PokemonName } from "../../library/PokemonName";
 import { EvolutionFamily } from "./EvolutionFamily";
 import { InfoLocations } from "./InfoLocations";
@@ -43,11 +43,10 @@ interface Props {
   setSelectedPokemon: Dispatch<SetStateAction<number>>;
 }
 
-// The panel beside the dex, which a phone shows over it. Its Legends: Arceus
-// icons have a circle behind them.
+// The panel beside the dex, which a phone shows over it.
 function infoClassName(showInfo: boolean): string {
   return classNames(
-    "relative z-2 flex max-400:absolute max-400:right-0 max-400:left-auto max-400:h-full [&_.pkicon.game-family-legends_arceus]:bg-[rgba(241,241,241,0.3)]",
+    "relative z-2 flex max-400:absolute max-400:right-0 max-400:left-auto max-400:h-full",
     showInfo ? "max-400:w-full" : "max-400:w-[inherit]",
   );
 }
@@ -175,7 +174,9 @@ export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
 
       <div className={mainClassName(showInfo)} data-testid="info-main">
         <div className="flex shrink-0 items-center border-b-2 border-brand-secondary-dark-darken-3 bg-brand-secondary pt-17 pr-17 pb-17 pl-8 night:border-night-mode-secondary-dark night:bg-night-mode-secondary">
-          <i className={`${iconClass(pokemon, dex)} mx-12 my-0`} />
+          <i
+            className={`${iconClass(pokemon, dex, infoIconCircle)} mx-12 my-0`}
+          />
           <h1 className="m-0 grow text-32 font-medium" data-testid="info-name">
             <PokemonName name={pokemon.name} />
           </h1>
@@ -209,7 +210,7 @@ export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
             rel="noopener noreferrer"
             target="_blank"
           >
-            Bulbapedia{" "}
+            {"Bulbapedia "}
             <FontAwesomeIcon
               className={footerIcon}
               icon={faLongArrowAltRight}
@@ -224,7 +225,7 @@ export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
             rel="noopener noreferrer"
             target="_blank"
           >
-            Serebii{" "}
+            {"Serebii "}
             <FontAwesomeIcon
               className={footerIcon}
               icon={faLongArrowAltRight}

@@ -29,7 +29,7 @@ interface Props {
 }
 
 // tileClassName is a tile's own classes. Its background shows whether it's
-// caught or pending, and the Legends: Arceus icons have a circle behind them.
+// caught or pending.
 function tileClassName({
   captured = false,
   empty = false,
@@ -46,8 +46,8 @@ function tileClassName({
   return classNames(
     "group/tile relative flex h-110 w-110 max-750:h-80 max-750:w-full",
     captured
-      ? "bg-brand-primary-light night:bg-night-mode-primary night:text-black [&_.game-family-legends_arceus]:bg-[rgba(255,255,255,0.5)] night:[&_.game-family-legends_arceus]:bg-[rgba(255,255,255,0.35)]"
-      : "[&_.game-family-legends_arceus]:bg-[rgba(210,210,210,0.4)] night:[&_.game-family-legends_arceus]:bg-[rgba(241,241,241,0.2)]",
+      ? "bg-brand-primary-light night:bg-night-mode-primary night:text-black"
+      : "",
     pending &&
       "bg-[rgba(100%,92.0386784851%,54.1176470588%,0.5)] night:bg-[rgba(199,189,125,0.5)]",
     !empty && !readOnly && "hover:cursor-pointer",
@@ -202,6 +202,11 @@ export function Pokemon({
 
   const readOnly = !session || session.id !== user.id;
 
+  // The circle behind a Legends: Arceus icon, lighter on a caught tile.
+  const circle = capture.captured
+    ? "bg-[rgba(255,255,255,0.5)] night:bg-[rgba(255,255,255,0.35)]"
+    : "bg-[rgba(210,210,210,0.4)] night:bg-[rgba(241,241,241,0.2)]";
+
   const regional = dex.dex_type.tags.includes("regional");
   const idToDisplay = regional
     ? capture.pokemon.dex_number === -1
@@ -235,7 +240,7 @@ export function Pokemon({
           <PokemonName name={capture.pokemon.name} />
         </h4>
         <div className="flex h-49 items-center">
-          <i className={iconClass(capture.pokemon, dex)} />
+          <i className={iconClass(capture.pokemon, dex, circle)} />
         </div>
         <p className="m-0 font-secondary text-12 font-normal">
           #{padding(idToDisplay, paddingDigits)}
@@ -246,7 +251,7 @@ export function Pokemon({
         onClick={handleSetCapturedClick}
       >
         <div className="min-w-52 px-6 py-0 text-center">
-          <i className={iconClass(capture.pokemon, dex)} />
+          <i className={iconClass(capture.pokemon, dex, circle)} />
         </div>
         <h4 className="m-0 grow text-20 font-normal">
           <PokemonName name={capture.pokemon.name} />

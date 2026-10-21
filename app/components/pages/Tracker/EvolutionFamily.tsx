@@ -4,7 +4,7 @@ import { useMemo, type Dispatch, type SetStateAction } from "react";
 import { useUser } from "../../../hooks/queries/users";
 import { useUserParams } from "../../../hooks/use-user-params";
 import type { EvolutionFamily as EvolutionFamilyType } from "../../../types";
-import { iconClass } from "../../../utils/pokemon";
+import { iconClass, infoIconCircle } from "../../../utils/pokemon";
 import { Evolutions } from "./Evolutions";
 
 interface Props {
@@ -36,7 +36,7 @@ export function EvolutionFamily({ family, setSelectedPokemon }: Props) {
             onClick={() => setSelectedPokemon(pokemon.id)}
             title={pokemon.name}
           >
-            <i className={iconClass(pokemon, dex)} />
+            <i className={iconClass(pokemon, dex, infoIconCircle)} />
           </a>
         ))}
       </div>
@@ -56,7 +56,7 @@ export function EvolutionFamily({ family, setSelectedPokemon }: Props) {
             onClick={() => setSelectedPokemon(pokemon.id)}
             title={pokemon.name}
           >
-            <i className={iconClass(pokemon, dex)} />
+            <i className={iconClass(pokemon, dex, infoIconCircle)} />
           </a>
         ))}
       </div>
@@ -71,7 +71,7 @@ export function EvolutionFamily({ family, setSelectedPokemon }: Props) {
           onClick={() => setSelectedPokemon(family.pokemon[0][0].id)}
           title={family.pokemon[0][0].name}
         >
-          <i className={iconClass(family.pokemon[0][0], dex)} />
+          <i className={iconClass(family.pokemon[0][0], dex, infoIconCircle)} />
         </a>
         {family.evolutions.length === 0 ? <div>Does not evolve</div> : null}
       </div>
