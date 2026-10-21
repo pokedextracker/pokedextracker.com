@@ -1,12 +1,14 @@
 import { faMars, faVenus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+import { tw } from "../../utils/tw";
+
 interface Props {
   name: string;
 }
 
 // The ♂ or ♀ after a name, as an icon a little smaller than the name.
-const symbol = "relative bottom-1 left-3 text-[0.7em]";
+const symbol = tw`relative bottom-1 left-3 text-[0.7em]`;
 
 export function PokemonName({ name }: Props) {
   const male = name.indexOf("♂") > -1;

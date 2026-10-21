@@ -1,6 +1,8 @@
 import classNames from "classnames";
 import type { ReactNode } from "react";
 
+import { tw } from "../../utils/tw";
+
 interface Props {
   className?: string;
   message: ReactNode;
@@ -9,8 +11,8 @@ interface Props {
 
 const types = {
   // In night mode the text is white, and an error keeps a red border.
-  error: "border-error text-error night:border-night-mode-error",
-  success: "border-success text-success",
+  error: tw`border-error text-error night:border-night-mode-error`,
+  success: tw`border-success text-success`,
 };
 
 export function Alert({ className, message, type }: Props) {

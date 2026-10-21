@@ -13,7 +13,7 @@ import { trackEvent } from "../../../utils/analytics";
 import { groupBoxes } from "../../../utils/pokemon";
 import { DonatedFlair } from "../../library/DonatedFlair";
 import { FriendCode } from "../../library/FriendCode";
-import { Header, header } from "../../library/Header";
+import { Header } from "../../library/Header";
 import { wrapper } from "../../library/layout";
 import { Notification } from "../../library/Notification";
 import { Progress } from "../../library/Progress";
@@ -74,7 +74,7 @@ export function Dex({
       <div className={wrapper}>
         <Scroll onClick={onScrollButtonClick} showScroll={showScrollButton} />
         <Notification />
-        <header className={header}>
+        <header>
           <Header />
           <h3 className="mx-0 mt-0 mb-8">
             <Link

@@ -32,6 +32,7 @@ import {
   friendCode3dsFormatter,
   friendCodeSwitchFormatter,
 } from "../../utils/formatting";
+import { tw } from "../../utils/tw";
 import { Alert } from "../library/Alert";
 import { buttonClassName, buttonIcon, buttonLayout } from "../library/Button";
 import { Footer } from "../library/Footer";
@@ -39,7 +40,7 @@ import {
   Checkbox,
   form,
   formColumn,
-  formControl,
+  formControlClassName,
   formGroup,
   formHeading,
   formLabel,
@@ -59,8 +60,8 @@ import { Tooltip } from "../library/Tooltip";
 
 // The account and dex columns, side by side unless the screen is narrow. The
 // last field in each has no space under it while they're side by side.
-const rowColumn = "mx-15 my-0 w-280";
-const rowGroup = `${formGroup} last:mb-0 max-600:last:mb-25`;
+const rowColumn = tw`mx-15 my-0 w-280`;
+const rowGroup = tw`${formGroup} last:mb-0 max-600:last:mb-25`;
 
 export function Register() {
   const navigate = useNavigate();
@@ -325,7 +326,7 @@ export function Register() {
                   autoCapitalize="off"
                   autoComplete="off"
                   autoCorrect="off"
-                  className={formControl()}
+                  className={formControlClassName()}
                   id="username"
                   name="username"
                   onChange={handleUsernameChange}
@@ -342,7 +343,7 @@ export function Register() {
                   Password
                 </label>
                 <input
-                  className={`${formControl()} tracking-2`}
+                  className={`${formControlClassName()} tracking-2`}
                   id="password"
                   name="password"
                   onChange={handlePasswordChange}
@@ -358,7 +359,7 @@ export function Register() {
                   Confirm Password
                 </label>
                 <input
-                  className={`${formControl()} tracking-2`}
+                  className={`${formControlClassName()} tracking-2`}
                   id="password_confirm"
                   name="password_confirm"
                   onChange={handlePasswordConfirmChange}
@@ -374,7 +375,7 @@ export function Register() {
                   3DS Friend Code
                 </label>
                 <input
-                  className={formControl()}
+                  className={formControlClassName()}
                   id="friend_code_3ds"
                   name="friend_code_3ds"
                   onChange={handleFriendCode3dsChange}
@@ -388,7 +389,7 @@ export function Register() {
                   Switch Friend Code
                 </label>
                 <input
-                  className={formControl()}
+                  className={formControlClassName()}
                   id="friend_code_switch"
                   name="friend_code_switch"
                   onChange={handleFriendCodeSwitchChange}
@@ -412,7 +413,7 @@ export function Register() {
                   Title
                 </label>
                 <input
-                  className={formControl()}
+                  className={formControlClassName()}
                   id="dex_title"
                   maxLength={300}
                   name="dex_title"
@@ -429,7 +430,7 @@ export function Register() {
                   Game
                 </label>
                 <select
-                  className={formControl()}
+                  className={formControlClassName()}
                   onChange={handleGameChange}
                   value={game}
                 >

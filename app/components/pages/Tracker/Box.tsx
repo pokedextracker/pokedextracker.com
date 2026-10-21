@@ -60,7 +60,7 @@ export function Box({
   }
 
   return (
-    <div className="mt-60 block max-750:mt-50 max-750:w-full" data-testid="box">
+    <div className="mt-60 max-750:mt-50" data-testid="box">
       <div className="mb-10 flex">
         <h1 className="m-0 flex-[1_0] font-secondary text-25 font-bold">
           {title}

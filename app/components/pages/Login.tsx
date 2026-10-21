@@ -21,7 +21,7 @@ import { Footer } from "../library/Footer";
 import {
   form,
   formColumn,
-  formControl,
+  formControlClassName,
   formGroup,
   formLabel,
   formPage,
@@ -99,7 +99,7 @@ export function Login() {
               autoCapitalize="off"
               autoComplete="off"
               autoCorrect="off"
-              className={formControl()}
+              className={formControlClassName()}
               id="username"
               maxLength={20}
               name="username"
@@ -117,7 +117,7 @@ export function Login() {
               Password
             </label>
             <input
-              className={`${formControl()} tracking-2`}
+              className={`${formControlClassName()} tracking-2`}
               id="password"
               maxLength={72}
               name="password"

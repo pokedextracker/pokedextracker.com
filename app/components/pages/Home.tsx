@@ -5,18 +5,17 @@ import { useEffect } from "react";
 import { Link } from "react-router";
 
 import { useSession } from "../../hooks/contexts/use-session";
+import { tw } from "../../utils/tw";
 import { buttonClassName, buttonIcon } from "../library/Button";
 import { link } from "../library/links";
 
 // The text under the title, and the headings in the list, which sit closer.
 // Both are a little smaller on a narrow phone; the list itself isn't.
-const text =
-  "mx-0 mt-20 mb-0 max-w-570 px-20 py-0 text-15 font-normal max-400:text-14";
-const item = "m-0 max-w-570 p-0 text-15 font-normal max-400:text-14";
+const text = tw`mx-0 mt-20 mb-0 max-w-570 px-20 py-0 text-15 font-normal max-400:text-14`;
+const item = tw`m-0 max-w-570 p-0 text-15 font-normal max-400:text-14`;
 
 // The buttons under the list, side by side.
-const homeButton =
-  "mx-8 mt-20 mb-0 inline-block w-180 p-15 text-11 max-400:w-150";
+const homeButton = tw`mx-8 mt-20 mb-0 inline-block w-180 p-15 text-11 max-400:w-150`;
 
 export function Home() {
   const { session } = useSession();

@@ -17,6 +17,7 @@ import type { Dex } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
 import { nationalId, padding } from "../../../utils/formatting";
 import { iconClass } from "../../../utils/pokemon";
+import { tw } from "../../../utils/tw";
 import { PokemonName } from "../../library/PokemonName";
 import { useTrackerContext, type UICapture } from "./use-tracker";
 
@@ -53,7 +54,7 @@ function tileClassName({
     !empty && !readOnly && "hover:cursor-pointer",
     empty && "max-750:hidden",
     searchResult &&
-      "min-751:-mt-2 min-751:-ml-2 min-751:h-112 min-751:w-112 min-751:nth-[6n+1]:ml-0 min-751:hover:z-1",
+      "min-751:-mt-2 min-751:-ml-2 min-751:h-112 min-751:w-112 min-751:hover:z-1 min-751:nth-[6n+1]:ml-0",
   );
 }
 
@@ -83,7 +84,7 @@ function desktopClassName({
 // The tile on a phone, a row with its border.
 function mobileClassName(captured = false): string {
   return classNames(
-    "grow items-center border hidden max-750:flex",
+    "hidden grow items-center border max-750:flex",
     captured
       ? "border-brand-primary-lighten-15 night:border-night-mode-primary-dark"
       : "border-gray-light night:border-night-mode-01dp",
@@ -204,8 +205,8 @@ export function Pokemon({
 
   // The circle behind a Legends: Arceus icon, lighter on a caught tile.
   const circle = capture.captured
-    ? "bg-[rgba(255,255,255,0.5)] night:bg-[rgba(255,255,255,0.35)]"
-    : "bg-[rgba(210,210,210,0.4)] night:bg-[rgba(241,241,241,0.2)]";
+    ? tw`bg-[rgba(255,255,255,0.5)] night:bg-[rgba(255,255,255,0.35)]`
+    : tw`bg-[rgba(210,210,210,0.4)] night:bg-[rgba(241,241,241,0.2)]`;
 
   const regional = dex.dex_type.tags.includes("regional");
   const idToDisplay = regional

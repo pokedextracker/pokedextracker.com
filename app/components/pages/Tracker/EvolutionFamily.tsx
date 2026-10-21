@@ -5,6 +5,7 @@ import { useUser } from "../../../hooks/queries/users";
 import { useUserParams } from "../../../hooks/use-user-params";
 import type { EvolutionFamily as EvolutionFamilyType } from "../../../types";
 import { iconClass, infoIconCircle } from "../../../utils/pokemon";
+import { tw } from "../../../utils/tw";
 import { Evolutions } from "./Evolutions";
 
 interface Props {
@@ -14,8 +15,8 @@ interface Props {
 
 // A column of a family's Pokémon, spread out unless it sits at the bottom.
 // Melmetal's icon sits a little to the right.
-const pokemonColumn = "flex flex-col [&_.pkicon-809]:ml-3";
-const pokemonLink = "cursor-pointer px-5 py-0";
+const pokemonColumn = tw`flex flex-col [&_.pkicon-809]:ml-3`;
+const pokemonLink = tw`cursor-pointer px-5 py-0`;
 
 export function EvolutionFamily({ family, setSelectedPokemon }: Props) {
   const { username, slug } = useUserParams();

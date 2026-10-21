@@ -60,7 +60,7 @@ export function DexPreview({ dex }: Props) {
         )}
         <DexIndicator dex={dex} />
       </div>
-      <div className="mt-0 flex justify-between">
+      <div className="flex justify-between">
         <Progress caught={dex.caught} total={dex.total} />
       </div>
     </div>

@@ -7,9 +7,10 @@ import { useSession } from "../../hooks/contexts/use-session";
 import { useUser } from "../../hooks/queries/users";
 import { useUserParams } from "../../hooks/use-user-params";
 import { trackEvent } from "../../utils/analytics";
+import { tw } from "../../utils/tw";
 import { headerLink, headerPencil } from "./Header";
 
-const friendCode = "m-0 font-secondary text-15 font-normal";
+const friendCode = tw`m-0 font-secondary text-15 font-normal`;
 
 export function FriendCode() {
   const { username } = useUserParams();

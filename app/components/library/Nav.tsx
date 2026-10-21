@@ -13,29 +13,28 @@ import { Link } from "react-router";
 import { useLocalStorageContext } from "../../hooks/contexts/use-local-storage-context";
 import { useSession } from "../../hooks/contexts/use-session";
 import { trackEvent } from "../../utils/analytics";
+import { tw } from "../../utils/tw";
 import { TooltipText } from "./Tooltip";
 
-const nav =
-  "relative flex flex-[0_0_42px] bg-brand-primary font-secondary night:bg-night-mode-03dp";
+const nav = tw`relative flex flex-[0_0_42px] bg-brand-primary font-secondary night:bg-night-mode-03dp`;
 
 // What every link in the nav has, the dropdown's included.
-const base =
-  "p-14 text-11 font-bold tracking-1 text-brand-secondary uppercase no-underline transition-all duration-100 ease-out no-touch:hover:cursor-pointer no-touch:focus:cursor-pointer night:text-white night:hover:text-night-mode-primary max-600:px-10 max-600:text-10";
+const base = tw`p-14 text-11 font-bold tracking-1 text-brand-secondary uppercase no-underline transition-all duration-100 ease-out no-touch:hover:cursor-pointer no-touch:focus:cursor-pointer night:text-white night:hover:text-night-mode-primary max-600:px-10 max-600:text-10`;
 
 // The links along the nav, which light up on hover or focus on devices
 // without touch.
-const link = `${base} flex items-center no-touch:hover:bg-brand-primary-lighten-10 no-touch:focus:bg-brand-primary-lighten-10 night:hover:bg-night-mode-06dp`;
+const navLink = tw`${base} flex items-center no-touch:hover:bg-brand-primary-lighten-10 no-touch:focus:bg-brand-primary-lighten-10 night:hover:bg-night-mode-06dp`;
 
 // The logo, which pushes the rest of the links to the right.
-const logo = `${link} mr-auto`;
+const logo = tw`${navLink} mr-auto`;
 
 // The username, which opens the dropdown. It lights up while the dropdown is
 // hovered, on touch devices too.
-const toggle = `${base} flex items-center group-hover/dropdown:bg-brand-primary-lighten-10 no-touch:focus:bg-brand-primary-lighten-10 night:group-hover/dropdown:bg-night-mode-04dp`;
+const toggle = tw`${base} flex items-center group-hover/dropdown:bg-brand-primary-lighten-10 no-touch:focus:bg-brand-primary-lighten-10 night:group-hover/dropdown:bg-night-mode-04dp`;
 
 // The dropdown's links.
-const item = `${base} block truncate border-t-2 border-t-brand-primary bg-brand-primary-lighten-10 hover:bg-brand-primary-lighten-15 night:border-t-night-mode-03dp night:bg-night-mode-04dp night:hover:bg-night-mode-06dp`;
-const itemIcon = "float-left mt-2 mr-15";
+const item = tw`${base} block truncate border-t-2 border-t-brand-primary bg-brand-primary-lighten-10 hover:bg-brand-primary-lighten-15 night:border-t-night-mode-03dp night:bg-night-mode-04dp night:hover:bg-night-mode-06dp`;
+const itemIcon = tw`float-left mt-2 mr-15`;
 
 export function Nav() {
   const { isNightMode, setIsNightMode } = useLocalStorageContext();
@@ -65,7 +64,7 @@ export function Nav() {
         Pokédex Tracker
       </Link>
       <a
-        className={`${link} group relative ml-3`}
+        className={`${navLink} group relative ml-3`}
         data-testid="night-mode-toggle"
         onClick={handleNightModeClick}
       >
@@ -78,7 +77,7 @@ export function Nav() {
         </TooltipText>
       </a>
       <a
-        className={link}
+        className={navLink}
         href="https://www.patreon.com/pokedextracker"
         rel="noopener noreferrer"
         target="_blank"
@@ -143,10 +142,10 @@ export function Nav() {
   return (
     <nav className={nav}>
       {links}
-      <Link className={link} to="/login">
+      <Link className={navLink} to="/login">
         Login
       </Link>
-      <Link className={link} to="/register">
+      <Link className={navLink} to="/register">
         Register
       </Link>
     </nav>

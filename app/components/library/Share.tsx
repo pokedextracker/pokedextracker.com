@@ -2,7 +2,7 @@ import { useRef } from "react";
 
 import { useUserParams } from "../../hooks/use-user-params";
 import { trackEvent } from "../../utils/analytics";
-import { formControl } from "./Form";
+import { formControlClassName } from "./Form";
 
 interface Props {
   profile: boolean;
@@ -25,7 +25,7 @@ export function Share({ profile }: Props) {
     >
       Share this {profile ? "Profile" : "Living Dex"}:
       <input
-        className={formControl("mt-5 p-6 text-12")}
+        className={formControlClassName("mt-5 p-6 text-12")}
         onClick={handleClick}
         readOnly
         ref={inputRef}

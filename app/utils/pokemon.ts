@@ -2,6 +2,7 @@ import classNames from "classnames";
 
 import type { Capture, Dex } from "../types";
 import { padding } from "./formatting";
+import { tw } from "./tw";
 
 export const BOX_SIZE = 30;
 
@@ -36,7 +37,7 @@ interface Pokemon {
 
 // The circle behind a Legends: Arceus icon in the info panel. Those icons sit
 // in a circle, whose color depends on what's behind it.
-export const infoIconCircle = "bg-[rgba(241,241,241,0.3)]";
+export const infoIconCircle = tw`bg-[rgba(241,241,241,0.3)]`;
 
 // iconClass is the sprite for a Pokémon in a dex, with circle as its
 // background if it's a Legends: Arceus icon.

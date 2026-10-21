@@ -123,28 +123,16 @@
   --color-night-mode-03dp: rgb(15.0588235294%, 15.0588235294%, 15.0588235294%);
   --color-night-mode-04dp: rgb(16.0588235294%, 16.0588235294%, 16.0588235294%);
   --color-night-mode-06dp: rgb(18.0588235294%, 18.0588235294%, 18.0588235294%);
-  --color-night-mode-08dp: rgb(19.0588235294%, 19.0588235294%, 19.0588235294%);
-  --color-night-mode-12dp: rgb(21.0588235294%, 21.0588235294%, 21.0588235294%);
   --color-night-mode-16dp: rgb(22.0588235294%, 22.0588235294%, 22.0588235294%);
   --color-night-mode-24dp: rgb(23.0588235294%, 23.0588235294%, 23.0588235294%);
   --color-night-mode-dark: rgb(0.0588235294%, 0.0588235294%, 0.0588235294%);
   --color-night-mode-primary: #c7bd7d;
-  --color-night-mode-primary-light: rgb(
-    87.0714737508%,
-    84.7628083491%,
-    69.9873497786%
-  );
   --color-night-mode-primary-dark: rgb(
     67.8368121442%,
     62.6185958254%,
     29.2220113852%
   );
   --color-night-mode-secondary: #102d52;
-  --color-night-mode-secondary-light: rgb(
-    8.5602240896%,
-    24.0756302521%,
-    43.8711484594%
-  );
   --color-night-mode-secondary-dark: rgb(
     3.9887955182%,
     11.218487395%,
@@ -220,12 +208,15 @@
   --shadow-*: initial;
   --shadow-raised: 1px 1px 3px rgba(0, 0, 0, 0.5);
 
-  /* CSS's ease-out keyword, which the old stylesheets use. Tailwind's own is
+  /* CSS's ease-out keyword, which the old stylesheets used. Tailwind's own is
      a different curve. */
   --ease-*: initial;
   --ease-out: ease-out;
 
+  /* Pages slide up into place: the home page and 404 slowly, and the forms
+     and profile quickly. */
   --animate-slide: slide 1s cubic-bezier(0, 0, 0.05, 1) forwards;
+  --animate-slide-fast: slide 0.5s ease-out forwards;
 
   @keyframes slide {
     0% {
@@ -239,17 +230,18 @@
   }
 }
 
-/* Hover applies on every device, as it does in the old stylesheets. Tailwind
+/* Hover applies on every device, as it did in the old stylesheets. Tailwind
    4 limits it to devices that can hover, which would change taps on phones. */
 @custom-variant hover (&:hover);
 
-/* The old stylesheets' .no-touch class (set in index.html on devices without
-   touch), for the few hover styles limited to those. It adds no specificity,
-   like night below, so between the two the later utility wins, as the later
-   rule did in the old stylesheets. */
+/* The .no-touch class (set in index.html on devices without touch), for the
+   few hover styles limited to those. It adds no specificity, like night
+   below, so between the two the later utility wins, as the later rule did in
+   the old stylesheets. */
 @custom-variant no-touch (:where(.no-touch) &);
 
-/* Night mode is a class on the app's root. */
+/* Night mode is a class on the app's root, and on a modal, which renders
+   outside it. */
 @custom-variant night (&:where(.night-mode, .night-mode *));
 
 /* The old stylesheets' breakpoints, exactly. Tailwind's max-* variants use

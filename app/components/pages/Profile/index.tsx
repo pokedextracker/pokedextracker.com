@@ -11,7 +11,7 @@ import { isNotFound } from "../../../utils/api";
 import { buttonClassName, buttonIcon } from "../../library/Button";
 import { Footer } from "../../library/Footer";
 import { FriendCode } from "../../library/FriendCode";
-import { Header, header } from "../../library/Header";
+import { Header } from "../../library/Header";
 import { pageContainer, wrapper } from "../../library/layout";
 import { LoadError } from "../../library/LoadError";
 import { Loading } from "../../library/Loading";
@@ -66,9 +66,9 @@ export function Profile() {
     <div className={pageContainer}>
       <Nav />
       <Reload />
-      <div className="relative top-70 flex-[1_0_auto] animate-[slide_0.5s_ease-out_forwards] overflow-y-scroll px-0 pt-100 pb-60 night:bg-night-mode max-750:px-15 max-750:pt-40 max-750:pb-20">
+      <div className="relative top-70 flex-[1_0_auto] animate-slide-fast overflow-y-scroll px-0 pt-100 pb-60 night:bg-night-mode max-750:px-15 max-750:pt-40 max-750:pb-20">
         <div className={wrapper}>
-          <header className={header}>
+          <header>
             <Notification />
             <Header profile />
             <FriendCode />

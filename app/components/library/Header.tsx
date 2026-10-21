@@ -9,19 +9,16 @@ import { useUser } from "../../hooks/queries/users";
 import { useUserParams } from "../../hooks/use-user-params";
 import type { Dex } from "../../types";
 import { trackEvent } from "../../utils/analytics";
+import { tw } from "../../utils/tw";
 import { DexIndicator } from "./DexIndicator";
 import { DonatedFlair } from "./DonatedFlair";
 import { Share } from "./Share";
 
-// The header atop a profile or dex.
-export const header = "max-750:w-full";
-
 // A link in the header, like the share toggle or the friend code's pencil,
 // and the icon in it.
-export const headerLink =
-  "text-16 text-black-lighten-25 hover:cursor-pointer hover:text-black night:text-night-mode-link-gray night:hover:text-night-mode-link-gray-dark";
-export const headerIcon = "relative bottom-4 ml-5 text-14";
-export const headerPencil = "relative bottom-1 ml-5 text-12";
+export const headerLink = tw`text-16 text-black-lighten-25 hover:cursor-pointer hover:text-black night:text-night-mode-link-gray night:hover:text-night-mode-link-gray-dark`;
+const headerIcon = tw`relative bottom-4 ml-5 text-14`;
+export const headerPencil = tw`relative bottom-1 ml-5 text-12`;
 
 interface Props {
   profile?: boolean;

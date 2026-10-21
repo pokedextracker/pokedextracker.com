@@ -38,7 +38,7 @@ import {
   Checkbox,
   form,
   formColumn,
-  formControl,
+  formControlClassName,
   formGroup,
   formLabel,
   formNote,
@@ -279,7 +279,7 @@ export function DexCreate({ onRequestClose }: Props) {
               Title
             </label>
             <input
-              className={formControl()}
+              className={formControlClassName()}
               id="dex_title"
               maxLength={300}
               name="dex_title"
@@ -296,7 +296,7 @@ export function DexCreate({ onRequestClose }: Props) {
               Game
             </label>
             <select
-              className={formControl()}
+              className={formControlClassName()}
               onChange={handleGameChange}
               value={game}
             >

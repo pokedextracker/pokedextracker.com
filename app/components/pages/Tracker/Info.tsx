@@ -17,6 +17,7 @@ import type { Dex } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
 import { nationalId, padding, serebiiLink } from "../../../utils/formatting";
 import { iconClass, infoIconCircle } from "../../../utils/pokemon";
+import { tw } from "../../../utils/tw";
 import { PokemonName } from "../../library/PokemonName";
 import { EvolutionFamily } from "./EvolutionFamily";
 import { InfoLocations } from "./InfoLocations";
@@ -68,9 +69,8 @@ function mainClassName(showInfo: boolean): string {
 }
 
 // The links to Bulbapedia and Serebii, side by side, and their arrows.
-const footerLink =
-  "w-1/2 border-brand-secondary-dark-darken-3 bg-brand-secondary-dark p-20 text-center font-secondary text-11 font-bold tracking-1 text-white uppercase no-underline transition-all duration-100 ease-out no-touch:hover:bg-brand-secondary-dark-darken-3 no-touch:focus:bg-brand-secondary-dark-darken-3 night:border-night-mode-secondary-dark night:bg-night-mode-secondary-darken-4 night:hover:bg-night-mode-secondary-darken-6 night:focus:bg-night-mode-secondary-darken-4 night:focus:hover:bg-night-mode-secondary-darken-6";
-const footerIcon = "ml-3 text-10 transition-all duration-100 ease-out";
+const footerLink = tw`w-1/2 border-brand-secondary-dark-darken-3 bg-brand-secondary-dark p-20 text-center font-secondary text-11 font-bold tracking-1 text-white uppercase no-underline transition-all duration-100 ease-out no-touch:hover:bg-brand-secondary-dark-darken-3 no-touch:focus:bg-brand-secondary-dark-darken-3 night:border-night-mode-secondary-dark night:bg-night-mode-secondary-darken-4 night:hover:bg-night-mode-secondary-darken-6 night:focus:bg-night-mode-secondary-darken-4 night:focus:hover:bg-night-mode-secondary-darken-6`;
+const footerIcon = tw`ml-3 text-10 transition-all duration-100 ease-out`;
 
 export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
   const { username, slug } = useUserParams();

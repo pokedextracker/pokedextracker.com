@@ -26,7 +26,7 @@ import { Footer } from "../library/Footer";
 import {
   form,
   formColumn,
-  formControl,
+  formControlClassName,
   formGroup,
   formLabel,
   formPage,
@@ -159,7 +159,7 @@ function AccountForm({ sessionUser }: AccountFormProps) {
             <div>
               <div className={formGroup}>
                 <input
-                  className={`${formControl()} tracking-2`}
+                  className={`${formControlClassName()} tracking-2`}
                   id="password"
                   name="password"
                   onChange={handlePasswordChange}
@@ -172,7 +172,7 @@ function AccountForm({ sessionUser }: AccountFormProps) {
               </div>
               <div className={formGroup}>
                 <input
-                  className={`${formControl()} tracking-2`}
+                  className={`${formControlClassName()} tracking-2`}
                   id="password_confirm"
                   name="password_confirm"
                   onChange={handlePasswordConfirmChange}
@@ -190,7 +190,7 @@ function AccountForm({ sessionUser }: AccountFormProps) {
               3DS Friend Code
             </label>
             <input
-              className={formControl()}
+              className={formControlClassName()}
               id="friend_code_3ds"
               name="friend_code_3ds"
               onChange={handleFriendCode3dsChange}
@@ -204,7 +204,7 @@ function AccountForm({ sessionUser }: AccountFormProps) {
               Switch Friend Code
             </label>
             <input
-              className={formControl()}
+              className={formControlClassName()}
               id="friend_code_switch"
               name="friend_code_switch"
               onChange={handleFriendCodeSwitchChange}
@@ -217,7 +217,7 @@ function AccountForm({ sessionUser }: AccountFormProps) {
             <label className={formLabel} htmlFor="language">
               Pokémon Name Language
             </label>
-            <select className={formControl()}>
+            <select className={formControlClassName()}>
               <option>English</option>
             </select>
             <FontAwesomeIcon className={selectIcon} icon={faChevronDown} />

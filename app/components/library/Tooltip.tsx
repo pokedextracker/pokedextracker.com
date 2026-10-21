@@ -3,16 +3,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import type { ReactNode } from "react";
 
+import { tw } from "../../utils/tw";
+
 // Where the text sits and its colors, with its arrow's to match.
 const variants = {
-  default:
-    "bottom-27 bg-brand-secondary text-white after:top-full after:border-t-brand-secondary",
+  default: tw`bottom-27 bg-brand-secondary text-white after:top-full after:border-t-brand-secondary`,
   // In night mode it takes night mode's red.
-  error:
-    "bottom-27 bg-error-darken-5 text-white after:top-full after:border-t-error-darken-5 night:bg-night-mode-error night:after:border-t-night-mode-error",
-  light: "bottom-27 bg-white text-black after:top-full after:border-t-white",
+  error: tw`bottom-27 bg-error-darken-5 text-white after:top-full after:border-t-error-darken-5 night:bg-night-mode-error night:after:border-t-night-mode-error`,
+  light: tw`bottom-27 bg-white text-black after:top-full after:border-t-white`,
   // Below the trigger, in the nav's colors in night mode.
-  nav: "top-47 bg-brand-secondary text-white after:bottom-full after:border-b-brand-secondary night:bg-night-mode-primary night:text-night-mode-03dp night:after:border-b-night-mode-primary",
+  nav: tw`top-47 bg-brand-secondary text-white after:bottom-full after:border-b-brand-secondary night:bg-night-mode-primary night:text-night-mode-03dp night:after:border-b-night-mode-primary`,
 };
 
 type Variant = keyof typeof variants;
@@ -59,10 +59,10 @@ interface Props {
 // Tooltip is an icon that shows some text on hover.
 export function Tooltip({
   children,
-  className = "ml-3",
+  className = tw`ml-3`,
   "data-testid": testId,
   icon,
-  iconClassName = "text-11",
+  iconClassName = tw`text-11`,
   textClassName,
   variant,
 }: Props) {

@@ -29,13 +29,14 @@ import { useDeleteDex, useUpdateDex } from "../../../hooks/queries/dexes";
 import { useGames } from "../../../hooks/queries/games";
 import type { Customization, Dex, DexType, Game } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
+import { tw } from "../../../utils/tw";
 import { Alert } from "../../library/Alert";
 import { buttonClassName, buttonIcon } from "../../library/Button";
 import {
   Checkbox,
   form,
   formColumn,
-  formControl,
+  formControlClassName,
   formGroup,
   formLabel,
   formNote,
@@ -62,12 +63,11 @@ interface Props {
   onRequestClose: () => void;
 }
 
+// The link that deletes the dex, and the one that confirms it, in red.
+const deleteLink = tw`mx-3 my-0 cursor-pointer font-medium text-error underline transition-all duration-100 ease-out hover:text-error-darken-5 night:text-night-mode-error night:hover:text-night-mode-error-dark`;
+
 // DexEdit is only mounted while it's open, so every time it opens, the form
 // starts from the dex as it is then.
-// The link that deletes the dex, and the one that confirms it, in red.
-const deleteLink =
-  "mx-3 my-0 cursor-pointer font-medium text-error underline transition-all duration-100 ease-out hover:text-error-darken-5 night:text-night-mode-error night:hover:text-night-mode-error-dark";
-
 export function DexEdit({ dex, onRequestClose }: Props) {
   const formRef = useRef<HTMLDivElement>(null);
 
@@ -390,7 +390,7 @@ export function DexEdit({ dex, onRequestClose }: Props) {
             </label>
             <FormWarning message={showUrlWarning && URL_WARNING} />
             <input
-              className={formControl()}
+              className={formControlClassName()}
               id="dex_title"
               maxLength={300}
               name="dex_title"
@@ -408,7 +408,7 @@ export function DexEdit({ dex, onRequestClose }: Props) {
               Game
             </label>
             <select
-              className={formControl()}
+              className={formControlClassName()}
               onChange={handleGameChange}
               value={game}
             >

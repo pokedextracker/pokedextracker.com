@@ -9,7 +9,7 @@ import {
 } from "react";
 
 import { trackEvent } from "../../../utils/analytics";
-import { Checkbox, formControl } from "../../library/Form";
+import { Checkbox, fieldSize, formControlClassName } from "../../library/Form";
 import { wrapper } from "../../library/layout";
 
 interface Props {
@@ -57,7 +57,7 @@ export function SearchBar({
   return (
     <div className="border-b border-gray-light bg-white p-10 night:border-night-mode-dark night:bg-night-mode max-400:pr-35">
       <div className={wrapper}>
-        <div className="relative mb-0">
+        <div className="relative">
           <FontAwesomeIcon
             className="absolute bottom-15 left-14 text-12 text-brand-secondary night:text-white"
             icon={faSearch}
@@ -66,7 +66,7 @@ export function SearchBar({
             autoCapitalize="off"
             autoComplete="off"
             autoCorrect="off"
-            className={formControl("h-43 py-0 pr-32 pl-32 text-15")}
+            className={formControlClassName(`${fieldSize} pl-32`)}
             id="search"
             name="search"
             onChange={handleInputChange}
@@ -89,7 +89,7 @@ export function SearchBar({
           ) : null}
         </div>
         <div className="pt-10">
-          <div className="relative mb-0">
+          <div className="relative">
             <Checkbox
               checked={hideCaught}
               id="hide-caught"
