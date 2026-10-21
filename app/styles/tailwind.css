@@ -40,18 +40,18 @@
     height: 100vh;
   }
 
-  /* Night mode is a class on the app's root, and on a modal, which renders
-     outside it. A link that doesn't set its own color takes night mode's. */
-  .night-mode {
+  /* Night mode is the dark class on <html> (see index.html). A link that
+     doesn't set its own color takes night mode's. */
+  .dark {
     background-color: var(--color-night-mode);
     color: var(--color-white);
   }
 
-  .night-mode a {
+  .dark a {
     color: var(--color-night-mode-link);
   }
 
-  .night-mode a:hover {
+  .dark a:hover {
     color: var(--color-night-mode-link-dark);
   }
 }
@@ -240,9 +240,12 @@
    the old stylesheets. */
 @custom-variant no-touch (:where(.no-touch) &);
 
-/* Night mode is a class on the app's root, and on a modal, which renders
-   outside it. */
-@custom-variant night (&:where(.night-mode, .night-mode *));
+/* Night mode, as Tailwind's dark variant: the dark class on <html>, which
+   index.html sets before the page draws, and the toggle in the nav changes.
+   Tailwind keeps dark in its own place in the order, before no-touch, so a
+   dark hover or focus color that has to win over a no-touch one, as it did
+   in the old stylesheets, is marked important (the trailing !). */
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* The old stylesheets' breakpoints, exactly. Tailwind's max-* variants use
    width < N rather than max-width: N, a pixel off. Widest first: utilities

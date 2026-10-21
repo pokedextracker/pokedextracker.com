@@ -123,6 +123,19 @@
       if (!("ontouchstart" in window)) {
         document.documentElement.className += " no-touch";
       }
+      // Night mode before the page draws, so it doesn't flash light first: the
+      // visitor's choice if they've made one (see use-local-storage-context),
+      // and otherwise their device's.
+      try {
+        var nightMode = localStorage.getItem("nightMode");
+        if (
+          nightMode === null
+            ? matchMedia("(prefers-color-scheme: dark)").matches
+            : nightMode === "true"
+        ) {
+          document.documentElement.className += " dark";
+        }
+      } catch (e) {}
     </script>
   </head>
   <body>

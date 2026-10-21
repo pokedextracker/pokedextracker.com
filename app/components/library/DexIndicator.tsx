@@ -10,7 +10,7 @@ interface Props {
   dex: Dex;
 }
 
-const label = tw`ml-7 rounded-3 bg-gray-light px-6 py-4 font-secondary text-10 font-medium uppercase night:bg-night-mode-04dp`;
+const label = tw`ml-7 rounded-3 bg-gray-light px-6 py-4 font-secondary text-10 font-medium uppercase dark:bg-night-mode-04dp`;
 
 export function DexIndicator({ dex }: Props) {
   return (

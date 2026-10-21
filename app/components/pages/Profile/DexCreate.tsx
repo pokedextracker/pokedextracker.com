@@ -21,7 +21,6 @@ import Modal from "react-modal";
 import { useNavigate } from "react-router";
 import slug from "slug";
 
-import { useLocalStorageContext } from "../../../hooks/contexts/use-local-storage-context";
 import { useSession } from "../../../hooks/contexts/use-session";
 import { useDexTypes } from "../../../hooks/queries/dex-types";
 import { useCreateDex } from "../../../hooks/queries/dexes";
@@ -63,8 +62,6 @@ export function DexCreate({ onRequestClose }: Props) {
   const navigate = useNavigate();
 
   const formRef = useRef<HTMLDivElement>(null);
-
-  const { isNightMode } = useLocalStorageContext();
   const { session } = useSession();
   const { data: games } = useGames();
   const { data: dexTypes } = useDexTypes();
@@ -260,7 +257,7 @@ export function DexCreate({ onRequestClose }: Props) {
 
   return (
     <Modal
-      className={`${modal} ${isNightMode ? "night-mode" : ""}`}
+      className={modal}
       contentLabel="Create a New Dex"
       isOpen
       onRequestClose={onRequestClose}

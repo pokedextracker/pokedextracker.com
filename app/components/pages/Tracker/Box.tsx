@@ -67,7 +67,7 @@ export function Box({
         </h1>
         <MarkAllButton captures={captures} />
       </div>
-      <div className="flex flex-wrap border border-gray-light night:border-night-mode-01dp max-750:flex-col">
+      <div className="flex flex-wrap border border-gray-light dark:border-night-mode-01dp max-750:flex-col">
         {captures.map((capture) => (
           <Pokemon
             capture={capture}

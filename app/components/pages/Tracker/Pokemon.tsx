@@ -47,10 +47,10 @@ function tileClassName({
   return classNames(
     "group/tile relative flex h-110 w-110 max-750:h-80 max-750:w-full",
     captured
-      ? "bg-brand-primary-light night:bg-night-mode-primary night:text-black"
+      ? "bg-brand-primary-light dark:bg-night-mode-primary dark:text-black"
       : "",
     pending &&
-      "bg-[rgba(100%,92.0386784851%,54.1176470588%,0.5)] night:bg-[rgba(199,189,125,0.5)]",
+      "bg-[rgba(100%,92.0386784851%,54.1176470588%,0.5)] dark:bg-[rgba(199,189,125,0.5)]",
     !empty && !readOnly && "hover:cursor-pointer",
     empty && "max-750:hidden",
     searchResult &&
@@ -72,11 +72,11 @@ function desktopClassName({
   return classNames(
     "flex grow flex-col items-center justify-center border max-750:hidden",
     captured
-      ? "border-brand-primary-lighten-15 night:border-night-mode-primary-dark"
-      : "border-gray-light night:border-night-mode-01dp",
+      ? "border-brand-primary-lighten-15 dark:border-night-mode-primary-dark"
+      : "border-gray-light dark:border-night-mode-01dp",
     !captured &&
       hoverable &&
-      "group-hover/tile:border-brand-primary-lighten-15 night:group-hover/tile:border-night-mode-primary-dark",
+      "group-hover/tile:border-brand-primary-lighten-15 dark:group-hover/tile:border-night-mode-primary-dark",
     searchResult && "min-751:border-2",
   );
 }
@@ -86,8 +86,8 @@ function mobileClassName(captured = false): string {
   return classNames(
     "hidden grow items-center border max-750:flex",
     captured
-      ? "border-brand-primary-lighten-15 night:border-night-mode-primary-dark"
-      : "border-gray-light night:border-night-mode-01dp",
+      ? "border-brand-primary-lighten-15 dark:border-night-mode-primary-dark"
+      : "border-gray-light dark:border-night-mode-01dp",
   );
 }
 
@@ -205,8 +205,8 @@ export function Pokemon({
 
   // The circle behind a Legends: Arceus icon, lighter on a caught tile.
   const circle = capture.captured
-    ? tw`bg-[rgba(255,255,255,0.5)] night:bg-[rgba(255,255,255,0.35)]`
-    : tw`bg-[rgba(210,210,210,0.4)] night:bg-[rgba(241,241,241,0.2)]`;
+    ? tw`bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.35)]`
+    : tw`bg-[rgba(210,210,210,0.4)] dark:bg-[rgba(241,241,241,0.2)]`;
 
   const regional = dex.dex_type.tags.includes("regional");
   const idToDisplay = regional
@@ -265,14 +265,14 @@ export function Pokemon({
         className={classNames(
           "group/info absolute right-0 bottom-0 flex p-5 opacity-0 group-hover/tile:opacity-100 hover:cursor-pointer max-750:relative max-750:w-50 max-750:items-center max-750:justify-center max-750:border max-750:opacity-100 min-751:hover:-right-1 min-751:hover:-bottom-1",
           capture.captured
-            ? "border-brand-primary-lighten-15 night:border-night-mode-primary-dark"
-            : "border-gray-light night:border-night-mode-01dp",
+            ? "border-brand-primary-lighten-15 dark:border-night-mode-primary-dark"
+            : "border-gray-light dark:border-night-mode-01dp",
         )}
         data-testid="set-info"
         onClick={handleSetInfoClick}
       >
         <FontAwesomeIcon
-          className="m-2 h-21 w-21 rounded-half border-2 border-solid border-brand-secondary-light p-4 text-14 text-brand-secondary-light group-hover/info:m-3 group-hover/info:h-22 group-hover/info:w-22 group-hover/info:border-brand-secondary-dark-darken-5 group-hover/info:text-brand-secondary-dark-darken-5 night:border-night-mode-link night:text-night-mode-link night:group-hover/info:border-night-mode-link-dark night:group-hover/info:text-night-mode-link-dark"
+          className="m-2 h-21 w-21 rounded-half border-2 border-solid border-brand-secondary-light p-4 text-14 text-brand-secondary-light group-hover/info:m-3 group-hover/info:h-22 group-hover/info:w-22 group-hover/info:border-brand-secondary-dark-darken-5 group-hover/info:text-brand-secondary-dark-darken-5 dark:border-night-mode-link dark:text-night-mode-link dark:group-hover/info:border-night-mode-link-dark dark:group-hover/info:text-night-mode-link-dark"
           icon={faInfo}
         />
       </div>

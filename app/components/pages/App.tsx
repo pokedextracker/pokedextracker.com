@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 
-import { useLocalStorageContext } from "../../hooks/contexts/use-local-storage-context";
 import { Rollbar } from "../../utils/rollbar";
 import { Account } from "./Account";
 import { Home } from "./Home";
@@ -24,14 +23,10 @@ function RollbarContext() {
 }
 
 export function App() {
-  const { isNightMode } = useLocalStorageContext();
-
   return (
     <BrowserRouter>
       <RollbarContext />
-      <div
-        className={`flex h-screen flex-col ${isNightMode ? "night-mode" : ""}`}
-      >
+      <div className="flex h-screen flex-col">
         <Routes>
           <Route element={<Home />} path="/" />
           <Route element={<Login />} path="/login" />

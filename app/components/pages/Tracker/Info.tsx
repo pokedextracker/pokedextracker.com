@@ -56,20 +56,20 @@ function infoClassName(showInfo: boolean): string {
 // the dex, so the open tab sits at its edge.
 function collapseClassName(showInfo: boolean): string {
   return classNames(
-    "flex items-center bg-brand-secondary-dark-darken-3 p-8 text-12 text-white hover:-ml-2 hover:cursor-pointer hover:pr-10 night:bg-night-mode-secondary-dark max-1100:relative max-400:right-0 max-400:hover:ml-0 max-400:hover:pr-8",
+    "flex items-center bg-brand-secondary-dark-darken-3 p-8 text-12 text-white hover:-ml-2 hover:cursor-pointer hover:pr-10 dark:bg-night-mode-secondary-dark max-1100:relative max-400:right-0 max-400:hover:ml-0 max-400:hover:pr-8",
     showInfo ? "max-1100:right-350" : "max-1100:right-0",
   );
 }
 
 function mainClassName(showInfo: boolean): string {
   return classNames(
-    "w-350 flex-col bg-brand-secondary text-white night:bg-night-mode-02dp max-1100:absolute max-1100:right-0 max-1100:h-full max-400:relative max-400:w-full",
+    "w-350 flex-col bg-brand-secondary text-white dark:bg-night-mode-02dp max-1100:absolute max-1100:right-0 max-1100:h-full max-400:relative max-400:w-full",
     showInfo ? "flex" : "hidden",
   );
 }
 
 // The links to Bulbapedia and Serebii, side by side, and their arrows.
-const footerLink = tw`w-1/2 border-brand-secondary-dark-darken-3 bg-brand-secondary-dark p-20 text-center font-secondary text-11 font-bold tracking-1 text-white uppercase no-underline transition-all duration-100 ease-out no-touch:hover:bg-brand-secondary-dark-darken-3 no-touch:focus:bg-brand-secondary-dark-darken-3 night:border-night-mode-secondary-dark night:bg-night-mode-secondary-darken-4 night:hover:bg-night-mode-secondary-darken-6 night:focus:bg-night-mode-secondary-darken-4 night:focus:hover:bg-night-mode-secondary-darken-6`;
+const footerLink = tw`w-1/2 border-brand-secondary-dark-darken-3 bg-brand-secondary-dark p-20 text-center font-secondary text-11 font-bold tracking-1 text-white uppercase no-underline transition-all duration-100 ease-out dark:border-night-mode-secondary-dark dark:bg-night-mode-secondary-darken-4 dark:hover:bg-night-mode-secondary-darken-6! dark:focus:bg-night-mode-secondary-darken-4! dark:focus:hover:bg-night-mode-secondary-darken-6! no-touch:hover:bg-brand-secondary-dark-darken-3 no-touch:focus:bg-brand-secondary-dark-darken-3`;
 const footerIcon = tw`ml-3 text-10 transition-all duration-100 ease-out`;
 
 export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
@@ -173,7 +173,7 @@ export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
       </div>
 
       <div className={mainClassName(showInfo)} data-testid="info-main">
-        <div className="flex shrink-0 items-center border-b-2 border-brand-secondary-dark-darken-3 bg-brand-secondary pt-17 pr-17 pb-17 pl-8 night:border-night-mode-secondary-dark night:bg-night-mode-secondary">
+        <div className="flex shrink-0 items-center border-b-2 border-brand-secondary-dark-darken-3 bg-brand-secondary pt-17 pr-17 pb-17 pl-8 dark:border-night-mode-secondary-dark dark:bg-night-mode-secondary">
           <i
             className={`${iconClass(pokemon, dex, infoIconCircle)} mx-12 my-0`}
           />
@@ -200,7 +200,7 @@ export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
           setSelectedPokemon={setSelectedPokemon}
         />
 
-        <div className="mt-auto flex shrink-0 border-t-2 border-brand-secondary-dark-darken-3 night:border-night-mode-secondary-dark night:bg-night-mode-secondary">
+        <div className="mt-auto flex shrink-0 border-t-2 border-brand-secondary-dark-darken-3 dark:border-night-mode-secondary-dark dark:bg-night-mode-secondary">
           <a
             className={`${footerLink} border-r`}
             href={`http://bulbapedia.bulbagarden.net/wiki/${encodeURI(pokemon.name)}_(Pok%C3%A9mon)`}

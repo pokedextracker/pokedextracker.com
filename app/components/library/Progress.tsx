@@ -10,7 +10,7 @@ export function Progress({ caught, total }: Props) {
 
   return (
     <div className="h-28 w-full">
-      <div className="relative h-full w-full border-2 border-solid border-brand-primary bg-white night:border-night-mode-primary-dark night:bg-night-mode-01dp">
+      <div className="relative h-full w-full border-2 border-solid border-brand-primary bg-white dark:border-night-mode-primary-dark dark:bg-night-mode-01dp">
         <div className="absolute w-full p-5 text-center font-secondary text-11 font-normal tracking-1 uppercase">
           <b>{decimal(percent, 1)}%</b> done!
           <span className="max-500:hidden">
@@ -19,7 +19,7 @@ export function Progress({ caught, total }: Props) {
           </span>
         </div>
         <div
-          className="h-full bg-brand-primary night:bg-night-mode-primary-dark"
+          className="h-full bg-brand-primary dark:bg-night-mode-primary-dark"
           style={{ width: `${percent}%` }}
         />
       </div>
