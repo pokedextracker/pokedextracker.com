@@ -29,7 +29,9 @@ export function App() {
   return (
     <BrowserRouter>
       <RollbarContext />
-      <div className={`root ${isNightMode ? "night-mode" : ""}`}>
+      <div
+        className={`flex h-screen flex-col ${isNightMode ? "night-mode" : ""}`}
+      >
         <Routes>
           <Route element={<Home />} path="/" />
           <Route element={<Login />} path="/login" />

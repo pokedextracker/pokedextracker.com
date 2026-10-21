@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 
 import { useVersion } from "../../hooks/queries/version";
+import { link } from "./links";
 
 export function Reload() {
   const { data: version } = useVersion();
@@ -23,10 +24,13 @@ export function Reload() {
   const handleClick = () => window.location.reload();
 
   return (
-    <div className="reload" data-testid="reload-banner">
-      <FontAwesomeIcon icon={faExclamationCircle} />
+    <div
+      className="bg-brand-primary-lighter px-30 py-10 text-center text-14 night:bg-night-mode-16dp"
+      data-testid="reload-banner"
+    >
+      <FontAwesomeIcon className="mr-2 text-10" icon={faExclamationCircle} />
       There&apos;s a new version of the app available &ndash;{" "}
-      <a className="link" onClick={handleClick}>
+      <a className={link} onClick={handleClick}>
         Refresh your browser
       </a>{" "}
       now!

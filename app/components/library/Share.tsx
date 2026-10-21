@@ -2,6 +2,7 @@ import { useRef } from "react";
 
 import { useUserParams } from "../../hooks/use-user-params";
 import { trackEvent } from "../../utils/analytics";
+import { formControlClassName } from "./Form";
 
 interface Props {
   profile: boolean;
@@ -18,10 +19,13 @@ export function Share({ profile }: Props) {
   };
 
   return (
-    <div className="share" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="absolute bottom-[200%] left-1/2 z-1 -ml-150 w-300 border-2 border-solid border-gray-light bg-white p-10 text-14 after:absolute after:top-full after:left-1/2 after:-ml-8 after:border-8 after:border-solid after:border-transparent after:border-t-gray-light after:content-['_'] night:border-night-mode-02dp night:bg-night-mode night:text-white night:after:border-t-night-mode-02dp"
+      onClick={(e) => e.stopPropagation()}
+    >
       Share this {profile ? "Profile" : "Living Dex"}:
       <input
-        className="form-control"
+        className={formControlClassName("mt-5 p-6 text-12")}
         onClick={handleClick}
         readOnly
         ref={inputRef}

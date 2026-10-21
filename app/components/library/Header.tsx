@@ -9,9 +9,16 @@ import { useUser } from "../../hooks/queries/users";
 import { useUserParams } from "../../hooks/use-user-params";
 import type { Dex } from "../../types";
 import { trackEvent } from "../../utils/analytics";
+import { tw } from "../../utils/tw";
 import { DexIndicator } from "./DexIndicator";
 import { DonatedFlair } from "./DonatedFlair";
 import { Share } from "./Share";
+
+// A link in the header, like the share toggle or the friend code's pencil,
+// and the icon in it.
+export const headerLink = tw`text-16 text-black-lighten-25 hover:cursor-pointer hover:text-black night:text-night-mode-link-gray night:hover:text-night-mode-link-gray-dark`;
+const headerIcon = tw`relative bottom-4 ml-5 text-14`;
+export const headerPencil = tw`relative bottom-1 ml-5 text-12`;
 
 interface Props {
   profile?: boolean;
@@ -50,25 +57,30 @@ export function Header({ profile = false }: Props) {
   const ownPage = session?.id === user.id;
 
   return (
-    <div className="header-row">
-      <h1>
+    <div className="flex items-center">
+      <h1 className="relative m-0 inline-block text-40 text-brand-secondary night:text-white max-750:text-30">
         {dex?.title || `${user.username}'s Profile`}
-        <div className="share-container">
-          <a data-testid="share-toggle" onClick={handleShareClick}>
-            <FontAwesomeIcon icon={faLink} />
+        <div className="relative inline-block max-750:hidden">
+          <a
+            className={`${headerLink} relative`}
+            data-testid="share-toggle"
+            onClick={handleShareClick}
+          >
+            <FontAwesomeIcon className={headerIcon} icon={faLink} />
             {showShare && <Share profile={profile} />}
           </a>
           <a
+            className={`${headerLink} relative`}
             href={`https://twitter.com/intent/tweet?text=Check out ${ownPage ? "my" : `${user.username}'s`} ${profile ? "profile" : "living dex progress"} on @PokedexTracker! https://pokedextracker.com/u/${user.username}${dex ? `/${dex.slug}` : ""}`}
             onClick={handleTweetClick}
             rel="noopener noreferrer"
             target="_blank"
           >
-            <FontAwesomeIcon icon={faTwitter} />
+            <FontAwesomeIcon className={headerIcon} icon={faTwitter} />
           </a>
         </div>
       </h1>
-      {profile && <DonatedFlair user={user} />}
+      {profile && <DonatedFlair className="ml-auto h-18" user={user} />}
       {dex && <DexIndicator dex={dex} />}
     </div>
   );

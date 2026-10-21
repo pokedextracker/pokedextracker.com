@@ -29,6 +29,29 @@ import { useGames } from "../../../hooks/queries/games";
 import type { Customization, DexType, Game } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
 import { Alert } from "../../library/Alert";
+import {
+  buttonClassName,
+  buttonIcon,
+  buttonLayout,
+} from "../../library/Button";
+import {
+  Checkbox,
+  form,
+  formColumn,
+  formControlClassName,
+  formGroup,
+  formLabel,
+  formNote,
+  formOption,
+  formPage,
+  formTitle,
+  inputIcon,
+  Radio,
+  selectIcon,
+} from "../../library/Form";
+import { link } from "../../library/links";
+import { modal, modalFooter, modalOverlay } from "../../library/modal";
+import { Tooltip } from "../../library/Tooltip";
 
 interface Props {
   onRequestClose: () => void;
@@ -237,24 +260,26 @@ export function DexCreate({ onRequestClose }: Props) {
 
   return (
     <Modal
-      className={`modal ${isNightMode ? "night-mode" : ""}`}
+      className={`${modal} ${isNightMode ? "night-mode" : ""}`}
       contentLabel="Create a New Dex"
       isOpen
       onRequestClose={onRequestClose}
-      overlayClassName="modal-overlay"
+      overlayClassName={modalOverlay}
     >
-      <div className="form" ref={formRef}>
-        <h1>Create New Dex</h1>
-        <form className="form-column" onSubmit={handleSubmit}>
+      <div className={formPage} ref={formRef}>
+        <h1 className={formTitle}>Create New Dex</h1>
+        <form className={`${form} ${formColumn}`} onSubmit={handleSubmit}>
           <Alert message={createDexMutation.error?.message} type="error" />
-          <div className="form-group">
-            <div className="form-note">
+          <div className={formGroup}>
+            <div className={formNote}>
               /u/{session!.username}/
               {slug(title || "Living Dex", { lower: true })}
             </div>
-            <label htmlFor="dex_title">Title</label>
+            <label className={formLabel} htmlFor="dex_title">
+              Title
+            </label>
             <input
-              className="form-control"
+              className={formControlClassName()}
               id="dex_title"
               maxLength={300}
               name="dex_title"
@@ -264,12 +289,14 @@ export function DexCreate({ onRequestClose }: Props) {
               type="text"
               value={title}
             />
-            <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
+            <FontAwesomeIcon className={inputIcon} icon={faAsterisk} />
           </div>
-          <div className="form-group">
-            <label htmlFor="game">Game</label>
+          <div className={formGroup}>
+            <label className={formLabel} htmlFor="game">
+              Game
+            </label>
             <select
-              className="form-control"
+              className={formControlClassName()}
               onChange={handleGameChange}
               value={game}
             >
@@ -279,100 +306,83 @@ export function DexCreate({ onRequestClose }: Props) {
                 </option>
               ))}
             </select>
-            <FontAwesomeIcon className="input-icon" icon={faChevronDown} />
+            <FontAwesomeIcon className={selectIcon} icon={faChevronDown} />
           </div>
-          <div className="form-group">
-            <label htmlFor="dex-type">Dex Type</label>
+          <div className={formGroup}>
+            <label className={formLabel} htmlFor="dex-type">
+              Dex Type
+            </label>
             {dexTypesByGameFamilyId[gamesById[game].game_family.id]
               .filter((dt) => !dt.base_dex_type_id)
               .map((dt) => (
-                <div className="form-option" key={dt.id}>
-                  <div className="radio">
-                    <label>
-                      <input
-                        checked={dexType === dt.id}
-                        name="dex-type"
-                        onChange={() => {
-                          setDexType(dt.id);
-                          setSelectedCustomizations({});
-                        }}
-                        type="radio"
-                      />
-                      <span className="radio-custom">
-                        <span />
-                      </span>
-                      {dt.name}
-                      {dt.description ? (
-                        <div className="tooltip">
-                          <FontAwesomeIcon
-                            className="tooltip-icon"
-                            icon={faQuestionCircle}
-                          />
-                          <span className="tooltip-text">{dt.description}</span>
-                        </div>
-                      ) : null}
-                    </label>
-                  </div>
+                <div className={formOption} key={dt.id}>
+                  <Radio
+                    checked={dexType === dt.id}
+                    name="dex-type"
+                    onChange={() => {
+                      setDexType(dt.id);
+                      setSelectedCustomizations({});
+                    }}
+                  >
+                    {dt.name}
+                    {dt.description ? (
+                      <Tooltip
+                        className="ml-5"
+                        icon={faQuestionCircle}
+                        iconClassName="text-12 text-brand-secondary"
+                      >
+                        {dt.description}
+                      </Tooltip>
+                    ) : null}
+                  </Radio>
                 </div>
               ))}
           </div>
-          <div className="form-group">
-            <label>Customizations</label>
-            <div className="form-option">
-              <div className="checkbox">
-                <label>
-                  <input
-                    checked={shiny}
-                    id="customization-shiny"
-                    name="customization-shiny"
-                    onChange={handleShinyChange}
-                    type="checkbox"
-                  />
-                  <span className="checkbox-custom">
-                    <span />
-                  </span>
-                  Shiny
-                </label>
-              </div>
+          <div className={formGroup}>
+            <label className={formLabel}>Customizations</label>
+            <div className={formOption}>
+              <Checkbox
+                checked={shiny}
+                id="customization-shiny"
+                name="customization-shiny"
+                onChange={handleShinyChange}
+              >
+                Shiny
+              </Checkbox>
             </div>
             {customizationsByBaseDexTypeId[dexType]?.map((customization) => (
-              <div className="form-option" key={customization.value}>
-                <div className="checkbox">
-                  <label>
-                    <input
-                      checked={
-                        selectedCustomizations[customization.value] || false
-                      }
-                      id={customization.value.replace(/ /g, "-")}
-                      name={customization.value.replace(/ /g, "-")}
-                      onChange={(e) => {
-                        setSelectedCustomizations((prev) => ({
-                          ...prev,
-                          [customization.value]: e.target.checked,
-                        }));
-                      }}
-                      type="checkbox"
-                    />
-                    <span className="checkbox-custom">
-                      <span />
-                    </span>
-                    {customization.label}
-                  </label>
-                </div>
+              <div className={formOption} key={customization.value}>
+                <Checkbox
+                  checked={selectedCustomizations[customization.value] || false}
+                  id={customization.value.replace(/ /g, "-")}
+                  name={customization.value.replace(/ /g, "-")}
+                  onChange={(e) => {
+                    setSelectedCustomizations((prev) => ({
+                      ...prev,
+                      [customization.value]: e.target.checked,
+                    }));
+                  }}
+                >
+                  {customization.label}
+                </Checkbox>
               </div>
             ))}
           </div>
           <button
-            className="btn btn-blue"
+            className={buttonClassName("blue", `${buttonLayout} mt-40`)}
             disabled={createDexMutation.isPending}
             type="submit"
           >
-            Create <FontAwesomeIcon icon={faLongArrowAltRight} />
+            {"Create "}
+            <FontAwesomeIcon
+              className={buttonIcon}
+              icon={faLongArrowAltRight}
+            />
           </button>
         </form>
       </div>
-      <p>
-        <a className="link" onClick={onRequestClose}>
+      <p className={modalFooter}>
+        <a className={link} onClick={onRequestClose}>
           Go Back
         </a>
       </p>

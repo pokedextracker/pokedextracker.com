@@ -17,16 +17,86 @@ import type { Dex } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
 import { nationalId, padding } from "../../../utils/formatting";
 import { iconClass } from "../../../utils/pokemon";
+import { tw } from "../../../utils/tw";
 import { PokemonName } from "../../library/PokemonName";
 import { useTrackerContext, type UICapture } from "./use-tracker";
 
 interface Props {
   capture: UICapture | null;
   delay?: number;
+  // In search results, where the tiles overlap their borders on a desktop.
+  searchResult?: boolean;
   setSelectedPokemon: Dispatch<SetStateAction<number>>;
 }
 
-export function Pokemon({ capture, delay = 0, setSelectedPokemon }: Props) {
+// tileClassName is a tile's own classes. Its background shows whether it's
+// caught or pending.
+function tileClassName({
+  captured = false,
+  empty = false,
+  pending = false,
+  readOnly = true,
+  searchResult = false,
+}: {
+  captured?: boolean;
+  empty?: boolean;
+  pending?: boolean;
+  readOnly?: boolean;
+  searchResult?: boolean;
+}): string {
+  return classNames(
+    "group/tile relative flex h-110 w-110 max-750:h-80 max-750:w-full",
+    captured
+      ? "bg-brand-primary-light night:bg-night-mode-primary night:text-black"
+      : "",
+    pending &&
+      "bg-[rgba(100%,92.0386784851%,54.1176470588%,0.5)] night:bg-[rgba(199,189,125,0.5)]",
+    !empty && !readOnly && "hover:cursor-pointer",
+    empty && "max-750:hidden",
+    searchResult &&
+      "min-751:-mt-2 min-751:-ml-2 min-751:h-112 min-751:w-112 min-751:hover:z-1 min-751:nth-[6n+1]:ml-0",
+  );
+}
+
+// The tile's border on a desktop, which darkens when it's caught, or on hover
+// when it can be marked.
+function desktopClassName({
+  captured = false,
+  hoverable = false,
+  searchResult = false,
+}: {
+  captured?: boolean;
+  hoverable?: boolean;
+  searchResult?: boolean;
+}): string {
+  return classNames(
+    "flex grow flex-col items-center justify-center border max-750:hidden",
+    captured
+      ? "border-brand-primary-lighten-15 night:border-night-mode-primary-dark"
+      : "border-gray-light night:border-night-mode-01dp",
+    !captured &&
+      hoverable &&
+      "group-hover/tile:border-brand-primary-lighten-15 night:group-hover/tile:border-night-mode-primary-dark",
+    searchResult && "min-751:border-2",
+  );
+}
+
+// The tile on a phone, a row with its border.
+function mobileClassName(captured = false): string {
+  return classNames(
+    "hidden grow items-center border max-750:flex",
+    captured
+      ? "border-brand-primary-lighten-15 night:border-night-mode-primary-dark"
+      : "border-gray-light night:border-night-mode-01dp",
+  );
+}
+
+export function Pokemon({
+  capture,
+  delay = 0,
+  searchResult = false,
+  setSelectedPokemon,
+}: Props) {
   const render = useDelayedRender(delay);
 
   const { username, slug } = useUserParams();
@@ -46,9 +116,9 @@ export function Pokemon({ capture, delay = 0, setSelectedPokemon }: Props) {
 
   if (!render || !capture) {
     return (
-      <div className="pokemon empty">
-        <div className="set-captured" />
-        <div className="set-captured-mobile" />
+      <div className={tileClassName({ empty: true, searchResult })}>
+        <div className={desktopClassName({ searchResult })} />
+        <div className={mobileClassName()} />
       </div>
     );
   }
@@ -132,12 +202,11 @@ export function Pokemon({ capture, delay = 0, setSelectedPokemon }: Props) {
   }
 
   const readOnly = !session || session.id !== user.id;
-  const classes = {
-    pokemon: true,
-    viewing: readOnly,
-    captured: capture.captured,
-    pending: capture.pending,
-  };
+
+  // The circle behind a Legends: Arceus icon, lighter on a caught tile.
+  const circle = capture.captured
+    ? tw`bg-[rgba(255,255,255,0.5)] night:bg-[rgba(255,255,255,0.35)]`
+    : tw`bg-[rgba(210,210,210,0.4)] night:bg-[rgba(241,241,241,0.2)]`;
 
   const regional = dex.dex_type.tags.includes("regional");
   const idToDisplay = regional
@@ -149,39 +218,63 @@ export function Pokemon({ capture, delay = 0, setSelectedPokemon }: Props) {
 
   return (
     <div
-      className={classNames(classes)}
+      className={tileClassName({
+        captured: capture.captured,
+        pending: capture.pending,
+        readOnly,
+        searchResult,
+      })}
       data-captured={capture.captured}
       data-read-only={readOnly}
       data-testid="pokemon"
     >
       <div
-        className="set-captured"
+        className={desktopClassName({
+          captured: capture.captured,
+          hoverable: !readOnly,
+          searchResult,
+        })}
         data-testid="set-captured"
         onClick={handleSetCapturedClick}
       >
-        <h4>
+        <h4 className="m-0 text-17 font-normal">
           <PokemonName name={capture.pokemon.name} />
         </h4>
-        <div className="icon-wrapper">
-          <i className={iconClass(capture.pokemon, dex)} />
+        <div className="flex h-49 items-center">
+          <i className={iconClass(capture.pokemon, dex, circle)} />
         </div>
-        <p>#{padding(idToDisplay, paddingDigits)}</p>
-      </div>
-      <div className="set-captured-mobile" onClick={handleSetCapturedClick}>
-        <div className="icon-wrapper">
-          <i className={iconClass(capture.pokemon, dex)} />
-        </div>
-        <h4>
-          <PokemonName name={capture.pokemon.name} />
-        </h4>
-        <p>#{padding(idToDisplay, paddingDigits)}</p>
+        <p className="m-0 font-secondary text-12 font-normal">
+          #{padding(idToDisplay, paddingDigits)}
+        </p>
       </div>
       <div
-        className="set-info"
+        className={mobileClassName(capture.captured)}
+        onClick={handleSetCapturedClick}
+      >
+        <div className="min-w-52 px-6 py-0 text-center">
+          <i className={iconClass(capture.pokemon, dex, circle)} />
+        </div>
+        <h4 className="m-0 grow text-20 font-normal">
+          <PokemonName name={capture.pokemon.name} />
+        </h4>
+        <p className="m-0 pr-10 font-secondary text-11">
+          #{padding(idToDisplay, paddingDigits)}
+        </p>
+      </div>
+      <div
+        className={classNames(
+          "group/info absolute right-0 bottom-0 flex p-5 opacity-0 group-hover/tile:opacity-100 hover:cursor-pointer max-750:relative max-750:w-50 max-750:items-center max-750:justify-center max-750:border max-750:opacity-100 min-751:hover:-right-1 min-751:hover:-bottom-1",
+          capture.captured
+            ? "border-brand-primary-lighten-15 night:border-night-mode-primary-dark"
+            : "border-gray-light night:border-night-mode-01dp",
+        )}
         data-testid="set-info"
         onClick={handleSetInfoClick}
       >
-        <FontAwesomeIcon icon={faInfo} />
+        <FontAwesomeIcon
+          className="m-2 h-21 w-21 rounded-half border-2 border-solid border-brand-secondary-light p-4 text-14 text-brand-secondary-light group-hover/info:m-3 group-hover/info:h-22 group-hover/info:w-22 group-hover/info:border-brand-secondary-dark-darken-5 group-hover/info:text-brand-secondary-dark-darken-5 night:border-night-mode-link night:text-night-mode-link night:group-hover/info:border-night-mode-link-dark night:group-hover/info:text-night-mode-link-dark"
+          icon={faInfo}
+        />
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
-import "./styles";
+import "./styles/tailwind.css";
 
+import { config as fontAwesome } from "@fortawesome/fontawesome-svg-core";
 import { ErrorBoundary, Provider as RollbarProvider } from "@rollbar/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { createRoot } from "react-dom/client";
@@ -10,6 +11,11 @@ import { LocalStorageContextProvider } from "./hooks/contexts/use-local-storage-
 import { SessionProvider } from "./hooks/contexts/use-session";
 import { queryClient } from "./utils/query-client";
 import { Rollbar } from "./utils/rollbar";
+
+// Font Awesome's stylesheet is in styles/tailwind.css, so the site's styles can
+// still override it from inside a CSS layer. Left to add it itself, it would
+// sit outside every layer and win over them.
+fontAwesome.autoAddCss = false;
 
 Modal.setAppElement("#root");
 

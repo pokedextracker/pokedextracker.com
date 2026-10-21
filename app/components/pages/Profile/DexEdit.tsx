@@ -29,7 +29,27 @@ import { useDeleteDex, useUpdateDex } from "../../../hooks/queries/dexes";
 import { useGames } from "../../../hooks/queries/games";
 import type { Customization, Dex, DexType, Game } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
+import { tw } from "../../../utils/tw";
 import { Alert } from "../../library/Alert";
+import { buttonClassName, buttonIcon } from "../../library/Button";
+import {
+  Checkbox,
+  form,
+  formColumn,
+  formControlClassName,
+  formGroup,
+  formLabel,
+  formNote,
+  formOption,
+  formPage,
+  formTitle,
+  inputIcon,
+  Radio,
+  selectIcon,
+} from "../../library/Form";
+import { link } from "../../library/links";
+import { modal, modalFooter, modalOverlay } from "../../library/modal";
+import { Tooltip } from "../../library/Tooltip";
 import { FormWarning } from "./FormWarning";
 
 const GAME_WARNING = "Any capture info specific to your old game will be lost.";
@@ -42,6 +62,9 @@ interface Props {
   dex: Dex;
   onRequestClose: () => void;
 }
+
+// The link that deletes the dex, and the one that confirms it, in red.
+const deleteLink = tw`mx-3 my-0 cursor-pointer font-medium text-error underline transition-all duration-100 ease-out hover:text-error-darken-5 night:text-night-mode-error night:hover:text-night-mode-error-dark`;
 
 // DexEdit is only mounted while it's open, so every time it opens, the form
 // starts from the dex as it is then.
@@ -323,33 +346,33 @@ export function DexEdit({ dex, onRequestClose }: Props) {
 
   return (
     <Modal
-      className={`modal ${isNightMode ? "night-mode" : ""}`}
+      className={`${modal} ${isNightMode ? "night-mode" : ""}`}
       contentLabel="Edit Dex"
       isOpen
       onRequestClose={onRequestClose}
-      overlayClassName="modal-overlay"
+      overlayClassName={modalOverlay}
     >
-      <div className="dex-delete-container">
+      <div className="absolute top-10 right-12 z-1 text-right text-14">
         {isConfirmingDelete ? (
           <>
             Are you sure?&nbsp;
-            <a className="link" onClick={handleDeleteClick}>
+            <a className={deleteLink} onClick={handleDeleteClick}>
               Yes
             </a>
             &nbsp;
-            <a className="link" onClick={() => setIsConfirmingDelete(false)}>
+            <a className={link} onClick={() => setIsConfirmingDelete(false)}>
               No
             </a>
           </>
         ) : (
-          <a className="link" onClick={handleDeleteClick}>
+          <a className={deleteLink} onClick={handleDeleteClick}>
             <FontAwesomeIcon icon={faTrashAlt} />
           </a>
         )}
       </div>
-      <div className="form" ref={formRef}>
-        <h1>Edit a Dex</h1>
-        <form className="form-column" onSubmit={handleUpdateSubmit}>
+      <div className={formPage} ref={formRef}>
+        <h1 className={formTitle}>Edit a Dex</h1>
+        <form className={`${form} ${formColumn}`} onSubmit={handleUpdateSubmit}>
           <Alert
             message={
               updateDexMutation.error?.message ||
@@ -357,15 +380,17 @@ export function DexEdit({ dex, onRequestClose }: Props) {
             }
             type="error"
           />
-          <div className="form-group">
-            <div className="form-note">
+          <div className={formGroup}>
+            <div className={formNote}>
               /u/{session!.username}/
               {slug(title || "Living Dex", { lower: true })}
             </div>
-            <label htmlFor="dex_title">Title</label>
+            <label className={formLabel} htmlFor="dex_title">
+              Title
+            </label>
             <FormWarning message={showUrlWarning && URL_WARNING} />
             <input
-              className="form-control"
+              className={formControlClassName()}
               id="dex_title"
               maxLength={300}
               name="dex_title"
@@ -375,13 +400,15 @@ export function DexEdit({ dex, onRequestClose }: Props) {
               type="text"
               value={title}
             />
-            <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
+            <FontAwesomeIcon className={inputIcon} icon={faAsterisk} />
           </div>
-          <div className="form-group">
+          <div className={formGroup}>
             <FormWarning message={showGameWarning && GAME_WARNING} />
-            <label htmlFor="game">Game</label>
+            <label className={formLabel} htmlFor="game">
+              Game
+            </label>
             <select
-              className="form-control"
+              className={formControlClassName()}
               onChange={handleGameChange}
               value={game}
             >
@@ -391,94 +418,73 @@ export function DexEdit({ dex, onRequestClose }: Props) {
                 </option>
               ))}
             </select>
-            <FontAwesomeIcon className="input-icon" icon={faChevronDown} />
+            <FontAwesomeIcon className={selectIcon} icon={faChevronDown} />
           </div>
-          <div className="form-group">
+          <div className={formGroup}>
             <FormWarning message={dexTypeWarning} />
-            <label htmlFor="dex-type">Dex Type</label>
+            <label className={formLabel} htmlFor="dex-type">
+              Dex Type
+            </label>
             {dexTypesByGameFamilyId[gamesById[game].game_family.id]
               .filter((dt) => !dt.base_dex_type_id)
               .map((dt) => (
-                <div className="form-option" key={dt.id}>
-                  <div className="radio">
-                    <label>
-                      <input
-                        checked={dexType === dt.id}
-                        name="dex-type"
-                        onChange={() => {
-                          setDexType(dt.id);
-                          setSelectedCustomizations({});
-                          cancelConfirmingUpdate();
-                        }}
-                        type="radio"
-                      />
-                      <span className="radio-custom">
-                        <span />
-                      </span>
-                      {dt.name}
-                      {dt.description ? (
-                        <div className="tooltip">
-                          <FontAwesomeIcon
-                            className="tooltip-icon"
-                            icon={faQuestionCircle}
-                          />
-                          <span className="tooltip-text">{dt.description}</span>
-                        </div>
-                      ) : null}
-                    </label>
-                  </div>
+                <div className={formOption} key={dt.id}>
+                  <Radio
+                    checked={dexType === dt.id}
+                    name="dex-type"
+                    onChange={() => {
+                      setDexType(dt.id);
+                      setSelectedCustomizations({});
+                      cancelConfirmingUpdate();
+                    }}
+                  >
+                    {dt.name}
+                    {dt.description ? (
+                      <Tooltip
+                        className="ml-5"
+                        icon={faQuestionCircle}
+                        iconClassName="text-12 text-brand-secondary"
+                      >
+                        {dt.description}
+                      </Tooltip>
+                    ) : null}
+                  </Radio>
                 </div>
               ))}
           </div>
-          <div className="form-group">
-            <label>Customizations</label>
-            <div className="form-option">
-              <div className="checkbox">
-                <label>
-                  <input
-                    checked={shiny}
-                    id="customization-shiny"
-                    name="customization-shiny"
-                    onChange={handleShinyChange}
-                    type="checkbox"
-                  />
-                  <span className="checkbox-custom">
-                    <span />
-                  </span>
-                  Shiny
-                </label>
-              </div>
+          <div className={formGroup}>
+            <label className={formLabel}>Customizations</label>
+            <div className={formOption}>
+              <Checkbox
+                checked={shiny}
+                id="customization-shiny"
+                name="customization-shiny"
+                onChange={handleShinyChange}
+              >
+                Shiny
+              </Checkbox>
             </div>
             {customizationsByBaseDexTypeId[dexType]?.map((customization) => (
-              <div className="form-option" key={customization.value}>
-                <div className="checkbox">
-                  <label>
-                    <input
-                      checked={
-                        selectedCustomizations[customization.value] || false
-                      }
-                      id={customization.value.replace(/ /g, "-")}
-                      name={customization.value.replace(/ /g, "-")}
-                      onChange={(e) => {
-                        setSelectedCustomizations((prev) => ({
-                          ...prev,
-                          [customization.value]: e.target.checked,
-                        }));
-                        cancelConfirmingUpdate();
-                      }}
-                      type="checkbox"
-                    />
-                    <span className="checkbox-custom">
-                      <span />
-                    </span>
-                    {customization.label}
-                  </label>
-                </div>
+              <div className={formOption} key={customization.value}>
+                <Checkbox
+                  checked={selectedCustomizations[customization.value] || false}
+                  id={customization.value.replace(/ /g, "-")}
+                  name={customization.value.replace(/ /g, "-")}
+                  onChange={(e) => {
+                    setSelectedCustomizations((prev) => ({
+                      ...prev,
+                      [customization.value]: e.target.checked,
+                    }));
+                    cancelConfirmingUpdate();
+                  }}
+                >
+                  {customization.label}
+                </Checkbox>
               </div>
             ))}
           </div>
           <Alert
-            className="form-confirm"
+            className="mt-40"
             message={
               isConfirmingUpdate &&
               "Please review the warnings above and confirm your edit!"
@@ -486,19 +492,22 @@ export function DexEdit({ dex, onRequestClose }: Props) {
             type="error"
           />
           <button
-            className="btn btn-blue form-confirm"
+            className={buttonClassName("blue")}
             disabled={
               updateDexMutation.isPending || deleteDexMutation.isPending
             }
             type="submit"
           >
             {isConfirmingUpdate ? "Confirm" : ""} Edit{" "}
-            <FontAwesomeIcon icon={faLongArrowAltRight} />
+            <FontAwesomeIcon
+              className={buttonIcon}
+              icon={faLongArrowAltRight}
+            />
           </button>
         </form>
       </div>
-      <p>
-        <a className="link" onClick={onRequestClose}>
+      <p className={modalFooter}>
+        <a className={link} onClick={onRequestClose}>
           Go Back
         </a>
       </p>

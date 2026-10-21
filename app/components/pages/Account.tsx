@@ -1,7 +1,6 @@
 import {
   faAsterisk,
   faChevronDown,
-  faCircleNotch,
   faLongArrowAltRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -17,7 +16,25 @@ import {
   friendCodeSwitchFormatter,
 } from "../../utils/formatting";
 import { Alert } from "../library/Alert";
+import {
+  buttonClassName,
+  buttonIcon,
+  buttonLayout,
+  ButtonSpinner,
+} from "../library/Button";
 import { Footer } from "../library/Footer";
+import {
+  form,
+  formColumn,
+  formControlClassName,
+  formGroup,
+  formLabel,
+  formPage,
+  formTitle,
+  inputIcon,
+  selectIcon,
+} from "../library/Form";
+import { pageContainer } from "../library/layout";
 import { LoadError } from "../library/LoadError";
 import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
@@ -112,12 +129,12 @@ function AccountForm({ sessionUser }: AccountFormProps) {
     setFriendCodeSwitch(friendCodeSwitchFormatter(e.target.value));
 
   return (
-    <div className="account-container">
+    <div className={pageContainer}>
       <Nav />
       <Reload />
-      <div className="form">
-        <h1>{sessionUser.username}&apos;s Account</h1>
-        <form className="form-column" onSubmit={handleSubmit}>
+      <div className={formPage}>
+        <h1 className={formTitle}>{sessionUser.username}&apos;s Account</h1>
+        <form className={`${form} ${formColumn}`} onSubmit={handleSubmit}>
           <Alert
             message={error || updateUserMutation.error?.message}
             type="error"
@@ -126,10 +143,12 @@ function AccountForm({ sessionUser }: AccountFormProps) {
             message={updateUserMutation.isSuccess && "Account settings saved!"}
             type="success"
           />
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
+          <div className={formGroup}>
+            <label className={formLabel} htmlFor="password">
+              Password
+            </label>
             <button
-              className="btn btn-inline btn-yellow"
+              className={buttonClassName("yellow")}
               onClick={handleChangePasswordClick}
               type="button"
             >
@@ -138,9 +157,9 @@ function AccountForm({ sessionUser }: AccountFormProps) {
           </div>
           {isEditingPassword && (
             <div>
-              <div className="form-group">
+              <div className={formGroup}>
                 <input
-                  className="form-control"
+                  className={`${formControlClassName()} tracking-2`}
                   id="password"
                   name="password"
                   onChange={handlePasswordChange}
@@ -149,11 +168,11 @@ function AccountForm({ sessionUser }: AccountFormProps) {
                   type="password"
                   value={password}
                 />
-                <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
+                <FontAwesomeIcon className={inputIcon} icon={faAsterisk} />
               </div>
-              <div className="form-group">
+              <div className={formGroup}>
                 <input
-                  className="form-control"
+                  className={`${formControlClassName()} tracking-2`}
                   id="password_confirm"
                   name="password_confirm"
                   onChange={handlePasswordConfirmChange}
@@ -162,14 +181,16 @@ function AccountForm({ sessionUser }: AccountFormProps) {
                   type="password"
                   value={passwordConfirm}
                 />
-                <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
+                <FontAwesomeIcon className={inputIcon} icon={faAsterisk} />
               </div>
             </div>
           )}
-          <div className="form-group">
-            <label htmlFor="friend_code_3ds">3DS Friend Code</label>
+          <div className={formGroup}>
+            <label className={formLabel} htmlFor="friend_code_3ds">
+              3DS Friend Code
+            </label>
             <input
-              className="form-control"
+              className={formControlClassName()}
               id="friend_code_3ds"
               name="friend_code_3ds"
               onChange={handleFriendCode3dsChange}
@@ -178,10 +199,12 @@ function AccountForm({ sessionUser }: AccountFormProps) {
               value={friendCode3ds}
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="friend_code_switch">Switch Friend Code</label>
+          <div className={formGroup}>
+            <label className={formLabel} htmlFor="friend_code_switch">
+              Switch Friend Code
+            </label>
             <input
-              className="form-control"
+              className={formControlClassName()}
               id="friend_code_switch"
               name="friend_code_switch"
               onChange={handleFriendCodeSwitchChange}
@@ -190,26 +213,30 @@ function AccountForm({ sessionUser }: AccountFormProps) {
               value={friendCodeSwitch}
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="language">Pokémon Name Language</label>
-            <select className="form-control">
+          <div className={formGroup}>
+            <label className={formLabel} htmlFor="language">
+              Pokémon Name Language
+            </label>
+            <select className={formControlClassName()}>
               <option>English</option>
             </select>
-            <FontAwesomeIcon className="input-icon" icon={faChevronDown} />
+            <FontAwesomeIcon className={selectIcon} icon={faChevronDown} />
           </div>
-          <button className="btn btn-blue" type="submit">
+          <button
+            className={buttonClassName("blue", `${buttonLayout} mt-40`)}
+            type="submit"
+          >
             {/* The double check for isPending is necessary because there is a slight delay when applying visibility: hidden onto the icon. */}
-            <span className={updateUserMutation.isPending ? "hidden" : ""}>
+            <span className={updateUserMutation.isPending ? "invisible" : ""}>
               Save{" "}
               {!updateUserMutation.isPending && (
-                <FontAwesomeIcon icon={faLongArrowAltRight} />
+                <FontAwesomeIcon
+                  className={buttonIcon}
+                  icon={faLongArrowAltRight}
+                />
               )}
             </span>
-            {updateUserMutation.isPending ? (
-              <span className="spinner">
-                <FontAwesomeIcon icon={faCircleNotch} spin />
-              </span>
-            ) : null}
+            {updateUserMutation.isPending ? <ButtonSpinner /> : null}
           </button>
         </form>
       </div>

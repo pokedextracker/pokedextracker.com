@@ -8,6 +8,7 @@ import uniqBy from "lodash/uniqBy";
 
 import type { Evolution } from "../../../types";
 import { capitalize } from "../../../utils/formatting";
+import { Tooltip } from "../../library/Tooltip";
 
 function evolutionKey(evolution: Evolution) {
   return `${evolution.trigger}:${evolution.level}:${evolution.stone}:${evolution.held_item}:${evolution.notes}`;
@@ -49,17 +50,25 @@ export function Evolutions({ evolutions, pokemonId }: Props) {
         notes = <span>{evolution.notes}</span>;
       } else {
         notes = (
-          <div className="tooltip">
-            <FontAwesomeIcon icon={faPlusCircle} />
-            <span className="tooltip-text">{evolution.notes}</span>
-          </div>
+          <Tooltip
+            data-testid="evolution-notes"
+            icon={faPlusCircle}
+            iconClassName="text-11 text-white"
+            variant="light"
+          >
+            {evolution.notes}
+          </Tooltip>
         );
       }
     }
 
     return (
-      <div className="evolution-trigger" key={key}>
+      <div
+        className="mx-0 my-8 flex flex-col justify-center first:mt-0 last:mb-0"
+        key={key}
+      >
         <FontAwesomeIcon
+          className="mb-3 w-[unset]"
           icon={
             evolution.trigger === "breed"
               ? faLongArrowAltLeft
@@ -80,7 +89,7 @@ export function Evolutions({ evolutions, pokemonId }: Props) {
   return (
     // styling hack for mr.rime
     <div
-      className={`evolution-trigger-column ${pokemonId === 866 ? "push" : ""}`}
+      className={`flex max-w-90 grow flex-col ${pokemonId === 866 ? "justify-end" : "justify-around"}`}
     >
       {elements}
     </div>

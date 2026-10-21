@@ -6,7 +6,9 @@ import { useUser } from "../../../hooks/queries/users";
 import { useUserParams } from "../../../hooks/use-user-params";
 import { isNotFound } from "../../../utils/api";
 import { Footer } from "../../library/Footer";
+import { pageContainer } from "../../library/layout";
 import { LoadError } from "../../library/LoadError";
+import { Loading } from "../../library/Loading";
 import { Nav } from "../../library/Nav";
 import { Reload } from "../../library/Reload";
 import { NotFound } from "../NotFound";
@@ -46,7 +48,7 @@ function TrackerPage() {
   // changed), so it waits for this visit's fetch rather than starting from
   // the cache.
   if (userQuery.isPending || !capturesQuery.isFetchedAfterMount) {
-    return <div className="loading">Loading...</div>;
+    return <Loading>Loading...</Loading>;
   }
 
   // A failed refresh of an owner who's already loaded doesn't count: the page
@@ -113,18 +115,22 @@ function TrackerInner({ initialSelectedPokemon }: TrackerInnerProps) {
   };
 
   return (
-    <div className="tracker-container">
+    <div className={pageContainer}>
       <Nav />
       <Reload />
-      <div className="tracker">
-        <div className="dex-wrapper">
+      <div className="relative flex min-h-0 flex-[1_1_auto]">
+        <div className="flex grow flex-col">
           <SearchBar
             hideCaught={hideCaught}
             query={query}
             setHideCaught={setHideCaught}
             setQuery={setQuery}
           />
-          <div className="dex-column" onScroll={handleScroll} ref={trackerRef}>
+          <div
+            className="flex grow flex-col overflow-y-scroll"
+            onScroll={handleScroll}
+            ref={trackerRef}
+          >
             <Dex
               hideCaught={hideCaught}
               onScrollButtonClick={handleScrollButtonClick}

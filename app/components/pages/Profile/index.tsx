@@ -8,10 +8,13 @@ import { useGames } from "../../../hooks/queries/games";
 import { useUser } from "../../../hooks/queries/users";
 import { useUserParams } from "../../../hooks/use-user-params";
 import { isNotFound } from "../../../utils/api";
+import { buttonClassName, buttonIcon } from "../../library/Button";
 import { Footer } from "../../library/Footer";
 import { FriendCode } from "../../library/FriendCode";
 import { Header } from "../../library/Header";
+import { pageContainer, wrapper } from "../../library/layout";
 import { LoadError } from "../../library/LoadError";
+import { Loading } from "../../library/Loading";
 import { Nav } from "../../library/Nav";
 import { Notification } from "../../library/Notification";
 import { Reload } from "../../library/Reload";
@@ -46,7 +49,7 @@ export function Profile() {
   const handleDexCreateRequestClose = () => setShowDexCreate(false);
 
   if (userIsPending) {
-    return <div className="loading">Loading...</div>;
+    return <Loading>Loading...</Loading>;
   }
 
   // A failed refresh of a user who's already loaded doesn't count: the page can
@@ -60,11 +63,11 @@ export function Profile() {
   }
 
   return (
-    <div className="profile-container">
+    <div className={pageContainer}>
       <Nav />
       <Reload />
-      <div className="profile">
-        <div className="wrapper">
+      <div className="relative top-70 flex-[1_0_auto] animate-slide-fast overflow-y-scroll px-0 pt-100 pb-60 night:bg-night-mode max-750:px-15 max-750:pt-40 max-750:pb-20">
+        <div className={wrapper}>
           <header>
             <Notification />
             <Header profile />
@@ -76,9 +79,19 @@ export function Profile() {
           ))}
 
           {ownPage && (
-            <div className="dex-create">
-              <div className="btn btn-blue" onClick={handleCreateNewDexClick}>
-                Create a New Dex <FontAwesomeIcon icon={faLongArrowAltRight} />
+            <div className="mx-0 my-40 text-center">
+              <div
+                className={buttonClassName(
+                  "blue",
+                  "inline-block w-200 p-12 text-11 max-500:w-full",
+                )}
+                onClick={handleCreateNewDexClick}
+              >
+                {"Create a New Dex "}
+                <FontAwesomeIcon
+                  className={buttonIcon}
+                  icon={faLongArrowAltRight}
+                />
               </div>
               {showDexCreate && (
                 <DexCreate onRequestClose={handleDexCreateRequestClose} />

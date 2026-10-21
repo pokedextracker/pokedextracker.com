@@ -1,0 +1,258 @@
+/* The site's styles: Tailwind's theme and utilities, and a few base styles
+   under them. */
+@layer theme, base, components, utilities;
+
+/* No preflight. The pages are built on the browser's own styles (a heading's
+   margins, a list's padding), and its reset would change them all. */
+@import "tailwindcss/theme.css" layer(theme);
+
+/* Font Awesome's stylesheet, which the site's styles override (see
+   index.tsx), and the sprite sheet of Pokémon icons. */
+@import "@fortawesome/fontawesome-svg-core/styles.css" layer(base);
+@import "./pokesprite.css" layer(base);
+
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  *:focus {
+    outline: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-primary);
+  }
+
+  #root {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* Night mode is a class on the app's root, and on a modal, which renders
+     outside it. A link that doesn't set its own color takes night mode's. */
+  .night-mode {
+    background-color: var(--color-night-mode);
+    color: var(--color-white);
+  }
+
+  .night-mode a {
+    color: var(--color-night-mode-link);
+  }
+
+  .night-mode a:hover {
+    color: var(--color-night-mode-link-dark);
+  }
+}
+
+@theme {
+  /* Only the site's colors, as the old stylesheets' Sass computed them, so a
+     utility can't pick a color the site doesn't use. */
+  --color-*: initial;
+  --color-white: #fff;
+  --color-black: #000;
+  --color-brand-primary: #ffd924;
+  --color-brand-primary-light: rgb(100%, 92.0386784851%, 54.1176470588%);
+  --color-brand-primary-dark: rgb(100%, 82.6688154714%, 0.1176470588%);
+  --color-brand-secondary: #18447d;
+  --color-brand-secondary-light: rgb(
+    11.6667982629%,
+    33.0559284116%,
+    60.7645742861%
+  );
+  --color-brand-secondary-dark: rgb(
+    7.1567311488%,
+    20.2774049217%,
+    37.2746414002%
+  );
+  --color-error: #ff0000;
+  --color-success: #00cc66;
+  --color-gray-light: #f1f1f1;
+  --color-gray-medium: #d2d2d2;
+  --color-gray-dark: #ababab;
+  /* Computed in the old stylesheets where they were used. */
+  --color-brand-primary-lighter: rgb(100%, 97.2441579371%, 84.1176470588%);
+  --color-gray-darker: #787878;
+  --color-gray-darkest: #454545;
+  --color-brand-primary-lighten-10: rgb(100%, 88.5683588504%, 34.1176470588%);
+  --color-brand-primary-lighten-15: rgb(100%, 90.3035186677%, 44.1176470588%);
+  --color-error-darken-5: rgb(90%, 0%, 0%);
+  --color-white-darken-1: rgb(99%, 99%, 99%);
+  --color-black-lighten-25: rgb(25%, 25%, 25%);
+  --color-black-lighten-35: rgb(35%, 35%, 35%);
+  --color-shiny-star: #d81118;
+  --color-brand-secondary-dark-darken-3: rgb(
+    6.1902881958%,
+    17.5391498881%,
+    32.2410843532%
+  );
+  --color-brand-secondary-dark-darken-5: rgb(
+    5.5459928938%,
+    15.7136465324%,
+    28.8853796552%
+  );
+  --color-night-mode-secondary-darken-4: rgb(
+    4.9683873549%,
+    13.9735894358%,
+    25.4629851941%
+  );
+  --color-night-mode-secondary-darken-6: rgb(
+    4.3153261305%,
+    12.1368547419%,
+    22.1160464186%
+  );
+  --color-gray-light-darken-6: rgb(
+    88.5098039216%,
+    88.5098039216%,
+    88.5098039216%
+  );
+  --color-night-mode: #121212;
+  --color-night-mode-01dp: rgb(12.0588235294%, 12.0588235294%, 12.0588235294%);
+  --color-night-mode-02dp: rgb(14.0588235294%, 14.0588235294%, 14.0588235294%);
+  --color-night-mode-03dp: rgb(15.0588235294%, 15.0588235294%, 15.0588235294%);
+  --color-night-mode-04dp: rgb(16.0588235294%, 16.0588235294%, 16.0588235294%);
+  --color-night-mode-06dp: rgb(18.0588235294%, 18.0588235294%, 18.0588235294%);
+  --color-night-mode-16dp: rgb(22.0588235294%, 22.0588235294%, 22.0588235294%);
+  --color-night-mode-24dp: rgb(23.0588235294%, 23.0588235294%, 23.0588235294%);
+  --color-night-mode-dark: rgb(0.0588235294%, 0.0588235294%, 0.0588235294%);
+  --color-night-mode-primary: #c7bd7d;
+  --color-night-mode-primary-dark: rgb(
+    67.8368121442%,
+    62.6185958254%,
+    29.2220113852%
+  );
+  --color-night-mode-secondary: #102d52;
+  --color-night-mode-secondary-dark: rgb(
+    3.9887955182%,
+    11.218487395%,
+    20.4425770308%
+  );
+  --color-night-mode-link: #3777ca;
+  --color-night-mode-link-dark: rgb(
+    18.180113152%,
+    40.1334573355%,
+    68.6042005735%
+  );
+  --color-night-mode-link-gray: #5f5f5f;
+  --color-night-mode-link-gray-dark: rgb(
+    30.2549019608%,
+    30.2549019608%,
+    30.2549019608%
+  );
+  --color-night-mode-error: #bb2323;
+  --color-night-mode-error-dark: rgb(
+    61.5405405405%,
+    11.5182829889%,
+    11.5182829889%
+  );
+
+  --font-*: initial;
+  --font-primary: "Alegreya Sans", "Helvetica", sans-serif;
+  --font-secondary: "Montserrat", "Helvetica", sans-serif;
+
+  /* One unit is one pixel (mt-15 is 15px), so sizes read like the
+     stylesheets they replace and don't change with the browser's font
+     size, which the old px values didn't either. */
+  --spacing: 1px;
+
+  /* The rest of the old stylesheets' values, named by value for now. Turning
+     them into scales (and merging near duplicates) is a design pass for after
+     the move, when any change it makes is deliberate. */
+  --text-*: initial;
+  --text-5: 5px;
+  --text-8: 8px;
+  --text-9: 9px;
+  --text-10: 10px;
+  --text-11: 11px;
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-15: 15px;
+  --text-16: 16px;
+  --text-17: 17px;
+  --text-20: 20px;
+  --text-25: 25px;
+  --text-30: 30px;
+  --text-32: 32px;
+  --text-35: 35px;
+  --text-40: 40px;
+  --text-45: 45px;
+  --text-50: 50px;
+  --text-60: 60px;
+
+  --tracking-*: initial;
+  --tracking-0: 0;
+  --tracking-1: 1px;
+  --tracking-2: 2px;
+
+  --radius-*: initial;
+  --radius-3: 3px;
+  --radius-5: 5px;
+  /* Not rounded-full, which rounds the ends of a non-square box rather than
+     making an ellipse. */
+  --radius-half: 50%;
+
+  /* For box-shadow itself: Tailwind's shadow utilities stack a shadow with
+     empty ones, which WebKit draws a little differently. */
+  --shadow-*: initial;
+  --shadow-raised: 1px 1px 3px rgba(0, 0, 0, 0.5);
+
+  /* CSS's ease-out keyword, which the old stylesheets used. Tailwind's own is
+     a different curve. */
+  --ease-*: initial;
+  --ease-out: ease-out;
+
+  /* Pages slide up into place: the home page and 404 slowly, and the forms
+     and profile quickly. */
+  --animate-slide: slide 1s cubic-bezier(0, 0, 0.05, 1) forwards;
+  --animate-slide-fast: slide 0.5s ease-out forwards;
+
+  @keyframes slide {
+    0% {
+      opacity: 0;
+    }
+
+    100% {
+      top: 0;
+      opacity: 1;
+    }
+  }
+}
+
+/* Hover applies on every device, as it did in the old stylesheets. Tailwind
+   4 limits it to devices that can hover, which would change taps on phones. */
+@custom-variant hover (&:hover);
+
+/* The .no-touch class (set in index.html on devices without touch), for the
+   few hover styles limited to those. It adds no specificity, like night
+   below, so between the two the later utility wins, as the later rule did in
+   the old stylesheets. */
+@custom-variant no-touch (:where(.no-touch) &);
+
+/* Night mode is a class on the app's root, and on a modal, which renders
+   outside it. */
+@custom-variant night (&:where(.night-mode, .night-mode *));
+
+/* The old stylesheets' breakpoints, exactly. Tailwind's max-* variants use
+   width < N rather than max-width: N, a pixel off. Widest first: utilities
+   come out in this order, so a narrower one wins where both apply, as the
+   later rule did in the old stylesheets. */
+@custom-variant max-1100 (@media (max-width: 1100px));
+@custom-variant max-750 (@media (max-width: 750px));
+@custom-variant max-700 (@media (max-width: 700px));
+@custom-variant max-600 (@media (max-width: 600px));
+@custom-variant max-550 (@media (max-width: 550px));
+@custom-variant max-500 (@media (max-width: 500px));
+@custom-variant max-400 (@media (max-width: 400px));
+@custom-variant min-751 (@media (min-width: 751px));

@@ -154,6 +154,8 @@ var hiccups = []string{
 	"econnreset",
 	"econnrefused",
 	"connection terminated",
+	// WebKit's page.goto when the load is cut off.
+	"operation was cancelled",
 	"could not connect",
 	"has been closed",
 }

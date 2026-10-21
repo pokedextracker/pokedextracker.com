@@ -4,6 +4,7 @@ import {
   faLongArrowAltRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
 import find from "lodash/find";
 import keyBy from "lodash/keyBy";
 import { useMemo, type Dispatch, type SetStateAction } from "react";
@@ -15,7 +16,8 @@ import { useUserParams } from "../../../hooks/use-user-params";
 import type { Dex } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
 import { nationalId, padding, serebiiLink } from "../../../utils/formatting";
-import { iconClass } from "../../../utils/pokemon";
+import { iconClass, infoIconCircle } from "../../../utils/pokemon";
+import { tw } from "../../../utils/tw";
 import { PokemonName } from "../../library/PokemonName";
 import { EvolutionFamily } from "./EvolutionFamily";
 import { InfoLocations } from "./InfoLocations";
@@ -41,6 +43,34 @@ interface Props {
   selectedPokemon: number;
   setSelectedPokemon: Dispatch<SetStateAction<number>>;
 }
+
+// The panel beside the dex, which a phone shows over it.
+function infoClassName(showInfo: boolean): string {
+  return classNames(
+    "relative z-2 flex max-400:absolute max-400:right-0 max-400:left-auto max-400:h-full",
+    showInfo ? "max-400:w-full" : "max-400:w-[inherit]",
+  );
+}
+
+// The tab that opens and closes the panel. Below 1100px the panel lies over
+// the dex, so the open tab sits at its edge.
+function collapseClassName(showInfo: boolean): string {
+  return classNames(
+    "flex items-center bg-brand-secondary-dark-darken-3 p-8 text-12 text-white hover:-ml-2 hover:cursor-pointer hover:pr-10 night:bg-night-mode-secondary-dark max-1100:relative max-400:right-0 max-400:hover:ml-0 max-400:hover:pr-8",
+    showInfo ? "max-1100:right-350" : "max-1100:right-0",
+  );
+}
+
+function mainClassName(showInfo: boolean): string {
+  return classNames(
+    "w-350 flex-col bg-brand-secondary text-white night:bg-night-mode-02dp max-1100:absolute max-1100:right-0 max-1100:h-full max-400:relative max-400:w-full",
+    showInfo ? "flex" : "hidden",
+  );
+}
+
+// The links to Bulbapedia and Serebii, side by side, and their arrows.
+const footerLink = tw`w-1/2 border-brand-secondary-dark-darken-3 bg-brand-secondary-dark p-20 text-center font-secondary text-11 font-bold tracking-1 text-white uppercase no-underline transition-all duration-100 ease-out no-touch:hover:bg-brand-secondary-dark-darken-3 no-touch:focus:bg-brand-secondary-dark-darken-3 night:border-night-mode-secondary-dark night:bg-night-mode-secondary-darken-4 night:hover:bg-night-mode-secondary-darken-6 night:focus:bg-night-mode-secondary-darken-4 night:focus:hover:bg-night-mode-secondary-darken-6`;
+const footerIcon = tw`ml-3 text-10 transition-all duration-100 ease-out`;
 
 export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
   const { username, slug } = useUserParams();
@@ -111,44 +141,46 @@ export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
   if (!pokemon) {
     return (
       <div
-        className={`info ${showInfo ? "" : "collapsed"}`}
+        className={infoClassName(showInfo)}
         data-collapsed={!showInfo}
         data-testid="info"
       >
         <div
-          className="info-collapse"
+          className={collapseClassName(showInfo)}
           data-testid="info-toggle"
           onClick={handleInfoClick}
         >
           <FontAwesomeIcon icon={showInfo ? faCaretRight : faCaretLeft} />
         </div>
 
-        <div className="info-main" data-testid="info-main" />
+        <div className={mainClassName(showInfo)} data-testid="info-main" />
       </div>
     );
   }
 
   return (
     <div
-      className={`info ${showInfo ? "" : "collapsed"}`}
+      className={infoClassName(showInfo)}
       data-collapsed={!showInfo}
       data-testid="info"
     >
       <div
-        className="info-collapse"
+        className={collapseClassName(showInfo)}
         data-testid="info-toggle"
         onClick={handleInfoClick}
       >
         <FontAwesomeIcon icon={showInfo ? faCaretRight : faCaretLeft} />
       </div>
 
-      <div className="info-main" data-testid="info-main">
-        <div className="info-header">
-          <i className={iconClass(pokemon, dex)} />
-          <h1 data-testid="info-name">
+      <div className={mainClassName(showInfo)} data-testid="info-main">
+        <div className="flex shrink-0 items-center border-b-2 border-brand-secondary-dark-darken-3 bg-brand-secondary pt-17 pr-17 pb-17 pl-8 night:border-night-mode-secondary-dark night:bg-night-mode-secondary">
+          <i
+            className={`${iconClass(pokemon, dex, infoIconCircle)} mx-12 my-0`}
+          />
+          <h1 className="m-0 grow text-32 font-medium" data-testid="info-name">
             <PokemonName name={pokemon.name} />
           </h1>
-          <h2>
+          <h2 className="m-0 font-secondary text-17 font-normal">
             #
             {padding(
               dex.dex_type.tags.includes("regional")
@@ -168,8 +200,9 @@ export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
           setSelectedPokemon={setSelectedPokemon}
         />
 
-        <div className="info-footer">
+        <div className="mt-auto flex shrink-0 border-t-2 border-brand-secondary-dark-darken-3 night:border-night-mode-secondary-dark night:bg-night-mode-secondary">
           <a
+            className={`${footerLink} border-r`}
             href={`http://bulbapedia.bulbagarden.net/wiki/${encodeURI(pokemon.name)}_(Pok%C3%A9mon)`}
             onClick={() =>
               trackEvent("Info", "open Bulbapedia link", pokemon.name)
@@ -177,9 +210,14 @@ export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
             rel="noopener noreferrer"
             target="_blank"
           >
-            Bulbapedia <FontAwesomeIcon icon={faLongArrowAltRight} />
+            {"Bulbapedia "}
+            <FontAwesomeIcon
+              className={footerIcon}
+              icon={faLongArrowAltRight}
+            />
           </a>
           <a
+            className={`${footerLink} border-l`}
             href={serebiiLink(serebiiPath, pokemon.national_id)}
             onClick={() =>
               trackEvent("Info", "open Serebii link", pokemon.name)
@@ -187,7 +225,11 @@ export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
             rel="noopener noreferrer"
             target="_blank"
           >
-            Serebii <FontAwesomeIcon icon={faLongArrowAltRight} />
+            {"Serebii "}
+            <FontAwesomeIcon
+              className={footerIcon}
+              icon={faLongArrowAltRight}
+            />
           </a>
         </div>
       </div>

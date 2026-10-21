@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 
+import { Loading } from "./Loading";
 import { Nav } from "./Nav";
 
 interface FailedRequest {
@@ -32,7 +33,7 @@ export function LoadError({ error, thing }: Props) {
   return (
     <div>
       <Nav />
-      <div className="loading">{message}</div>
+      <Loading>{message}</Loading>
     </div>
   );
 }

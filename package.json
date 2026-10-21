@@ -38,13 +38,13 @@
     "react-modal": "^3.16.3",
     "react-router": "^8.4.0",
     "rollbar": "^2.26.5",
-    "sass": "^1.105.2",
     "slug": "^2.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
     "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
     "@playwright/test": "1.64.1",
+    "@tailwindcss/vite": "^4.3.3",
     "@tanstack/eslint-plugin-query": "^5.104.4",
     "@vitejs/plugin-react": "^6.1.2",
     "eslint": "^9.39.5",
@@ -52,6 +52,8 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
     "prettier": "3.9.10",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.71.2",
     "vite": "^8.3.4"

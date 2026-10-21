@@ -16,7 +16,21 @@ import { useSession } from "../../hooks/contexts/use-session";
 import { useLogin } from "../../hooks/queries/sessions";
 import { trackEvent } from "../../utils/analytics";
 import { Alert } from "../library/Alert";
+import { buttonClassName, buttonIcon, buttonLayout } from "../library/Button";
 import { Footer } from "../library/Footer";
+import {
+  form,
+  formColumn,
+  formControlClassName,
+  formGroup,
+  formLabel,
+  formPage,
+  formText,
+  formTitle,
+  inputIcon,
+} from "../library/Form";
+import { pageContainer } from "../library/layout";
+import { link } from "../library/links";
 import { Nav } from "../library/Nav";
 import { Reload } from "../library/Reload";
 
@@ -70,20 +84,22 @@ export function Login() {
     setPassword(e.target.value);
 
   return (
-    <div className="login-container">
+    <div className={pageContainer}>
       <Nav />
       <Reload />
-      <div className="form">
-        <h1>Login</h1>
-        <form className="form-column" onSubmit={handleSubmit}>
+      <div className={formPage}>
+        <h1 className={formTitle}>Login</h1>
+        <form className={`${form} ${formColumn}`} onSubmit={handleSubmit}>
           <Alert message={loginMutation.error?.message} type="error" />
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
+          <div className={formGroup}>
+            <label className={formLabel} htmlFor="username">
+              Username
+            </label>
             <input
               autoCapitalize="off"
               autoComplete="off"
               autoCorrect="off"
-              className="form-control"
+              className={formControlClassName()}
               id="username"
               maxLength={20}
               name="username"
@@ -94,12 +110,14 @@ export function Login() {
               type="text"
               value={username}
             />
-            <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
+            <FontAwesomeIcon className={inputIcon} icon={faAsterisk} />
           </div>
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
+          <div className={formGroup}>
+            <label className={formLabel} htmlFor="password">
+              Password
+            </label>
             <input
-              className="form-control"
+              className={`${formControlClassName()} tracking-2`}
               id="password"
               maxLength={72}
               name="password"
@@ -109,18 +127,22 @@ export function Login() {
               type="password"
               value={password}
             />
-            <FontAwesomeIcon className="input-icon" icon={faAsterisk} />
+            <FontAwesomeIcon className={inputIcon} icon={faAsterisk} />
           </div>
           <button
-            className="btn btn-blue"
+            className={buttonClassName("blue", `${buttonLayout} mt-40`)}
             disabled={loginMutation.isPending}
             type="submit"
           >
-            Let&apos;s go! <FontAwesomeIcon icon={faLongArrowAltRight} />
+            {"Let's go! "}
+            <FontAwesomeIcon
+              className={buttonIcon}
+              icon={faLongArrowAltRight}
+            />
           </button>
-          <p>
+          <p className={formText}>
             Don&apos;t have an account yet?{" "}
-            <Link className="link" to="/register">
+            <Link className={link} to="/register">
               Register here
             </Link>
             !

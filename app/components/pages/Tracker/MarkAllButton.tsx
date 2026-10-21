@@ -1,5 +1,3 @@
-import { faCircleNotch } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import keyBy from "lodash/keyBy";
 import { useMemo } from "react";
 
@@ -12,6 +10,7 @@ import { useUser } from "../../../hooks/queries/users";
 import { useUserParams } from "../../../hooks/use-user-params";
 import { trackEvent } from "../../../utils/analytics";
 import { padding } from "../../../utils/formatting";
+import { buttonClassName, ButtonSpinner } from "../../library/Button";
 import { useTrackerContext, type UICapture } from "./use-tracker";
 
 interface Props {
@@ -108,18 +107,17 @@ export function MarkAllButton({ captures }: Props) {
 
   return (
     <button
-      className="btn btn-blue"
+      className={buttonClassName(
+        "blue",
+        "ml-10 block w-auto self-center px-12 py-8 text-10",
+      )}
       disabled={isPending}
       onClick={handleButtonClick}
     >
-      <span className={isPending ? "hidden" : ""}>
+      <span className={isPending ? "invisible" : ""}>
         {uncaught === 0 ? "Unmark" : "Mark"} All
       </span>
-      {isPending ? (
-        <span className="spinner">
-          <FontAwesomeIcon icon={faCircleNotch} spin />
-        </span>
-      ) : null}
+      {isPending ? <ButtonSpinner /> : null}
     </button>
   );
 }

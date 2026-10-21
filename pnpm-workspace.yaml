@@ -1,6 +1,7 @@
 # pnpm runs dependencies' install scripts only when they're listed here.
 allowBuilds:
-  # Sass's file watcher. Its script only compiles the watcher from source when
-  # no prebuilt binary matches the platform, and every platform we build on
-  # has one.
+  # Sass's file watcher. Sass still comes in as Vite's optional peer, though
+  # nothing uses it. Its script only compiles the watcher from source when no
+  # prebuilt binary matches the platform, and every platform we build on has
+  # one.
   "@parcel/watcher": false

@@ -13,12 +13,17 @@ export function Notification() {
   const handleClick = () => setHideNotification(true);
 
   return (
-    <div className="alert alert-muted">
-      <FontAwesomeIcon icon={faTimes} onClick={handleClick} />
+    <div className="relative mb-50 border-2 border-solid border-gray-medium p-11 text-center text-14 text-gray-darker night:border-night-mode-01dp night:bg-night-mode-01dp night:text-white">
+      <FontAwesomeIcon
+        className="absolute top-8 right-8 text-gray-medium transition-all duration-100 ease-out hover:cursor-pointer hover:text-gray-dark"
+        icon={faTimes}
+        onClick={handleClick}
+      />
       <p>
         We&apos;ve <em>finally</em> added support for Pokémon Legends: Z-A and
         the Mega Dimension DLC!{" "}
         <a
+          className="text-14 text-gray-darkest hover:text-black night:text-night-mode-link night:hover:text-night-mode-link-dark"
           href="https://pokedextracker.com/blog/pokemon-legends-z-a-mega-dimension-dlc/"
           rel="noopener noreferrer"
           target="_blank"
