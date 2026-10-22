@@ -16,7 +16,7 @@ import { Share } from "./Share";
 
 // A link in the header, like the share toggle or the friend code's pencil,
 // and the icon in it.
-export const headerLink = tw`text-16 text-black-lighten-25 hover:cursor-pointer hover:text-black dark:text-night-mode-link-gray dark:hover:text-night-mode-link-gray-dark`;
+export const headerLink = tw`text-16 text-muted-link hover:cursor-pointer hover:text-muted-link-hover`;
 const headerIcon = tw`relative bottom-4 ml-5 text-14`;
 export const headerPencil = tw`relative bottom-1 ml-5 text-12`;
 
@@ -58,7 +58,7 @@ export function Header({ profile = false }: Props) {
 
   return (
     <div className="flex items-center">
-      <h1 className="relative m-0 inline-block text-40 text-brand-secondary dark:text-white max-750:text-30">
+      <h1 className="relative m-0 inline-block text-40 text-strong max-750:text-30">
         {dex?.title || `${user.username}'s Profile`}
         <div className="relative inline-block max-750:hidden">
           <a

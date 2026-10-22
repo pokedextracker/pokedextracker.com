@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 // couldn't.
 export function Loading({ children }: { children: ReactNode }) {
   return (
-    <div className="mt-[47vh] text-center font-secondary text-11 font-bold tracking-1 text-brand-secondary uppercase dark:text-night-mode-link">
+    <div className="mt-[47vh] text-center font-secondary text-11 font-bold tracking-1 text-heading uppercase">
       {children}
     </div>
   );

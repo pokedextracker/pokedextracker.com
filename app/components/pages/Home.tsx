@@ -34,7 +34,7 @@ export function Home() {
             className="mb-10 h-100 w-100 max-400:h-80 max-400:w-80"
             src="/pokeball.svg"
           />
-          <h1 className="m-0 font-secondary text-60 font-bold tracking-1 text-brand-secondary uppercase no-underline dark:text-night-mode-link max-400:text-45">
+          <h1 className="m-0 font-secondary text-60 font-bold tracking-1 text-heading uppercase no-underline max-400:text-45">
             Pokédex Tracker
           </h1>
         </div>

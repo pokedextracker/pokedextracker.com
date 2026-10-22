@@ -16,10 +16,10 @@ import { trackEvent } from "../../utils/analytics";
 import { tw } from "../../utils/tw";
 import { TooltipText } from "./Tooltip";
 
-const nav = tw`relative flex flex-[0_0_42px] bg-brand-primary font-secondary dark:bg-night-mode-03dp`;
+const nav = tw`relative flex flex-[0_0_42px] bg-nav font-secondary`;
 
 // What every link in the nav has, the dropdown's included.
-const base = tw`p-14 text-11 font-bold tracking-1 text-brand-secondary uppercase no-underline transition-all duration-100 ease-out dark:text-white dark:hover:text-night-mode-primary no-touch:hover:cursor-pointer no-touch:focus:cursor-pointer max-600:px-10 max-600:text-10`;
+const base = tw`p-14 text-11 font-bold tracking-1 text-strong uppercase no-underline transition-all duration-100 ease-out dark:hover:text-night-mode-primary no-touch:hover:cursor-pointer no-touch:focus:cursor-pointer max-600:px-10 max-600:text-10`;
 
 // The links along the nav, which light up on hover or focus on devices
 // without touch.
@@ -33,7 +33,7 @@ const logo = tw`${navLink} mr-auto`;
 const toggle = tw`${base} flex items-center group-hover/dropdown:bg-brand-primary-lighten-10 dark:group-hover/dropdown:bg-night-mode-04dp! no-touch:focus:bg-brand-primary-lighten-10`;
 
 // The dropdown's links.
-const item = tw`${base} block truncate border-t-2 border-t-brand-primary bg-brand-primary-lighten-10 hover:bg-brand-primary-lighten-15 dark:border-t-night-mode-03dp dark:bg-night-mode-04dp dark:hover:bg-night-mode-06dp!`;
+const item = tw`${base} block truncate border-t-2 border-t-nav bg-nav-raised hover:bg-brand-primary-lighten-15 dark:hover:bg-night-mode-06dp`;
 const itemIcon = tw`float-left mt-2 mr-15`;
 
 export function Nav() {

@@ -6,7 +6,7 @@ import { tw } from "../../utils/tw";
 export const formPage = tw`flex flex-[1_0_auto] flex-col items-center overflow-y-scroll px-0 pt-50 pb-100`;
 
 // The form page's title.
-export const formTitle = tw`mb-17 text-brand-secondary dark:text-night-mode-link`;
+export const formTitle = tw`mb-17 text-heading`;
 
 // A form slides up into place.
 export const form = tw`relative top-60 animate-slide-fast`;
@@ -29,7 +29,7 @@ export const fieldSize = tw`h-43 py-0 pr-32 text-15`;
 // formControlClassName styles a text input or select, by default at its size
 // in a field.
 export function formControlClassName(size = tw`${fieldSize} pl-10`): string {
-  return tw`w-full appearance-none rounded-none border-2 border-solid border-brand-secondary-light bg-white font-primary invalid:[box-shadow:none] focus:border-brand-secondary-dark dark:border-night-mode-02dp dark:bg-night-mode-02dp dark:text-white dark:focus:border-night-mode-02dp ${size}`;
+  return tw`w-full appearance-none rounded-none border-2 border-solid border-brand-secondary-light bg-surface-2 font-primary invalid:[box-shadow:none] focus:border-brand-secondary-dark dark:border-night-mode-02dp dark:text-white dark:focus:border-night-mode-02dp ${size}`;
 }
 
 // The asterisk on a required input, and the chevron on a select.

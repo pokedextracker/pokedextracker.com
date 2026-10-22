@@ -47,7 +47,7 @@ export function DexPreview({ dex }: Props) {
         {ownPage && (
           <div>
             <a
-              className="cursor-pointer text-14 font-medium text-black-lighten-25 underline transition-all duration-100 ease-out hover:text-black dark:text-night-mode-link-gray dark:hover:text-night-mode-link-gray-dark"
+              className="cursor-pointer text-14 font-medium text-muted-link underline transition-all duration-100 ease-out hover:text-muted-link-hover"
               data-testid="dex-edit-toggle"
               onClick={handleEditClick}
             >

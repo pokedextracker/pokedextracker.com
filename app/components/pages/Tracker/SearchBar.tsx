@@ -55,11 +55,11 @@ export function SearchBar({
   };
 
   return (
-    <div className="border-b border-gray-light bg-white p-10 dark:border-night-mode-dark dark:bg-night-mode max-400:pr-35">
+    <div className="border-b border-gray-light bg-surface p-10 dark:border-night-mode-dark max-400:pr-35">
       <div className={wrapper}>
         <div className="relative">
           <FontAwesomeIcon
-            className="absolute bottom-15 left-14 text-12 text-brand-secondary dark:text-white"
+            className="absolute bottom-15 left-14 text-12 text-strong"
             icon={faSearch}
           />
           <input
