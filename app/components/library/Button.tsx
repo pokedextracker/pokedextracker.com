@@ -4,12 +4,11 @@ import classNames from "classnames";
 
 import { tw } from "../../utils/tw";
 
-// Each color darkens on hover or focus: on devices without touch, or on any
-// device in night mode.
+// Each color darkens on hover or focus, on devices without touch.
 const colors = {
-  blue: tw`bg-brand-secondary-light text-white dark:bg-night-mode-secondary dark:hover:bg-night-mode-secondary-dark! dark:focus:bg-night-mode-secondary-dark! no-touch:hover:bg-brand-secondary no-touch:focus:bg-brand-secondary`,
-  white: tw`bg-white text-brand-secondary dark:bg-gray-light dark:text-night-mode-secondary dark:hover:bg-gray-light-darken-6! dark:focus:bg-gray-light-darken-6! no-touch:hover:bg-white-darken-1 no-touch:focus:bg-white-darken-1`,
-  yellow: tw`bg-brand-primary text-brand-secondary dark:bg-night-mode-primary dark:text-white dark:hover:bg-night-mode-primary-dark! dark:focus:bg-night-mode-primary-dark! no-touch:hover:bg-brand-primary-dark no-touch:focus:bg-brand-primary-dark`,
+  blue: tw`bg-button-blue text-white no-touch:hover:bg-button-blue-hover no-touch:focus:bg-button-blue-hover`,
+  white: tw`bg-button-white text-button-white-text no-touch:hover:bg-button-white-hover no-touch:focus:bg-button-white-hover`,
+  yellow: tw`bg-button-yellow text-button-yellow-text no-touch:hover:bg-button-yellow-hover no-touch:focus:bg-button-yellow-hover`,
 };
 
 // A button's size and place: by default, as wide as what it's in.

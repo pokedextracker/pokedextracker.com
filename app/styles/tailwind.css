@@ -264,6 +264,23 @@
   /* The nav bar, and its dropdown's items. */
   --color-nav: var(--nav);
   --color-nav-raised: var(--nav-raised);
+  /* Interactive colors, and what they turn on hover or focus. */
+  --color-nav-hover: var(--nav-hover);
+  --color-nav-raised-hover: var(--nav-raised-hover);
+  --color-nav-text-hover: var(--nav-text-hover);
+  --color-link: var(--link);
+  --color-link-hover: var(--link-hover);
+  --color-button-blue: var(--button-blue);
+  --color-button-blue-hover: var(--button-blue-hover);
+  --color-button-white: var(--button-white);
+  --color-button-white-text: var(--button-white-text);
+  --color-button-white-hover: var(--button-white-hover);
+  --color-button-yellow: var(--button-yellow);
+  --color-button-yellow-text: var(--button-yellow-text);
+  --color-button-yellow-hover: var(--button-yellow-hover);
+  /* The info panel's links to Bulbapedia and Serebii. */
+  --color-info-link: var(--info-link);
+  --color-info-link-hover: var(--info-link-hover);
 }
 
 @layer base {
@@ -285,6 +302,21 @@
     --info-edge: var(--color-brand-secondary-dark-darken-3);
     --nav: var(--color-brand-primary);
     --nav-raised: var(--color-brand-primary-lighten-10);
+    --nav-hover: var(--color-brand-primary-lighten-10);
+    --nav-raised-hover: var(--color-brand-primary-lighten-15);
+    --nav-text-hover: var(--color-brand-secondary);
+    --link: var(--color-brand-secondary-light);
+    --link-hover: var(--color-brand-secondary-dark);
+    --button-blue: var(--color-brand-secondary-light);
+    --button-blue-hover: var(--color-brand-secondary);
+    --button-white: var(--color-white);
+    --button-white-text: var(--color-brand-secondary);
+    --button-white-hover: var(--color-white-darken-1);
+    --button-yellow: var(--color-brand-primary);
+    --button-yellow-text: var(--color-brand-secondary);
+    --button-yellow-hover: var(--color-brand-primary-dark);
+    --info-link: var(--color-brand-secondary-dark);
+    --info-link-hover: var(--color-brand-secondary-dark-darken-3);
   }
 
   .dark {
@@ -305,6 +337,21 @@
     --info-edge: var(--color-night-mode-secondary-dark);
     --nav: var(--color-night-mode-03dp);
     --nav-raised: var(--color-night-mode-04dp);
+    --nav-hover: var(--color-night-mode-06dp);
+    --nav-raised-hover: var(--color-night-mode-06dp);
+    --nav-text-hover: var(--color-night-mode-primary);
+    --link: var(--color-night-mode-link);
+    --link-hover: var(--color-night-mode-link-dark);
+    --button-blue: var(--color-night-mode-secondary);
+    --button-blue-hover: var(--color-night-mode-secondary-dark);
+    --button-white: var(--color-gray-light);
+    --button-white-text: var(--color-night-mode-secondary);
+    --button-white-hover: var(--color-gray-light-darken-6);
+    --button-yellow: var(--color-night-mode-primary);
+    --button-yellow-text: var(--color-white);
+    --button-yellow-hover: var(--color-night-mode-primary-dark);
+    --info-link: var(--color-night-mode-secondary-darken-4);
+    --info-link-hover: var(--color-night-mode-secondary-darken-6);
   }
 }
 
@@ -320,9 +367,8 @@
 
 /* Night mode, as Tailwind's dark variant: the dark class on <html>, which
    index.html sets before the page draws, and the toggle in the nav changes.
-   Tailwind keeps dark in its own place in the order, before no-touch, so a
-   dark hover or focus color that has to win over a no-touch one, as it did
-   in the old stylesheets, is marked important (the trailing !). */
+   Most colors are roles that change with it (above), so few classes need
+   it. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* The old stylesheets' breakpoints, exactly. Tailwind's max-* variants use
