@@ -18,91 +18,116 @@ func writeFile(t *testing.T, path, contents string) {
 	require.NoError(t, os.WriteFile(path, []byte(contents), 0o600))
 }
 
+const (
+	differMessage = "Error: expect(page).toHaveScreenshot(expected) failed\n\n  600 pixels (ratio 0.01 of all image pixels) are different."
+	clickMessage  = "Error: locator.click: Timeout 10000ms exceeded.\nCall log: ..."
+	hiccupMessage = "Test timeout of 60000ms exceeded."
+)
+
 // reviewFixture lays out a visual run's files the way Playwright leaves them
 // and returns its environment and this branch's report.
 func reviewFixture(t *testing.T) (Environment, *playwrightReport) {
 	t.Helper()
 	env := Environment{CurrentRoot: t.TempDir()}
-	dir := visualDir(env)
-	shots := filepath.Join(dir, "screenshots", "chromium-desktop", "pages.spec.ts")
-	for _, name := range []string{"home", "login", "register", "account"} {
+	shots := filepath.Join(visualDir(env), "screenshots", "chromium-desktop", "pages.spec.ts")
+	for _, name := range []string{"home", "login", "register", "account", "profile", "search", "tracker", "dex-a", "dex-b"} {
 		writeFile(t, filepath.Join(shots, name+".png"), "reference "+name)
 	}
-	results := filepath.Join(dir, "results-branch")
-	for _, test := range []struct{ dir, name string }{{"pages-login", "login"}, {"pages-register", "register"}} {
-		writeFile(t, filepath.Join(results, test.dir, test.name+"-actual.png"), "actual "+test.name)
-		writeFile(t, filepath.Join(results, test.dir, test.name+"-diff.png"), "diff "+test.name)
+	results := filepath.Join(visualDir(env), "results-branch")
+	// The attachments of an attempt whose screenshots named names differed.
+	attachments := func(dir string, names ...string) string {
+		var list []string
+		for _, name := range names {
+			list = append(list, fmt.Sprintf(`{"name": %q, "path": %q}, {"name": %q, "path": %q}, {"name": %q, "path": %q}`,
+				name+"-expected.png", filepath.Join(shots, name+".png"),
+				name+"-actual.png", filepath.Join(results, dir, name+"-actual.png"),
+				name+"-diff.png", filepath.Join(results, dir, name+"-diff.png")))
+		}
+		list = append(list, `{"name": "error-context", "path": "elsewhere.md"}`)
+		return "[" + strings.Join(list, ", ") + "]"
 	}
-	attachments := func(dir, name string) string {
-		return fmt.Sprintf(`[
-			{"name": %[3]q, "path": %[1]q},
-			{"name": %[4]q, "path": %[2]q},
-			{"name": %[5]q, "path": %[6]q},
-			{"name": "error-context", "path": "elsewhere.md"}
-		]`,
-			filepath.Join(shots, name+".png"), filepath.Join(results, dir, name+"-actual.png"),
-			name+"-expected.png", name+"-actual.png", name+"-diff.png", filepath.Join(results, dir, name+"-diff.png"))
+	test := func(title, status string, results ...string) string {
+		return fmt.Sprintf(`{"title": %q, "tests": [{"projectName": "chromium-desktop", "status": %q, "results": [%s]}]}`,
+			title, status, strings.Join(results, ", "))
 	}
-	report := writeReport(t, `{
-		"errors": [],
-		"suites": [{"title": "pages.spec.ts", "specs": [], "suites": [{
-			"title": "signed out",
-			"specs": [
-				{"title": "home", "tests": [{"projectName": "chromium-desktop", "status": "expected", "results": [{"errors": []}]}]},
-				{"title": "login", "tests": [{"projectName": "chromium-desktop", "status": "unexpected", "results": [
-					{"errors": [{"message": "Error: 600 pixels (ratio 0.01 of all image pixels) are different."}], "attachments": `+attachments("pages-login", "login")+`}
-				]}]},
-				{"title": "register", "tests": [{"projectName": "chromium-desktop", "status": "flaky", "results": [
-					{"errors": [{"message": "Error: 9 pixels (ratio 0.01 of all image pixels) are different."}], "attachments": `+attachments("pages-register", "register")+`},
-					{"errors": []}
-				]}]},
-				{"title": "account", "tests": [{"projectName": "chromium-desktop", "status": "unexpected", "results": [
-					{"errors": [{"message": "Error: locator.click: Timeout 10000ms exceeded.\nCall log: ..."}]}
-				]}]}
-			]
-		}]}]
-	}`)
+	attempt := func(message, attachments string) string {
+		if message == "" {
+			return `{"errors": []}`
+		}
+		if attachments == "" {
+			attachments = "[]"
+		}
+		return fmt.Sprintf(`{"errors": [{"message": %q}], "attachments": %s}`, message, attachments)
+	}
+	report := writeReport(t, `{"errors": [], "suites": [{"title": "pages.spec.ts", "specs": [], "suites": [{
+		"title": "pages",
+		"specs": [`+strings.Join([]string{
+		test("home", "expected", attempt("", "")),
+		test("login", "unexpected", attempt(differMessage, attachments("pages-login", "login"))),
+		test("register", "flaky", attempt(differMessage, attachments("pages-register", "register")), attempt("", "")),
+		test("account", "unexpected", attempt(clickMessage, "")),
+		test("profile", "flaky", attempt(clickMessage, ""), attempt("", "")),
+		test("search", "flaky", attempt(hiccupMessage, ""), attempt("", "")),
+		test("tracker", "unexpected", attempt(differMessage, "")),
+		test("dex", "unexpected", attempt(differMessage, ""), attempt(differMessage, attachments("pages-dex-retry1", "dex-b", "dex-a"))),
+	}, ", ")+`]
+	}]}]}`)
 	return env, report
 }
 
-func TestVisualReviewSortsEveryScreenshot(t *testing.T) {
+func TestVisualReviewSortsScreenshotsLikeTheTerminal(t *testing.T) {
 	env, report := reviewFixture(t)
-	require.NoError(t, os.MkdirAll(reviewDir(env), 0o755))
 
 	review, err := buildVisualReview(env, "origin/master (abc1234)", report)
 
 	require.NoError(t, err)
+	assert.Equal(t, []reviewShot{
+		{
+			Name:   "[chromium-desktop] pages › login",
+			Before: "../screenshots/chromium-desktop/pages.spec.ts/login.png",
+			After:  "../results-branch/pages-login/login-actual.png",
+			Diff:   "../results-branch/pages-login/login-diff.png",
+		},
+		{Name: "[chromium-desktop] pages › tracker"},
+		{
+			Name:   "[chromium-desktop] pages › dex (dex-a)",
+			Before: "../screenshots/chromium-desktop/pages.spec.ts/dex-a.png",
+			After:  "../results-branch/pages-dex-retry1/dex-a-actual.png",
+			Diff:   "../results-branch/pages-dex-retry1/dex-a-diff.png",
+		},
+		{
+			Name:   "[chromium-desktop] pages › dex (dex-b)",
+			Before: "../screenshots/chromium-desktop/pages.spec.ts/dex-b.png",
+			After:  "../results-branch/pages-dex-retry1/dex-b-actual.png",
+			Diff:   "../results-branch/pages-dex-retry1/dex-b-diff.png",
+		},
+	}, review.Changed, "tracker's images are missing, and dex's are in its second attempt")
 	assert.Equal(t, []reviewShot{{
-		Name: "[chromium-desktop] signed out › login", Before: "001-expected.png", After: "001-actual.png", Diff: "001-diff.png",
-	}}, review.Changed)
-	assert.Equal(t, []reviewShot{{
-		Name: "[chromium-desktop] signed out › register", Before: "002-expected.png", After: "002-actual.png", Diff: "002-diff.png",
+		Name:   "[chromium-desktop] pages › register",
+		Before: "../screenshots/chromium-desktop/pages.spec.ts/register.png",
+		After:  "../results-branch/pages-register/register-actual.png",
+		Diff:   "../results-branch/pages-register/register-diff.png",
 	}}, review.Sometimes, "a screenshot that differed and then matched")
-	assert.Equal(t, []reviewFailure{{
-		Name: "[chromium-desktop] signed out › account", Error: "Error: locator.click: Timeout 10000ms exceeded.",
-	}}, review.Failed)
-	// account's screenshot was never taken on this side, but the report
-	// doesn't say which one it is, so it's listed with the unchanged ones,
-	// under a note; login and register differed.
-	assert.Equal(t, []reviewGroup{{Project: "chromium-desktop", Shots: []reviewImage{
-		{Name: "account", Path: "../screenshots/chromium-desktop/pages.spec.ts/account.png"},
-		{Name: "home", Path: "../screenshots/chromium-desktop/pages.spec.ts/home.png"},
-	}}}, review.Unchanged)
-
-	for file, contents := range map[string]string{
-		"001-expected.png": "reference login", "001-actual.png": "actual login", "001-diff.png": "diff login",
-		"002-expected.png": "reference register",
-	} {
-		got, err := os.ReadFile(filepath.Join(reviewDir(env), file))
-		require.NoError(t, err)
-		assert.Equal(t, contents, string(got), file)
+	assert.Equal(t, []reviewFailure{
+		{Name: "[chromium-desktop] pages › account", Error: "Error: locator.click: Timeout 10000ms exceeded."},
+		{Name: "[chromium-desktop] pages › profile (then passed on a retry)", Error: "Error: locator.click: Timeout 10000ms exceeded."},
+	}, review.Failed)
+	// search only hit a hiccup, so it passed. account's and profile's
+	// screenshots weren't compared, but the report doesn't say which they
+	// are, and tracker's images are missing from it.
+	var unchanged []string
+	for _, group := range review.Unchanged {
+		assert.Equal(t, "chromium-desktop", group.Project)
+		for _, shot := range group.Shots {
+			unchanged = append(unchanged, shot.Name)
+		}
 	}
+	assert.Equal(t, []string{"account", "home", "profile", "search", "tracker"}, unchanged)
+	assert.Equal(t, "../screenshots/chromium-desktop/pages.spec.ts/account.png", review.Unchanged[0].Shots[0].Path)
 }
 
 func TestVisualReviewWritesThePage(t *testing.T) {
 	env, report := reviewFixture(t)
-	// Left from an earlier run, and gone after this one.
-	writeFile(t, filepath.Join(reviewDir(env), "009-diff.png"), "old")
 
 	page, err := writeVisualReview(env, "origin/master (abc1234)", report)
 
@@ -112,16 +137,16 @@ func TestVisualReviewWritesThePage(t *testing.T) {
 	require.NoError(t, err)
 	html := string(contents)
 	assert.Contains(t, html, "Visual comparison with origin/master (abc1234)")
-	assert.Contains(t, html, `<img src="001-diff.png"`)
-	assert.Contains(t, html, "[chromium-desktop] signed out › register")
+	assert.Contains(t, html, `<img src="../results-branch/pages-login/login-diff.png"`)
+	assert.Contains(t, html, "[chromium-desktop] pages › register")
+	assert.Contains(t, html, "Playwright's report doesn't have this screenshot's images", "for tracker")
 	assert.Contains(t, html, "Error: locator.click: Timeout 10000ms exceeded.")
 	assert.Contains(t, html, `../screenshots/chromium-desktop/pages.spec.ts/home.png`)
 	assert.Contains(t, html, "Includes the screenshots of the tests that failed above, which weren't compared.")
 	assert.Equal(t, 1, strings.Count(html, "<h2>Changed</h2>"))
-	assert.NoFileExists(t, filepath.Join(reviewDir(env), "009-diff.png"))
 }
 
-func TestVisualReviewWithNoScreenshots(t *testing.T) {
+func TestVisualReviewSaysWhenThereAreNoScreenshots(t *testing.T) {
 	env := Environment{CurrentRoot: t.TempDir()}
 	report := writeReport(t, `{"errors": [], "suites": []}`)
 

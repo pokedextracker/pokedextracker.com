@@ -127,9 +127,9 @@ comparison again tells you which.
 
 The review page, `tmp/visual/review/index.html`, shows every screenshot: each
 one that changed before and after, with the difference highlighted, and the
-ones that didn't, by browser. It keeps its own copies of the changed images,
-so it still shows them after the next run. Playwright's report, with each
-failure's details, is in `tmp/visual/report`
+ones that didn't, by project (browser, size, and day or night). It links to
+the images where the run left them, so the next run replaces it. Playwright's
+report, with each failure's details, is in `tmp/visual/report`
 (`pnpm exec playwright show-report tmp/visual/report`), and the servers' logs
 are in `tmp/visual/server-*.log`. Google Fonts are cached in
 `tmp/visual/fonts` so both sides get the same files; delete it if the site's

@@ -551,9 +551,12 @@ func (a *App) visual(ctx context.Context, env Environment, args []string) error 
 	ref = fmt.Sprintf("%s (%.7s)", ref, checkout.Commit)
 	// The last run's review page points at screenshots the reference side is
 	// about to clear, so it goes now rather than outliving a run that stops
-	// before writing a new one.
+	// before writing a new one. Like writing the page, this can't fail the
+	// comparison.
 	if err := os.RemoveAll(reviewDir(env)); err != nil {
-		return fmt.Errorf("clear the last review page: %w", err)
+		if err := a.printf("Couldn't clear the last review page: %v\n", err); err != nil {
+			return err
+		}
 	}
 	reference := env
 	reference.CurrentRoot = checkout.Root
@@ -606,15 +609,15 @@ func (a *App) visual(ctx context.Context, env Environment, args []string) error 
 // comparison itself still stands.
 func (a *App) printVisualReview(env Environment, ref string) error {
 	report, err := readVisualReport(filepath.Join(visualDir(env), "results-"+visualBranch+".json"))
-	if err == nil {
-		var page string
-		page, err = writeVisualReview(env, ref, report)
-		if err == nil {
-			rel, _ := filepath.Rel(env.CurrentRoot, page)
-			return a.printf("\nEvery screenshot, before and after: %s\n", rel)
-		}
+	if err != nil {
+		return a.printf("\nCouldn't write the review page: %v\n", err)
 	}
-	return a.printf("\nCouldn't write the review page: %v\n", err)
+	page, err := writeVisualReview(env, ref, report)
+	if err != nil {
+		return a.printf("\nCouldn't write the review page: %v\n", err)
+	}
+	rel, _ := filepath.Rel(env.CurrentRoot, page)
+	return a.printf("\nEvery screenshot, before and after: %s\n", rel)
 }
 
 // visualFailure lists the specs that didn't pass on one side of a visual

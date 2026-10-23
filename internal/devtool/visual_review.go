@@ -3,7 +3,6 @@ package devtool
 import (
 	"fmt"
 	"html/template"
-	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -13,8 +12,8 @@ import (
 
 // visualReview is a page showing every screenshot of a visual comparison:
 // the ones that changed, before and after with the difference highlighted,
-// and the ones that didn't. A change that's meant to alter how the site looks
-// is reviewed on it place by place, and it says what stayed the same.
+// and the ones that didn't. A change meant to alter how the site looks is
+// approved on it one screenshot at a time.
 type visualReview struct {
 	Ref string
 	// Screenshots that differed on every attempt.
@@ -22,7 +21,8 @@ type visualReview struct {
 	// Screenshots that differed on an attempt and then matched: noise, or a
 	// change that only happens some of the time.
 	Sometimes []reviewShot
-	// Tests that failed before or apart from their screenshot.
+	// Tests that failed before or apart from their screenshot, including ones
+	// that then passed on a retry.
 	Failed []reviewFailure
 	// The reference's screenshots that matched, by project. The report doesn't
 	// say which screenshot a failed test would have taken, so theirs are here
@@ -30,8 +30,9 @@ type visualReview struct {
 	Unchanged []reviewGroup
 }
 
-// reviewShot is one screenshot that differed. Its images are paths relative
-// to the page.
+// reviewShot is one screenshot that differed, with its images' paths
+// relative to the page. They're empty when Playwright's report doesn't have
+// them.
 type reviewShot struct {
 	Name                string
 	Before, After, Diff string
@@ -50,26 +51,25 @@ type reviewImage struct {
 	Name, Path string
 }
 
-// reviewDir is where the review page and the images it shows are written.
+// reviewDir is where the review page is written. A run clears it before it
+// starts, since the page links to screenshots and reports that the run
+// replaces.
 func reviewDir(env Environment) string {
 	return filepath.Join(visualDir(env), "review")
 }
 
 // writeVisualReview writes the review page for the last comparison with ref,
-// from this branch's report, and returns the page's path. It copies the
-// images that changed next to it, so the page still shows them after the
-// next run, and links the unchanged ones where the reference left them.
+// from this branch's report, and returns the page's path. It links to the
+// images where Playwright left them: the reference's screenshots, and this
+// branch's in its results.
 func writeVisualReview(env Environment, ref string, report *playwrightReport) (string, error) {
-	dir := reviewDir(env)
-	if err := os.RemoveAll(dir); err != nil {
-		return "", fmt.Errorf("clear the last review page: %w", err)
-	}
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return "", fmt.Errorf("create %s: %w", dir, err)
-	}
 	review, err := buildVisualReview(env, ref, report)
 	if err != nil {
 		return "", err
+	}
+	dir := reviewDir(env)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return "", fmt.Errorf("create %s: %w", dir, err)
 	}
 	page := filepath.Join(dir, "index.html")
 	file, err := os.Create(page)
@@ -83,42 +83,46 @@ func writeVisualReview(env Environment, ref string, report *playwrightReport) (s
 	return page, file.Close()
 }
 
-// buildVisualReview sorts every screenshot of the last comparison, copying
-// the images of the ones that differed into the review directory.
+// buildVisualReview sorts every screenshot of the last comparison the way
+// the terminal's lists do.
 func buildVisualReview(env Environment, ref string, report *playwrightReport) (*visualReview, error) {
 	review := &visualReview{Ref: ref}
 	// The reference screenshots that differed, so they aren't listed as
 	// unchanged too.
-	differed := map[string]bool{}
-	var walkErr error
-	report.eachTest(func(name string, test playwrightTest) {
-		if walkErr != nil {
-			return
+	compared := map[string]bool{}
+	for _, test := range report.tests() {
+		outcome := test.outcome()
+		if outcome != outcomeDiffer && outcome != outcomeFailed && outcome != outcomeFlaky {
+			continue
 		}
-		switch test.Status {
-		case "unexpected", "flaky":
-			shots, err := copyDifferences(env, name, test.Results, len(review.Changed)+len(review.Sometimes))
-			if err != nil {
-				walkErr = err
-				return
+		// A test that passed on a retry after an error rather than a difference
+		// is listed with the failures, as the terminal lists it apart from
+		// the differences.
+		if outcome == outcomeFailed || (outcome == outcomeFlaky && !differed(test.Results)) {
+			name := test.name
+			if outcome == outcomeFlaky {
+				name += " (then passed on a retry)"
 			}
-			for _, shot := range shots {
-				differed[shot.reference] = true
-				if test.Status == "unexpected" {
-					review.Changed = append(review.Changed, shot.reviewShot)
-				} else {
-					review.Sometimes = append(review.Sometimes, shot.reviewShot)
-				}
+			review.Failed = append(review.Failed, reviewFailure{Name: name, Error: firstError(test.Results)})
+			continue
+		}
+		comparisons := failedComparisons(test.name, test.Results)
+		if len(comparisons) == 0 {
+			comparisons = []comparison{{name: test.name}}
+		}
+		for _, c := range comparisons {
+			if c.expected != "" {
+				compared[c.expected] = true
 			}
-			if len(shots) == 0 && test.Status == "unexpected" {
-				review.Failed = append(review.Failed, reviewFailure{Name: name, Error: firstError(test.Results)})
+			shot := reviewShot{Name: c.name, Before: pageLink(env, c.expected), After: pageLink(env, c.actual), Diff: pageLink(env, c.diff)}
+			if outcome == outcomeDiffer {
+				review.Changed = append(review.Changed, shot)
+			} else {
+				review.Sometimes = append(review.Sometimes, shot)
 			}
 		}
-	})
-	if walkErr != nil {
-		return nil, walkErr
 	}
-	unchanged, err := unchangedScreenshots(env, differed)
+	unchanged, err := unchangedScreenshots(env, compared)
 	if err != nil {
 		return nil, err
 	}
@@ -126,34 +130,43 @@ func buildVisualReview(env Environment, ref string, report *playwrightReport) (*
 	return review, nil
 }
 
-// copiedShot is a screenshot that differed, with the reference's own path.
-type copiedShot struct {
-	reviewShot
-	reference string
+// comparison is one screenshot that didn't match, with the paths of its
+// images. expected is the reference's own screenshot: the screenshots are
+// taken in Docker with the worktree mounted at the same path, so it's the
+// same path the reference side wrote.
+type comparison struct {
+	name                   string
+	expected, actual, diff string
 }
 
-// copyDifferences copies the expected, actual, and diff images of the first
-// attempt that has them into the review directory, numbering them from
-// start so their names don't collide.
-func copyDifferences(env Environment, name string, results []playwrightResult, start int) ([]copiedShot, error) {
+// failedComparisons finds the screenshots that didn't match in the first
+// attempt that has all of their images. A test normally stops at its first
+// one, but a soft assertion can fail more than one.
+func failedComparisons(name string, results []playwrightResult) []comparison {
 	for _, result := range results {
-		// A test can take more than one screenshot; each comparison that
-		// failed attaches its three images, named after the screenshot.
-		images := map[string]map[string]string{}
+		images := map[string]*comparison{}
 		for _, attachment := range result.Attachments {
 			for _, kind := range []string{"expected", "actual", "diff"} {
 				base, ok := strings.CutSuffix(attachment.Name, "-"+kind+".png")
-				if ok && attachment.Path != "" {
-					if images[base] == nil {
-						images[base] = map[string]string{}
-					}
-					images[base][kind] = attachment.Path
+				if !ok || attachment.Path == "" {
+					continue
+				}
+				if images[base] == nil {
+					images[base] = &comparison{}
+				}
+				switch kind {
+				case "expected":
+					images[base].expected = attachment.Path
+				case "actual":
+					images[base].actual = attachment.Path
+				default:
+					images[base].diff = attachment.Path
 				}
 			}
 		}
 		var bases []string
-		for base, kinds := range images {
-			if kinds["expected"] != "" && kinds["actual"] != "" && kinds["diff"] != "" {
+		for base, c := range images {
+			if c.expected != "" && c.actual != "" && c.diff != "" {
 				bases = append(bases, base)
 			}
 		}
@@ -161,30 +174,35 @@ func copyDifferences(env Environment, name string, results []playwrightResult, s
 			continue
 		}
 		sort.Strings(bases)
-		var shots []copiedShot
-		for i, base := range bases {
-			shot := copiedShot{reference: images[base]["expected"]}
-			shot.Name = name
+		comparisons := make([]comparison, 0, len(bases))
+		for _, base := range bases {
+			c := *images[base]
+			c.name = name
 			if len(bases) > 1 {
-				shot.Name += " (" + base + ")"
+				c.name += " (" + base + ")"
 			}
-			for kind, target := range map[string]*string{"expected": &shot.Before, "actual": &shot.After, "diff": &shot.Diff} {
-				file := fmt.Sprintf("%03d-%s.png", start+i+1, kind)
-				if err := copyFile(images[base][kind], filepath.Join(reviewDir(env), file)); err != nil {
-					return nil, err
-				}
-				*target = file
-			}
-			shots = append(shots, shot)
+			comparisons = append(comparisons, c)
 		}
-		return shots, nil
+		return comparisons
 	}
-	return nil, nil
+	return nil
+}
+
+// pageLink is path relative to the review page, or empty for no path.
+func pageLink(env Environment, path string) string {
+	if path == "" {
+		return ""
+	}
+	rel, err := filepath.Rel(reviewDir(env), path)
+	if err != nil {
+		return filepath.ToSlash(path)
+	}
+	return filepath.ToSlash(rel)
 }
 
 // unchangedScreenshots lists the reference's screenshots that didn't differ,
 // by project, with paths relative to the review page.
-func unchangedScreenshots(env Environment, differed map[string]bool) ([]reviewGroup, error) {
+func unchangedScreenshots(env Environment, compared map[string]bool) ([]reviewGroup, error) {
 	root := filepath.Join(visualDir(env), "screenshots")
 	groups := map[string]*reviewGroup{}
 	err := filepath.WalkDir(root, func(path string, entry fs.DirEntry, err error) error {
@@ -194,7 +212,7 @@ func unchangedScreenshots(env Environment, differed map[string]bool) ([]reviewGr
 			}
 			return err
 		}
-		if entry.IsDir() || filepath.Ext(path) != ".png" || differed[path] {
+		if entry.IsDir() || filepath.Ext(path) != ".png" || compared[path] {
 			return nil
 		}
 		rel, err := filepath.Rel(root, path)
@@ -209,7 +227,7 @@ func unchangedScreenshots(env Environment, differed map[string]bool) ([]reviewGr
 		}
 		groups[project].Shots = append(groups[project].Shots, reviewImage{
 			Name: strings.TrimSuffix(parts[len(parts)-1], ".png"),
-			Path: "../screenshots/" + filepath.ToSlash(rel),
+			Path: pageLink(env, path),
 		})
 		return nil
 	})
@@ -224,27 +242,6 @@ func unchangedScreenshots(env Environment, differed map[string]bool) ([]reviewGr
 	return list, nil
 }
 
-// eachTest calls fn with every test in the report, named "[project]
-// describe › title" like the launcher's lists.
-func (r *playwrightReport) eachTest(fn func(name string, test playwrightTest)) {
-	var walk func(suite playwrightSuite, titles []string)
-	walk = func(suite playwrightSuite, titles []string) {
-		for _, spec := range suite.Specs {
-			title := strings.Join(append(append([]string{}, titles...), spec.Title), " › ")
-			for _, test := range spec.Tests {
-				fn(fmt.Sprintf("[%s] %s", test.ProjectName, title), test)
-			}
-		}
-		for _, child := range suite.Suites {
-			walk(child, append(append([]string{}, titles...), child.Title))
-		}
-	}
-	// The top level is one suite per spec file, whose title is the file name.
-	for _, file := range r.Suites {
-		walk(file, nil)
-	}
-}
-
 // firstError is the first line of the first error in a test's attempts.
 func firstError(results []playwrightResult) string {
 	for _, result := range results {
@@ -253,23 +250,6 @@ func firstError(results []playwrightResult) string {
 		}
 	}
 	return ""
-}
-
-func copyFile(from, to string) error {
-	source, err := os.Open(from)
-	if err != nil {
-		return fmt.Errorf("copy %s: %w", from, err)
-	}
-	defer func() { _ = source.Close() }()
-	target, err := os.Create(to)
-	if err != nil {
-		return fmt.Errorf("copy %s: %w", from, err)
-	}
-	if _, err := io.Copy(target, source); err != nil {
-		_ = target.Close()
-		return fmt.Errorf("copy %s: %w", from, err)
-	}
-	return target.Close()
 }
 
 var reviewTemplate = template.Must(template.New("review").Parse(`<!doctype html>
@@ -293,11 +273,12 @@ var reviewTemplate = template.Must(template.New("review").Parse(`<!doctype html>
 <p><b>{{len .Changed}}</b> changed{{if .Sometimes}}, <b>{{len .Sometimes}}</b> changed only some of the time{{end}}{{if .Failed}}, <b>{{len .Failed}}</b> failed before their screenshot{{end}}. Click an image to open it full size.</p>
 {{define "shot"}}
 <h3>{{.Name}}</h3>
+{{if not .Diff}}<p>Playwright's report doesn't have this screenshot's images; its report in tmp/visual/report might.</p>{{else}}
 <div class="row">
   <figure><figcaption>Before</figcaption><a href="{{.Before}}"><img src="{{.Before}}" alt="before"></a></figure>
   <figure><figcaption>After</figcaption><a href="{{.After}}"><img src="{{.After}}" alt="after"></a></figure>
   <figure><figcaption>Difference</figcaption><a href="{{.Diff}}"><img src="{{.Diff}}" alt="difference"></a></figure>
-</div>
+</div>{{end}}
 {{end}}
 {{if .Changed}}<h2>Changed</h2>{{range .Changed}}{{template "shot" .}}{{end}}{{end}}
 {{if .Sometimes}}<h2>Changed only some of the time</h2>
