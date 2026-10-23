@@ -30,7 +30,7 @@ func reviewFixture(t *testing.T) (Environment, *playwrightReport) {
 	t.Helper()
 	env := Environment{CurrentRoot: t.TempDir()}
 	shots := filepath.Join(visualDir(env), "screenshots", "chromium-desktop", "pages.spec.ts")
-	for _, name := range []string{"home", "login", "register", "account", "profile", "search", "tracker", "dex-a", "dex-b"} {
+	for _, name := range []string{"home", "login", "register", "account", "profile", "search", "tracker", "pokedex", "dex-a", "dex-b"} {
 		writeFile(t, filepath.Join(shots, name+".png"), "reference "+name)
 	}
 	results := filepath.Join(visualDir(env), "results-branch")
@@ -69,6 +69,7 @@ func reviewFixture(t *testing.T) (Environment, *playwrightReport) {
 		test("profile", "flaky", attempt(clickMessage, ""), attempt("", "")),
 		test("search", "flaky", attempt(hiccupMessage, ""), attempt("", "")),
 		test("tracker", "unexpected", attempt(differMessage, "")),
+		test("pokedex", "flaky", attempt(differMessage, ""), attempt("", "")),
 		test("dex", "unexpected", attempt(differMessage, ""), attempt(differMessage, attachments("pages-dex-retry1", "dex-b", "dex-a"))),
 	}, ", ")+`]
 	}]}]}`)
@@ -102,19 +103,22 @@ func TestVisualReviewSortsScreenshotsLikeTheTerminal(t *testing.T) {
 			Diff:   "../results-branch/pages-dex-retry1/dex-b-diff.png",
 		},
 	}, review.Changed, "tracker's images are missing, and dex's are in its second attempt")
-	assert.Equal(t, []reviewShot{{
-		Name:   "[chromium-desktop] pages › register",
-		Before: "../screenshots/chromium-desktop/pages.spec.ts/register.png",
-		After:  "../results-branch/pages-register/register-actual.png",
-		Diff:   "../results-branch/pages-register/register-diff.png",
-	}}, review.Sometimes, "a screenshot that differed and then matched")
+	assert.Equal(t, []reviewShot{
+		{
+			Name:   "[chromium-desktop] pages › register",
+			Before: "../screenshots/chromium-desktop/pages.spec.ts/register.png",
+			After:  "../results-branch/pages-register/register-actual.png",
+			Diff:   "../results-branch/pages-register/register-diff.png",
+		},
+		{Name: "[chromium-desktop] pages › pokedex"},
+	}, review.Sometimes, "screenshots that differed and then matched, pokedex's without its images")
 	assert.Equal(t, []reviewFailure{
 		{Name: "[chromium-desktop] pages › account", Error: "Error: locator.click: Timeout 10000ms exceeded."},
 		{Name: "[chromium-desktop] pages › profile (then passed on a retry)", Error: "Error: locator.click: Timeout 10000ms exceeded."},
 	}, review.Failed)
-	// search only hit a hiccup, so it passed. account's and profile's
-	// screenshots weren't compared, but the report doesn't say which they
-	// are, and tracker's images are missing from it.
+	// search only hit a hiccup and profile's retry matched, so they passed.
+	// account's screenshot wasn't compared, but the report doesn't say which
+	// it is, and tracker's and pokedex's images are missing from it.
 	var unchanged []string
 	for _, group := range review.Unchanged {
 		assert.Equal(t, "chromium-desktop", group.Project)
@@ -122,7 +126,8 @@ func TestVisualReviewSortsScreenshotsLikeTheTerminal(t *testing.T) {
 			unchanged = append(unchanged, shot.Name)
 		}
 	}
-	assert.Equal(t, []string{"account", "home", "profile", "search", "tracker"}, unchanged)
+	assert.Equal(t, []string{"account", "home", "pokedex", "profile", "search", "tracker"}, unchanged)
+	assert.True(t, review.Uncompared)
 	assert.Equal(t, "../screenshots/chromium-desktop/pages.spec.ts/account.png", review.Unchanged[0].Shots[0].Path)
 }
 
@@ -142,7 +147,8 @@ func TestVisualReviewWritesThePage(t *testing.T) {
 	assert.Contains(t, html, "Playwright's report doesn't have this screenshot's images", "for tracker")
 	assert.Contains(t, html, "Error: locator.click: Timeout 10000ms exceeded.")
 	assert.Contains(t, html, `../screenshots/chromium-desktop/pages.spec.ts/home.png`)
-	assert.Contains(t, html, "Includes the screenshots of the tests that failed above, which weren't compared.")
+	assert.Contains(t, html, "Failed before or apart from their screenshot")
+	assert.Contains(t, html, "the report doesn't say which screenshots those are")
 	assert.Equal(t, 1, strings.Count(html, "<h2>Changed</h2>"))
 }
 
@@ -156,5 +162,20 @@ func TestVisualReviewSaysWhenThereAreNoScreenshots(t *testing.T) {
 	contents, err := os.ReadFile(page)
 	require.NoError(t, err)
 	assert.Contains(t, string(contents), "<p>None.</p>")
-	assert.NotContains(t, string(contents), "failed above", "the note is only there when a test failed")
+	assert.NotContains(t, string(contents), "weren't compared", "the note is only there when a screenshot wasn't compared")
+}
+
+func TestVisualReviewTrustsARetryThatMatched(t *testing.T) {
+	env := Environment{CurrentRoot: t.TempDir()}
+	report := writeReport(t, `{"errors": [], "suites": [{"title": "pages.spec.ts", "specs": [
+		{"title": "profile", "tests": [{"projectName": "chromium-desktop", "status": "flaky", "results": [
+			{"errors": [{"message": "Error: locator.click: Timeout 10000ms exceeded."}]}, {"errors": []}
+		]}]}
+	], "suites": []}]}`)
+
+	review, err := buildVisualReview(env, "origin/master", report)
+
+	require.NoError(t, err)
+	assert.Len(t, review.Failed, 1)
+	assert.False(t, review.Uncompared, "its screenshot was compared on the retry, and matched")
 }

@@ -24,10 +24,12 @@ type visualReview struct {
 	// Tests that failed before or apart from their screenshot, including ones
 	// that then passed on a retry.
 	Failed []reviewFailure
-	// The reference's screenshots that matched, by project. The report doesn't
-	// say which screenshot a failed test would have taken, so theirs are here
-	// too, and the page says so.
+	// The reference's screenshots that matched, by project.
 	Unchanged []reviewGroup
+	// Uncompared is set when Unchanged can include screenshots that weren't
+	// compared: the report doesn't say which screenshot a failed test would
+	// have taken, or a differing one whose images are missing.
+	Uncompared bool
 }
 
 // reviewShot is one screenshot that differed, with its images' paths
@@ -104,11 +106,14 @@ func buildVisualReview(env Environment, ref string, report *playwrightReport) (*
 				name += " (then passed on a retry)"
 			}
 			review.Failed = append(review.Failed, reviewFailure{Name: name, Error: firstError(test.Results)})
+			// A retry that passed compared its screenshot.
+			review.Uncompared = review.Uncompared || outcome == outcomeFailed
 			continue
 		}
 		comparisons := failedComparisons(test.name, test.Results)
 		if len(comparisons) == 0 {
 			comparisons = []comparison{{name: test.name}}
+			review.Uncompared = true
 		}
 		for _, c := range comparisons {
 			if c.expected != "" {
@@ -270,7 +275,7 @@ var reviewTemplate = template.Must(template.New("review").Parse(`<!doctype html>
   summary { cursor: pointer; font-weight: 600; margin: 12px 0; }
 </style>
 <h1>Visual comparison with {{.Ref}}</h1>
-<p><b>{{len .Changed}}</b> changed{{if .Sometimes}}, <b>{{len .Sometimes}}</b> changed only some of the time{{end}}{{if .Failed}}, <b>{{len .Failed}}</b> failed before their screenshot{{end}}. Click an image to open it full size.</p>
+<p><b>{{len .Changed}}</b> changed{{if .Sometimes}}, <b>{{len .Sometimes}}</b> changed only some of the time{{end}}{{if .Failed}}, <b>{{len .Failed}}</b> failed before or apart from their screenshot{{end}}. Click an image to open it full size.</p>
 {{define "shot"}}
 <h3>{{.Name}}</h3>
 {{if not .Diff}}<p>Playwright's report doesn't have this screenshot's images; its report in tmp/visual/report might.</p>{{else}}
@@ -284,9 +289,9 @@ var reviewTemplate = template.Must(template.New("review").Parse(`<!doctype html>
 {{if .Sometimes}}<h2>Changed only some of the time</h2>
 <p>These differed on one attempt and matched on another: noise, or a change that only happens some of the time. Running the comparison again tells you which.</p>
 {{range .Sometimes}}{{template "shot" .}}{{end}}{{end}}
-{{if .Failed}}<h2>Failed before their screenshot</h2><ul>{{range .Failed}}<li><b>{{.Name}}</b>: {{.Error}}</li>{{end}}</ul>{{end}}
+{{if .Failed}}<h2>Failed before or apart from their screenshot</h2><ul>{{range .Failed}}<li><b>{{.Name}}</b>: {{.Error}}</li>{{end}}</ul>{{end}}
 <h2>Unchanged</h2>
-{{if .Failed}}<p>Includes the screenshots of the tests that failed above, which weren't compared.</p>{{end}}
+{{if .Uncompared}}<p>Can include the screenshots of the tests above that failed or whose images are missing, which weren't compared: the report doesn't say which screenshots those are.</p>{{end}}
 {{range .Unchanged}}<details><summary>{{.Project}} ({{len .Shots}})</summary><div class="grid">
 {{range .Shots}}<figure><figcaption>{{.Name}}</figcaption><a href="{{.Path}}"><img src="{{.Path}}" alt="{{.Name}}" loading="lazy"></a></figure>{{end}}
 </div></details>{{else}}<p>None.</p>{{end}}
