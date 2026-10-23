@@ -42,13 +42,22 @@
     height: 100vh;
   }
 
-  /* A link that doesn't set its own color takes night mode's. */
-  .dark a {
-    color: var(--color-night-mode-link);
-  }
+  /* Night mode is for screens only, like everything else named dark here:
+     printing drops backgrounds, so it prints in day colors. */
+  @media not print {
+    /* The browser's own parts, like scrollbars and form controls. */
+    .dark {
+      color-scheme: dark;
+    }
 
-  .dark a:hover {
-    color: var(--color-night-mode-link-dark);
+    /* A link that doesn't set its own color takes night mode's. */
+    .dark a {
+      color: var(--color-night-mode-link);
+    }
+
+    .dark a:hover {
+      color: var(--color-night-mode-link-dark);
+    }
   }
 }
 
@@ -317,40 +326,42 @@
     --button-yellow-hover: var(--color-brand-primary-dark);
   }
 
-  .dark {
-    --text: var(--color-white);
-    --surface: var(--color-night-mode);
-    --surface-1: var(--color-night-mode-01dp);
-    --surface-2: var(--color-night-mode-02dp);
-    --line: var(--color-night-mode-01dp);
-    --line-caught: var(--color-night-mode-primary-dark);
-    --caught: var(--color-night-mode-primary);
-    --progress: var(--color-night-mode-primary-dark);
-    --heading: var(--color-night-mode-link);
-    --strong: var(--color-white);
-    --link: var(--color-night-mode-link);
-    --link-hover: var(--color-night-mode-link-dark);
-    --muted-link: var(--color-night-mode-link-gray);
-    --muted-link-hover: var(--color-night-mode-link-gray-dark);
-    --danger: var(--color-night-mode-error);
-    --danger-hover: var(--color-night-mode-error-dark);
-    --info: var(--color-night-mode-secondary);
-    --info-edge: var(--color-night-mode-secondary-dark);
-    --info-link: var(--color-night-mode-secondary-darken-4);
-    --info-link-hover: var(--color-night-mode-secondary-darken-6);
-    --nav: var(--color-night-mode-03dp);
-    --nav-hover: var(--color-night-mode-06dp);
-    --nav-text-hover: var(--color-night-mode-primary);
-    --nav-raised: var(--color-night-mode-04dp);
-    --nav-raised-hover: var(--color-night-mode-06dp);
-    --button-blue: var(--color-night-mode-secondary);
-    --button-blue-hover: var(--color-night-mode-secondary-dark);
-    --button-white: var(--color-gray-light);
-    --button-white-text: var(--color-night-mode-secondary);
-    --button-white-hover: var(--color-gray-light-darken-6);
-    --button-yellow: var(--color-night-mode-primary);
-    --button-yellow-text: var(--color-white);
-    --button-yellow-hover: var(--color-night-mode-primary-dark);
+  @media not print {
+    .dark {
+      --text: var(--color-white);
+      --surface: var(--color-night-mode);
+      --surface-1: var(--color-night-mode-01dp);
+      --surface-2: var(--color-night-mode-02dp);
+      --line: var(--color-night-mode-01dp);
+      --line-caught: var(--color-night-mode-primary-dark);
+      --caught: var(--color-night-mode-primary);
+      --progress: var(--color-night-mode-primary-dark);
+      --heading: var(--color-night-mode-link);
+      --strong: var(--color-white);
+      --link: var(--color-night-mode-link);
+      --link-hover: var(--color-night-mode-link-dark);
+      --muted-link: var(--color-night-mode-link-gray);
+      --muted-link-hover: var(--color-night-mode-link-gray-dark);
+      --danger: var(--color-night-mode-error);
+      --danger-hover: var(--color-night-mode-error-dark);
+      --info: var(--color-night-mode-secondary);
+      --info-edge: var(--color-night-mode-secondary-dark);
+      --info-link: var(--color-night-mode-secondary-darken-4);
+      --info-link-hover: var(--color-night-mode-secondary-darken-6);
+      --nav: var(--color-night-mode-03dp);
+      --nav-hover: var(--color-night-mode-06dp);
+      --nav-text-hover: var(--color-night-mode-primary);
+      --nav-raised: var(--color-night-mode-04dp);
+      --nav-raised-hover: var(--color-night-mode-06dp);
+      --button-blue: var(--color-night-mode-secondary);
+      --button-blue-hover: var(--color-night-mode-secondary-dark);
+      --button-white: var(--color-gray-light);
+      --button-white-text: var(--color-night-mode-secondary);
+      --button-white-hover: var(--color-gray-light-darken-6);
+      --button-yellow: var(--color-night-mode-primary);
+      --button-yellow-text: var(--color-white);
+      --button-yellow-hover: var(--color-night-mode-primary-dark);
+    }
   }
 }
 
@@ -367,8 +378,14 @@
 /* Night mode, as Tailwind's dark variant: the dark class on <html>, which
    index.html sets before the page draws, and the toggle in the nav changes.
    Most colors are roles that change with it (above), so few classes need
-   it. */
-@custom-variant dark (&:where(.dark, .dark *));
+   it. Not when printing, like the roles. */
+@custom-variant dark {
+  @media not print {
+    &:where(.dark, .dark *) {
+      @slot;
+    }
+  }
+}
 
 /* The old stylesheets' breakpoints, exactly. Tailwind's max-* variants use
    width < N rather than max-width: N, a pixel off. Widest first: utilities

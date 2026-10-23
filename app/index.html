@@ -140,6 +140,10 @@
       }
       if (nightMode) {
         document.documentElement.className += " dark";
+        // The bar around the page on phones, in the night nav's color.
+        document
+          .querySelector('meta[name="theme-color"]')
+          .setAttribute("content", "#262626");
       }
     </script>
   </head>

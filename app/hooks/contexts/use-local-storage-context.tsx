@@ -10,6 +10,12 @@ import { useLocalStorage, type SetLocalStorageFn } from "../use-local-storage";
 
 const MOBILE_WIDTH = 1100;
 
+// The color of the bar around the page on phones: the theme-color in
+// index.html by day, and the night nav's color, which index.html also sets
+// before the page draws, at night.
+const DAY_THEME_COLOR = "#ffffff";
+const NIGHT_THEME_COLOR = "#262626";
+
 interface LocalStorageContextState {
   hideNotification: boolean;
   setHideNotification: SetLocalStorageFn<boolean>;
@@ -50,6 +56,12 @@ export const LocalStorageContextProvider = ({ children }: Props) => {
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isNightMode);
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute(
+        "content",
+        isNightMode ? NIGHT_THEME_COLOR : DAY_THEME_COLOR,
+      );
   }, [isNightMode]);
 
   const contextValue = useMemo<LocalStorageContextState>(
