@@ -24,7 +24,9 @@ type visualReview struct {
 	Sometimes []reviewShot
 	// Tests that failed before or apart from their screenshot.
 	Failed []reviewFailure
-	// The reference's screenshots that matched, by project.
+	// The reference's screenshots that matched, by project. The report doesn't
+	// say which screenshot a failed test would have taken, so theirs are here
+	// too, and the page says so.
 	Unchanged []reviewGroup
 }
 
@@ -303,6 +305,7 @@ var reviewTemplate = template.Must(template.New("review").Parse(`<!doctype html>
 {{range .Sometimes}}{{template "shot" .}}{{end}}{{end}}
 {{if .Failed}}<h2>Failed before their screenshot</h2><ul>{{range .Failed}}<li><b>{{.Name}}</b>: {{.Error}}</li>{{end}}</ul>{{end}}
 <h2>Unchanged</h2>
+{{if .Failed}}<p>Includes the screenshots of the tests that failed above, which weren't compared.</p>{{end}}
 {{range .Unchanged}}<details><summary>{{.Project}} ({{len .Shots}})</summary><div class="grid">
 {{range .Shots}}<figure><figcaption>{{.Name}}</figcaption><a href="{{.Path}}"><img src="{{.Path}}" alt="{{.Name}}" loading="lazy"></a></figure>{{end}}
 </div></details>{{else}}<p>None.</p>{{end}}

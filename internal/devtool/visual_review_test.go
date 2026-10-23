@@ -81,8 +81,9 @@ func TestVisualReviewSortsEveryScreenshot(t *testing.T) {
 	assert.Equal(t, []reviewFailure{{
 		Name: "[chromium-desktop] signed out › account", Error: "Error: locator.click: Timeout 10000ms exceeded.",
 	}}, review.Failed)
-	// account's screenshot was never taken on this side, so it's listed with
-	// the unchanged ones; login and register differed.
+	// account's screenshot was never taken on this side, but the report
+	// doesn't say which one it is, so it's listed with the unchanged ones,
+	// under a note; login and register differed.
 	assert.Equal(t, []reviewGroup{{Project: "chromium-desktop", Shots: []reviewImage{
 		{Name: "account", Path: "../screenshots/chromium-desktop/pages.spec.ts/account.png"},
 		{Name: "home", Path: "../screenshots/chromium-desktop/pages.spec.ts/home.png"},
@@ -115,6 +116,7 @@ func TestVisualReviewWritesThePage(t *testing.T) {
 	assert.Contains(t, html, "[chromium-desktop] signed out › register")
 	assert.Contains(t, html, "Error: locator.click: Timeout 10000ms exceeded.")
 	assert.Contains(t, html, `../screenshots/chromium-desktop/pages.spec.ts/home.png`)
+	assert.Contains(t, html, "Includes the screenshots of the tests that failed above, which weren't compared.")
 	assert.Equal(t, 1, strings.Count(html, "<h2>Changed</h2>"))
 	assert.NoFileExists(t, filepath.Join(reviewDir(env), "009-diff.png"))
 }
@@ -129,4 +131,5 @@ func TestVisualReviewWithNoScreenshots(t *testing.T) {
 	contents, err := os.ReadFile(page)
 	require.NoError(t, err)
 	assert.Contains(t, string(contents), "<p>None.</p>")
+	assert.NotContains(t, string(contents), "failed above", "the note is only there when a test failed")
 }

@@ -752,3 +752,15 @@ func TestVisualPointsAtTheReferenceReportWhenItCantBeTaken(t *testing.T) {
 	assert.Contains(t, err.Error(), "show-report tmp/visual/report-reference")
 	assert.Contains(t, h.stdout.String(), "didn't come out the same twice:\n  [chromium-desktop] signed out › home\n")
 }
+
+func TestVisualRemovesTheLastReviewPageWhenItStopsEarly(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	page := filepath.Join(reviewDir(h.env), "index.html")
+	writeFile(t, page, "the last run's page")
+	h.processes.visualErr = map[string]error{"reference": fmt.Errorf("pnpm exited: exit status 1")}
+
+	require.Error(t, h.app.Run(context.Background(), []string{"visual", "chromium"}))
+
+	assert.NoFileExists(t, page, "it showed the last run's screenshots, which the reference side clears")
+}

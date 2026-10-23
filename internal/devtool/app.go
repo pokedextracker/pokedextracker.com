@@ -549,6 +549,12 @@ func (a *App) visual(ctx context.Context, env Environment, args []string) error 
 		}
 	}
 	ref = fmt.Sprintf("%s (%.7s)", ref, checkout.Commit)
+	// The last run's review page points at screenshots the reference side is
+	// about to clear, so it goes now rather than outliving a run that stops
+	// before writing a new one.
+	if err := os.RemoveAll(reviewDir(env)); err != nil {
+		return fmt.Errorf("clear the last review page: %w", err)
+	}
 	reference := env
 	reference.CurrentRoot = checkout.Root
 
