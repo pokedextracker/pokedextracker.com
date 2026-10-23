@@ -114,7 +114,10 @@ jobs:
 
   e2e:
     name: E2E
-    runs-on: ubuntu-latest
+    # Not ubuntu-latest: on Ubuntu 26.04, Playwright 1.64's WebKit can't
+    # start, since it's built against 24.04's ICU (libicudata.so.74), which
+    # 26.04 doesn't have. Back to latest once Playwright supports 26.04.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
