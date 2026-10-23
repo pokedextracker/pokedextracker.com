@@ -65,6 +65,14 @@ type playwrightTest struct {
 // playwrightResult is one attempt at a test.
 type playwrightResult struct {
 	Errors []playwrightError `json:"errors"`
+	// The files an attempt left, like a screenshot comparison's expected,
+	// actual, and diff images.
+	Attachments []playwrightAttachment `json:"attachments"`
+}
+
+type playwrightAttachment struct {
+	Name string `json:"name"`
+	Path string `json:"path"`
 }
 
 type playwrightError struct {

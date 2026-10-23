@@ -579,15 +579,36 @@ func (a *App) visual(ctx context.Context, env Environment, args []string) error 
 				return err
 			}
 		}
-		if err != nil {
-			var failure *VisualFailure
-			if !errors.As(err, &failure) {
-				return fmt.Errorf("%s: %w", side.name, err)
+		var failure *VisualFailure
+		if err != nil && !errors.As(err, &failure) {
+			return fmt.Errorf("%s: %w", side.name, err)
+		}
+		if side.name == visualBranch {
+			if err := a.printVisualReview(env, ref); err != nil {
+				return err
 			}
+		}
+		if failure != nil {
 			return a.visualFailure(env, ref, side.name, failure)
 		}
 	}
 	return a.printf("No visual differences from %s.\n", ref)
+}
+
+// printVisualReview writes the review page for this branch's side and says
+// where it is. A page that can't be written is only a warning: the
+// comparison itself still stands.
+func (a *App) printVisualReview(env Environment, ref string) error {
+	report, err := readVisualReport(filepath.Join(visualDir(env), "results-"+visualBranch+".json"))
+	if err == nil {
+		var page string
+		page, err = writeVisualReview(env, ref, report)
+		if err == nil {
+			rel, _ := filepath.Rel(env.CurrentRoot, page)
+			return a.printf("\nEvery screenshot, before and after: %s\n", rel)
+		}
+	}
+	return a.printf("\nCouldn't write the review page: %v\n", err)
 }
 
 // visualFailure lists the specs that didn't pass on one side of a visual
