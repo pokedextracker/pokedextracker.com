@@ -63,7 +63,7 @@ interface Props {
 }
 
 // The link that deletes the dex, and the one that confirms it, in red.
-const deleteLink = tw`mx-3 my-0 cursor-pointer font-medium text-danger underline transition-all duration-100 ease-out hover:text-error-darken-5 dark:hover:text-night-mode-error-dark`;
+const deleteLink = tw`mx-3 my-0 cursor-pointer font-medium text-danger underline transition-all duration-100 ease-out hover:text-danger-hover`;
 
 // DexEdit is only mounted while it's open, so every time it opens, the form
 // starts from the dex as it is then.

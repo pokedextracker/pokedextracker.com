@@ -37,10 +37,10 @@ export const LocalStorageContextProvider = ({ children }: Props) => {
     "notif-2026.10.09",
     { defaultValue: false, parseAsJson: true },
   );
-  // Night mode starts as the device's, until the visitor picks one with the
-  // toggle. index.html works it out the same way before the page draws.
+  // Until the visitor picks one with the toggle, night mode starts as
+  // index.html set it before the page drew: their device's.
   const [isNightMode, setIsNightMode] = useLocalStorage("nightMode", {
-    defaultValue: window.matchMedia("(prefers-color-scheme: dark)").matches,
+    defaultValue: document.documentElement.classList.contains("dark"),
     parseAsJson: true,
   });
   const [showInfo, setShowInfo] = useLocalStorage("showInfo", {

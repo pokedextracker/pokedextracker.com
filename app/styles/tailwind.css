@@ -16,6 +16,8 @@
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
+    background-color: var(--color-surface);
+    color: var(--color-text);
   }
 
   *,
@@ -40,14 +42,7 @@
     height: 100vh;
   }
 
-  html {
-    background-color: var(--color-surface);
-    color: var(--color-text);
-  }
-
-  /* Night mode is the dark class on <html> (see index.html). A link that
-     doesn't set its own color takes night mode's. */
-
+  /* A link that doesn't set its own color takes night mode's. */
   .dark a {
     color: var(--color-night-mode-link);
   }
@@ -234,42 +229,47 @@
 /* Role colors: what a color is for, with its value by day and in night mode,
    so a class like bg-surface is right in both and needs no dark: variant.
    The values are the palette colors above; dark: is left for the few places
-   whose night color is their own. */
+   whose night color is their own. A -hover role is what its base turns on
+   hover or focus. A new role takes a line in each of the three lists below,
+   in the same order. */
 @theme inline {
+  /* Text, and the page behind it, along with what sits flat on the page: the
+     search bar, share panel and modals. */
   --color-text: var(--text);
-  /* The page, and what sits flat on it: the search bar, share panel and
-     modals. */
   --color-surface: var(--surface);
-  /* Raised a step: the progress bar's track and the notification. */
+  /* Raised a step (the progress bar's track), and two (inputs). */
   --color-surface-1: var(--surface-1);
-  /* Raised two steps: inputs and alerts. */
   --color-surface-2: var(--surface-2);
-  /* The dex's grid lines, and a caught tile's. */
+  /* The dex's grid lines, a caught tile's, and a caught tile. */
   --color-line: var(--line);
   --color-line-caught: var(--line-caught);
-  /* A caught tile. */
   --color-caught: var(--caught);
   /* The progress bar's fill and frame. */
   --color-progress: var(--progress);
-  /* Page titles, and text in the brand's blue that's white at night. */
+  /* Form titles, the home page's title and the loading text; and text in the
+     brand's blue that's white at night, like a dex's or profile's title. */
   --color-heading: var(--heading);
   --color-strong: var(--strong);
-  /* The header's quieter links, like the friend code's pencil. */
-  --color-muted-link: var(--muted-link);
-  --color-muted-link-hover: var(--muted-link-hover);
-  --color-danger: var(--danger);
-  /* The info panel, and its darker edges. */
-  --color-info: var(--info);
-  --color-info-edge: var(--info-edge);
-  /* The nav bar, and its dropdown's items. */
-  --color-nav: var(--nav);
-  --color-nav-raised: var(--nav-raised);
-  /* Interactive colors, and what they turn on hover or focus. */
-  --color-nav-hover: var(--nav-hover);
-  --color-nav-raised-hover: var(--nav-raised-hover);
-  --color-nav-text-hover: var(--nav-text-hover);
+  /* Links, and the header's quieter ones, like the friend code's pencil. */
   --color-link: var(--link);
   --color-link-hover: var(--link-hover);
+  --color-muted-link: var(--muted-link);
+  --color-muted-link-hover: var(--muted-link-hover);
+  /* Errors, and the link that deletes a dex. */
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  /* The info panel, its darker edges, and its links to Bulbapedia and Serebii. */
+  --color-info: var(--info);
+  --color-info-edge: var(--info-edge);
+  --color-info-link: var(--info-link);
+  --color-info-link-hover: var(--info-link-hover);
+  /* The nav bar, its links, and its dropdown's items. */
+  --color-nav: var(--nav);
+  --color-nav-hover: var(--nav-hover);
+  --color-nav-text-hover: var(--nav-text-hover);
+  --color-nav-raised: var(--nav-raised);
+  --color-nav-raised-hover: var(--nav-raised-hover);
+  /* The button colors: the button, its text where it isn't white, and its hover. */
   --color-button-blue: var(--button-blue);
   --color-button-blue-hover: var(--button-blue-hover);
   --color-button-white: var(--button-white);
@@ -278,9 +278,6 @@
   --color-button-yellow: var(--button-yellow);
   --color-button-yellow-text: var(--button-yellow-text);
   --color-button-yellow-hover: var(--button-yellow-hover);
-  /* The info panel's links to Bulbapedia and Serebii. */
-  --color-info-link: var(--info-link);
-  --color-info-link-hover: var(--info-link-hover);
 }
 
 @layer base {
@@ -295,18 +292,21 @@
     --progress: var(--color-brand-primary);
     --heading: var(--color-brand-secondary);
     --strong: var(--color-brand-secondary);
+    --link: var(--color-brand-secondary-light);
+    --link-hover: var(--color-brand-secondary-dark);
     --muted-link: var(--color-black-lighten-25);
     --muted-link-hover: var(--color-black);
     --danger: var(--color-error);
+    --danger-hover: var(--color-error-darken-5);
     --info: var(--color-brand-secondary);
     --info-edge: var(--color-brand-secondary-dark-darken-3);
+    --info-link: var(--color-brand-secondary-dark);
+    --info-link-hover: var(--color-brand-secondary-dark-darken-3);
     --nav: var(--color-brand-primary);
-    --nav-raised: var(--color-brand-primary-lighten-10);
     --nav-hover: var(--color-brand-primary-lighten-10);
-    --nav-raised-hover: var(--color-brand-primary-lighten-15);
     --nav-text-hover: var(--color-brand-secondary);
-    --link: var(--color-brand-secondary-light);
-    --link-hover: var(--color-brand-secondary-dark);
+    --nav-raised: var(--color-brand-primary-lighten-10);
+    --nav-raised-hover: var(--color-brand-primary-lighten-15);
     --button-blue: var(--color-brand-secondary-light);
     --button-blue-hover: var(--color-brand-secondary);
     --button-white: var(--color-white);
@@ -315,8 +315,6 @@
     --button-yellow: var(--color-brand-primary);
     --button-yellow-text: var(--color-brand-secondary);
     --button-yellow-hover: var(--color-brand-primary-dark);
-    --info-link: var(--color-brand-secondary-dark);
-    --info-link-hover: var(--color-brand-secondary-dark-darken-3);
   }
 
   .dark {
@@ -330,18 +328,21 @@
     --progress: var(--color-night-mode-primary-dark);
     --heading: var(--color-night-mode-link);
     --strong: var(--color-white);
+    --link: var(--color-night-mode-link);
+    --link-hover: var(--color-night-mode-link-dark);
     --muted-link: var(--color-night-mode-link-gray);
     --muted-link-hover: var(--color-night-mode-link-gray-dark);
     --danger: var(--color-night-mode-error);
+    --danger-hover: var(--color-night-mode-error-dark);
     --info: var(--color-night-mode-secondary);
     --info-edge: var(--color-night-mode-secondary-dark);
+    --info-link: var(--color-night-mode-secondary-darken-4);
+    --info-link-hover: var(--color-night-mode-secondary-darken-6);
     --nav: var(--color-night-mode-03dp);
-    --nav-raised: var(--color-night-mode-04dp);
     --nav-hover: var(--color-night-mode-06dp);
-    --nav-raised-hover: var(--color-night-mode-06dp);
     --nav-text-hover: var(--color-night-mode-primary);
-    --link: var(--color-night-mode-link);
-    --link-hover: var(--color-night-mode-link-dark);
+    --nav-raised: var(--color-night-mode-04dp);
+    --nav-raised-hover: var(--color-night-mode-06dp);
     --button-blue: var(--color-night-mode-secondary);
     --button-blue-hover: var(--color-night-mode-secondary-dark);
     --button-white: var(--color-gray-light);
@@ -350,8 +351,6 @@
     --button-yellow: var(--color-night-mode-primary);
     --button-yellow-text: var(--color-white);
     --button-yellow-hover: var(--color-night-mode-primary-dark);
-    --info-link: var(--color-night-mode-secondary-darken-4);
-    --info-link-hover: var(--color-night-mode-secondary-darken-6);
   }
 }
 
@@ -360,7 +359,7 @@
 @custom-variant hover (&:hover);
 
 /* The .no-touch class (set in index.html on devices without touch), for the
-   few hover styles limited to those. It adds no specificity, like night
+   few hover styles limited to those. It adds no specificity, like dark
    below, so between the two the later utility wins, as the later rule did in
    the old stylesheets. */
 @custom-variant no-touch (:where(.no-touch) &);
