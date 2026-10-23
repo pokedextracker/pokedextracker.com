@@ -16,6 +16,8 @@
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
+    background-color: var(--color-surface);
+    color: var(--color-text);
   }
 
   *,
@@ -40,18 +42,12 @@
     height: 100vh;
   }
 
-  /* Night mode is a class on the app's root, and on a modal, which renders
-     outside it. A link that doesn't set its own color takes night mode's. */
-  .night-mode {
-    background-color: var(--color-night-mode);
-    color: var(--color-white);
-  }
-
-  .night-mode a {
+  /* A link that doesn't set its own color takes night mode's. */
+  .dark a {
     color: var(--color-night-mode-link);
   }
 
-  .night-mode a:hover {
+  .dark a:hover {
     color: var(--color-night-mode-link-dark);
   }
 }
@@ -230,19 +226,149 @@
   }
 }
 
+/* Role colors: what a color is for, with its value by day and in night mode,
+   so a class like bg-surface is right in both and needs no dark: variant.
+   The values are the palette colors above; dark: is left for the few places
+   whose night color is their own. A -hover role is what its base turns on
+   hover or focus. A new role takes a line in each of the three lists below,
+   in the same order. */
+@theme inline {
+  /* Text, and the page behind it, along with what sits flat on the page: the
+     search bar, share panel and modals. */
+  --color-text: var(--text);
+  --color-surface: var(--surface);
+  /* Raised a step (the progress bar's track), and two (inputs). */
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  /* The dex's grid lines, a caught tile's, and a caught tile. */
+  --color-line: var(--line);
+  --color-line-caught: var(--line-caught);
+  --color-caught: var(--caught);
+  /* The progress bar's fill and frame. */
+  --color-progress: var(--progress);
+  /* Form titles, the home page's title and the loading text; and text in the
+     brand's blue that's white at night, like a dex's or profile's title. */
+  --color-heading: var(--heading);
+  --color-strong: var(--strong);
+  /* Links, and the header's quieter ones, like the friend code's pencil. */
+  --color-link: var(--link);
+  --color-link-hover: var(--link-hover);
+  --color-muted-link: var(--muted-link);
+  --color-muted-link-hover: var(--muted-link-hover);
+  /* Errors, and the link that deletes a dex. */
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  /* The info panel, its darker edges, and its links to Bulbapedia and Serebii. */
+  --color-info: var(--info);
+  --color-info-edge: var(--info-edge);
+  --color-info-link: var(--info-link);
+  --color-info-link-hover: var(--info-link-hover);
+  /* The nav bar, its links, and its dropdown's items. */
+  --color-nav: var(--nav);
+  --color-nav-hover: var(--nav-hover);
+  --color-nav-text-hover: var(--nav-text-hover);
+  --color-nav-raised: var(--nav-raised);
+  --color-nav-raised-hover: var(--nav-raised-hover);
+  /* The button colors: the button, its text where it isn't white, and its hover. */
+  --color-button-blue: var(--button-blue);
+  --color-button-blue-hover: var(--button-blue-hover);
+  --color-button-white: var(--button-white);
+  --color-button-white-text: var(--button-white-text);
+  --color-button-white-hover: var(--button-white-hover);
+  --color-button-yellow: var(--button-yellow);
+  --color-button-yellow-text: var(--button-yellow-text);
+  --color-button-yellow-hover: var(--button-yellow-hover);
+}
+
+@layer base {
+  :root {
+    --text: var(--color-black);
+    --surface: var(--color-white);
+    --surface-1: var(--color-white);
+    --surface-2: var(--color-white);
+    --line: var(--color-gray-light);
+    --line-caught: var(--color-brand-primary-lighten-15);
+    --caught: var(--color-brand-primary-light);
+    --progress: var(--color-brand-primary);
+    --heading: var(--color-brand-secondary);
+    --strong: var(--color-brand-secondary);
+    --link: var(--color-brand-secondary-light);
+    --link-hover: var(--color-brand-secondary-dark);
+    --muted-link: var(--color-black-lighten-25);
+    --muted-link-hover: var(--color-black);
+    --danger: var(--color-error);
+    --danger-hover: var(--color-error-darken-5);
+    --info: var(--color-brand-secondary);
+    --info-edge: var(--color-brand-secondary-dark-darken-3);
+    --info-link: var(--color-brand-secondary-dark);
+    --info-link-hover: var(--color-brand-secondary-dark-darken-3);
+    --nav: var(--color-brand-primary);
+    --nav-hover: var(--color-brand-primary-lighten-10);
+    --nav-text-hover: var(--color-brand-secondary);
+    --nav-raised: var(--color-brand-primary-lighten-10);
+    --nav-raised-hover: var(--color-brand-primary-lighten-15);
+    --button-blue: var(--color-brand-secondary-light);
+    --button-blue-hover: var(--color-brand-secondary);
+    --button-white: var(--color-white);
+    --button-white-text: var(--color-brand-secondary);
+    --button-white-hover: var(--color-white-darken-1);
+    --button-yellow: var(--color-brand-primary);
+    --button-yellow-text: var(--color-brand-secondary);
+    --button-yellow-hover: var(--color-brand-primary-dark);
+  }
+
+  .dark {
+    --text: var(--color-white);
+    --surface: var(--color-night-mode);
+    --surface-1: var(--color-night-mode-01dp);
+    --surface-2: var(--color-night-mode-02dp);
+    --line: var(--color-night-mode-01dp);
+    --line-caught: var(--color-night-mode-primary-dark);
+    --caught: var(--color-night-mode-primary);
+    --progress: var(--color-night-mode-primary-dark);
+    --heading: var(--color-night-mode-link);
+    --strong: var(--color-white);
+    --link: var(--color-night-mode-link);
+    --link-hover: var(--color-night-mode-link-dark);
+    --muted-link: var(--color-night-mode-link-gray);
+    --muted-link-hover: var(--color-night-mode-link-gray-dark);
+    --danger: var(--color-night-mode-error);
+    --danger-hover: var(--color-night-mode-error-dark);
+    --info: var(--color-night-mode-secondary);
+    --info-edge: var(--color-night-mode-secondary-dark);
+    --info-link: var(--color-night-mode-secondary-darken-4);
+    --info-link-hover: var(--color-night-mode-secondary-darken-6);
+    --nav: var(--color-night-mode-03dp);
+    --nav-hover: var(--color-night-mode-06dp);
+    --nav-text-hover: var(--color-night-mode-primary);
+    --nav-raised: var(--color-night-mode-04dp);
+    --nav-raised-hover: var(--color-night-mode-06dp);
+    --button-blue: var(--color-night-mode-secondary);
+    --button-blue-hover: var(--color-night-mode-secondary-dark);
+    --button-white: var(--color-gray-light);
+    --button-white-text: var(--color-night-mode-secondary);
+    --button-white-hover: var(--color-gray-light-darken-6);
+    --button-yellow: var(--color-night-mode-primary);
+    --button-yellow-text: var(--color-white);
+    --button-yellow-hover: var(--color-night-mode-primary-dark);
+  }
+}
+
 /* Hover applies on every device, as it did in the old stylesheets. Tailwind
    4 limits it to devices that can hover, which would change taps on phones. */
 @custom-variant hover (&:hover);
 
 /* The .no-touch class (set in index.html on devices without touch), for the
-   few hover styles limited to those. It adds no specificity, like night
+   few hover styles limited to those. It adds no specificity, like dark
    below, so between the two the later utility wins, as the later rule did in
    the old stylesheets. */
 @custom-variant no-touch (:where(.no-touch) &);
 
-/* Night mode is a class on the app's root, and on a modal, which renders
-   outside it. */
-@custom-variant night (&:where(.night-mode, .night-mode *));
+/* Night mode, as Tailwind's dark variant: the dark class on <html>, which
+   index.html sets before the page draws, and the toggle in the nav changes.
+   Most colors are roles that change with it (above), so few classes need
+   it. */
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* The old stylesheets' breakpoints, exactly. Tailwind's max-* variants use
    width < N rather than max-width: N, a pixel off. Widest first: utilities

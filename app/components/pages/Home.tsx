@@ -26,7 +26,7 @@ export function Home() {
   }, []);
 
   return (
-    <div className="flex flex-[1_1_auto] flex-col bg-brand-primary bg-[url(/pattern.png)] bg-[size:500px_250px] bg-center bg-repeat text-center night:bg-night-mode night:bg-[url(/pattern-night.png)]">
+    <div className="flex flex-[1_1_auto] flex-col bg-brand-primary bg-[url(/pattern.png)] bg-[size:500px_250px] bg-center bg-repeat text-center dark:bg-night-mode dark:bg-[url(/pattern-night.png)]">
       <div className="flex grow flex-col justify-center overflow-y-scroll pt-20">
         <div className="relative -top-100 animate-slide">
           <img
@@ -34,7 +34,7 @@ export function Home() {
             className="mb-10 h-100 w-100 max-400:h-80 max-400:w-80"
             src="/pokeball.svg"
           />
-          <h1 className="m-0 font-secondary text-60 font-bold tracking-1 text-brand-secondary uppercase no-underline night:text-night-mode-link max-400:text-45">
+          <h1 className="m-0 font-secondary text-60 font-bold tracking-1 text-heading uppercase no-underline max-400:text-45">
             Pokédex Tracker
           </h1>
         </div>
@@ -304,7 +304,7 @@ export function Home() {
           </div>
         </div>
       </div>
-      <div className="z-1 mt-auto w-full bg-brand-primary-light p-10 font-secondary text-11 font-bold tracking-1 text-brand-secondary uppercase night:bg-night-mode-dark">
+      <div className="z-1 mt-auto w-full bg-brand-primary-light p-10 font-secondary text-11 font-bold tracking-1 text-brand-secondary uppercase dark:bg-night-mode-dark">
         {"Made with "}
         <i className="pkicon pkicon-ball-love mx-3 my-5 align-middle" /> in San
         Francisco

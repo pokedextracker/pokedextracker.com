@@ -9,10 +9,10 @@ import { tw } from "../../utils/tw";
 const variants = {
   default: tw`bottom-27 bg-brand-secondary text-white after:top-full after:border-t-brand-secondary`,
   // In night mode it takes night mode's red.
-  error: tw`bottom-27 bg-error-darken-5 text-white after:top-full after:border-t-error-darken-5 night:bg-night-mode-error night:after:border-t-night-mode-error`,
+  error: tw`bottom-27 bg-error-darken-5 text-white after:top-full after:border-t-error-darken-5 dark:bg-night-mode-error dark:after:border-t-night-mode-error`,
   light: tw`bottom-27 bg-white text-black after:top-full after:border-t-white`,
   // Below the trigger, in the nav's colors in night mode.
-  nav: tw`top-47 bg-brand-secondary text-white after:bottom-full after:border-b-brand-secondary night:bg-night-mode-primary night:text-night-mode-03dp night:after:border-b-night-mode-primary`,
+  nav: tw`top-47 bg-brand-secondary text-white after:bottom-full after:border-b-brand-secondary dark:bg-night-mode-primary dark:text-night-mode-03dp dark:after:border-b-night-mode-primary`,
 };
 
 type Variant = keyof typeof variants;

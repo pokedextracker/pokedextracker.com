@@ -78,7 +78,7 @@ export function Dex({
           <Header />
           <h3 className="mx-0 mt-0 mb-8">
             <Link
-              className="text-16 text-black-lighten-35 hover:cursor-pointer hover:text-black-lighten-25 night:text-night-mode-link-gray night:hover:text-night-mode-link-gray-dark"
+              className="text-16 text-black-lighten-35 hover:cursor-pointer hover:text-black-lighten-25 dark:text-night-mode-link-gray dark:hover:text-night-mode-link-gray-dark"
               onClick={() => trackEvent("User", "click view profile")}
               to={`/u/${username}`}
             >

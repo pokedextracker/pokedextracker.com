@@ -6,7 +6,7 @@ interface Props {
 
 export function InfoLocations({ locations }: Props) {
   return (
-    <div className="flex-[1_1_auto] overflow-y-scroll border-b-2 border-brand-secondary-dark-darken-3 bg-brand-secondary p-30 night:border-night-mode-secondary-dark night:bg-night-mode-secondary">
+    <div className="flex-[1_1_auto] overflow-y-scroll border-b-2 border-info-edge bg-info p-30">
       {locations.map((location) => {
         return (
           <div key={location.game.id}>

@@ -1,4 +1,10 @@
-import { createContext, useContext, useMemo, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  type ReactNode,
+} from "react";
 
 import { useLocalStorage, type SetLocalStorageFn } from "../use-local-storage";
 
@@ -31,14 +37,20 @@ export const LocalStorageContextProvider = ({ children }: Props) => {
     "notif-2026.10.09",
     { defaultValue: false, parseAsJson: true },
   );
+  // Until the visitor picks one with the toggle, night mode starts as
+  // index.html set it before the page drew: their device's.
   const [isNightMode, setIsNightMode] = useLocalStorage("nightMode", {
-    defaultValue: false,
+    defaultValue: document.documentElement.classList.contains("dark"),
     parseAsJson: true,
   });
   const [showInfo, setShowInfo] = useLocalStorage("showInfo", {
     defaultValue: window.innerWidth > MOBILE_WIDTH,
     parseAsJson: true,
   });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", isNightMode);
+  }, [isNightMode]);
 
   const contextValue = useMemo<LocalStorageContextState>(
     () => ({

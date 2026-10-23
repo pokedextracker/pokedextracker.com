@@ -22,7 +22,6 @@ import {
 import Modal from "react-modal";
 import slug from "slug";
 
-import { useLocalStorageContext } from "../../../hooks/contexts/use-local-storage-context";
 import { useSession } from "../../../hooks/contexts/use-session";
 import { useDexTypes } from "../../../hooks/queries/dex-types";
 import { useDeleteDex, useUpdateDex } from "../../../hooks/queries/dexes";
@@ -64,14 +63,12 @@ interface Props {
 }
 
 // The link that deletes the dex, and the one that confirms it, in red.
-const deleteLink = tw`mx-3 my-0 cursor-pointer font-medium text-error underline transition-all duration-100 ease-out hover:text-error-darken-5 night:text-night-mode-error night:hover:text-night-mode-error-dark`;
+const deleteLink = tw`mx-3 my-0 cursor-pointer font-medium text-danger underline transition-all duration-100 ease-out hover:text-danger-hover`;
 
 // DexEdit is only mounted while it's open, so every time it opens, the form
 // starts from the dex as it is then.
 export function DexEdit({ dex, onRequestClose }: Props) {
   const formRef = useRef<HTMLDivElement>(null);
-
-  const { isNightMode } = useLocalStorageContext();
   const { session } = useSession();
   const { data: games } = useGames();
   const { data: dexTypes } = useDexTypes();
@@ -346,7 +343,7 @@ export function DexEdit({ dex, onRequestClose }: Props) {
 
   return (
     <Modal
-      className={`${modal} ${isNightMode ? "night-mode" : ""}`}
+      className={modal}
       contentLabel="Edit Dex"
       isOpen
       onRequestClose={onRequestClose}
