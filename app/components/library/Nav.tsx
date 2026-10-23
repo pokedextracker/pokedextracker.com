@@ -19,7 +19,7 @@ import { TooltipText } from "./Tooltip";
 const nav = tw`relative flex flex-[0_0_42px] bg-nav font-secondary`;
 
 // What every link in the nav has, the dropdown's included.
-const base = tw`p-14 text-11 font-bold tracking-1 text-strong uppercase no-underline transition-all duration-100 ease-out no-touch:hover:cursor-pointer no-touch:hover:text-nav-text-hover no-touch:focus:cursor-pointer max-600:px-10 max-600:text-10`;
+const base = tw`p-14 text-11 font-bold tracking-1 text-strong uppercase no-underline transition-all duration-100 ease-out no-touch:hover:cursor-pointer no-touch:hover:text-nav-text-hover no-touch:focus:cursor-pointer no-touch:focus:text-nav-text-hover max-600:px-10 max-600:text-10`;
 
 // The links along the nav, which light up on hover or focus on devices
 // without touch.
