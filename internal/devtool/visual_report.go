@@ -65,6 +65,14 @@ type playwrightTest struct {
 // playwrightResult is one attempt at a test.
 type playwrightResult struct {
 	Errors []playwrightError `json:"errors"`
+	// The files an attempt left, like a screenshot comparison's expected,
+	// actual, and diff images.
+	Attachments []playwrightAttachment `json:"attachments"`
+}
+
+type playwrightAttachment struct {
+	Name string `json:"name"`
+	Path string `json:"path"`
 }
 
 type playwrightError struct {
@@ -99,9 +107,19 @@ func (r *playwrightReport) failure(runErr error) (retried []string, err error) {
 		return nil, fmt.Errorf("playwright: %s", firstLine(r.Errors[0].Message))
 	}
 	var failure VisualFailure
-	// The top level is one suite per spec file, whose title is the file name.
-	for _, file := range r.Suites {
-		retried = failure.add(file, nil, retried)
+	for _, test := range r.tests() {
+		switch test.outcome() {
+		case outcomeDiffer:
+			failure.Differ = append(failure.Differ, test.name)
+		case outcomeFailed:
+			failure.Failed = append(failure.Failed, test.name)
+		case outcomeFlaky:
+			failure.Flaky = append(failure.Flaky, test.name)
+		case outcomeRetried:
+			hiccup, _ := onlyHiccups(test.Results)
+			retried = append(retried, test.name+" ("+hiccup+")")
+		case outcomePassed:
+		}
 	}
 	if len(failure.Differ)+len(failure.Failed)+len(failure.Flaky) > 0 {
 		return retried, &failure
@@ -112,33 +130,66 @@ func (r *playwrightReport) failure(runErr error) (retried []string, err error) {
 	return nil, fmt.Errorf("playwright: %w", runErr)
 }
 
-// add sorts the specs in suite that didn't pass into f, and appends the ones
-// that passed after retrying only hiccups to retried.
-func (f *VisualFailure) add(suite playwrightSuite, titles []string, retried []string) []string {
-	for _, spec := range suite.Specs {
-		title := strings.Join(append(append([]string{}, titles...), spec.Title), " › ")
-		for _, test := range spec.Tests {
-			name := fmt.Sprintf("[%s] %s", test.ProjectName, title)
-			switch test.Status {
-			case "flaky":
-				if hiccup, ok := onlyHiccups(test.Results); ok {
-					retried = append(retried, name+" ("+hiccup+")")
-				} else {
-					f.Flaky = append(f.Flaky, name)
-				}
-			case "unexpected":
-				if differed(test.Results) {
-					f.Differ = append(f.Differ, name)
-				} else {
-					f.Failed = append(f.Failed, name)
-				}
+// namedTest is one test in a report, named "[project] describe › title".
+type namedTest struct {
+	name string
+	playwrightTest
+}
+
+// tests lists every test in the report, in order.
+func (r *playwrightReport) tests() []namedTest {
+	var tests []namedTest
+	var walk func(suite playwrightSuite, titles []string)
+	walk = func(suite playwrightSuite, titles []string) {
+		for _, spec := range suite.Specs {
+			title := strings.Join(append(append([]string{}, titles...), spec.Title), " › ")
+			for _, test := range spec.Tests {
+				tests = append(tests, namedTest{name: fmt.Sprintf("[%s] %s", test.ProjectName, title), playwrightTest: test})
 			}
 		}
+		for _, child := range suite.Suites {
+			walk(child, append(append([]string{}, titles...), child.Title))
+		}
 	}
-	for _, child := range suite.Suites {
-		retried = f.add(child, append(append([]string{}, titles...), child.Title), retried)
+	// The top level is one suite per spec file, whose title is the file name.
+	for _, file := range r.Suites {
+		walk(file, nil)
 	}
-	return retried
+	return tests
+}
+
+// visualOutcome is how a visual test came out, as the terminal's lists and
+// the review page both sort it.
+type visualOutcome int
+
+const (
+	// Passed, including a test that was skipped.
+	outcomePassed visualOutcome = iota
+	// Its screenshot differed on every attempt.
+	outcomeDiffer
+	// It failed before or apart from its screenshot.
+	outcomeFailed
+	// It passed only on a retry, after a difference or an error that isn't a
+	// hiccup.
+	outcomeFlaky
+	// It passed on a retry after only hiccups, which counts as a pass.
+	outcomeRetried
+)
+
+func (t playwrightTest) outcome() visualOutcome {
+	switch t.Status {
+	case "flaky":
+		if _, ok := onlyHiccups(t.Results); ok {
+			return outcomeRetried
+		}
+		return outcomeFlaky
+	case "unexpected":
+		if differed(t.Results) {
+			return outcomeDiffer
+		}
+		return outcomeFailed
+	}
+	return outcomePassed
 }
 
 // hiccups are errors that say something went wrong around a test rather than

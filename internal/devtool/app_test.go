@@ -86,6 +86,8 @@ type fakeProcesses struct {
 	fetchErr      error
 	visualErr     map[string]error
 	visualRetried map[string][]string
+	// The JSON report each side writes, by side.
+	visualReports map[string]string
 	migrateRoots  []string
 	calls         []string
 	servers       Servers
@@ -131,6 +133,15 @@ func (f *fakeProcesses) PrepareVisual(context.Context, Environment) error {
 
 func (f *fakeProcesses) Visual(_ context.Context, site, tests Environment, target DatabaseTarget, port int, side string, args ...string) ([]string, error) {
 	f.calls = append(f.calls, fmt.Sprintf("visual %s site=%s tests=%s %s:%d on %d %s", side, filepath.Base(site.CurrentRoot), filepath.Base(tests.CurrentRoot), target.Name, target.Port, port, strings.Join(args, " ")))
+	if report, ok := f.visualReports[side]; ok {
+		path := filepath.Join(visualDir(tests), "results-"+side+".json")
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			return nil, err
+		}
+		if err := os.WriteFile(path, []byte(report), 0o600); err != nil {
+			return nil, err
+		}
+	}
 	return f.visualRetried[side], f.visualErr[side]
 }
 
@@ -751,4 +762,43 @@ func TestVisualPointsAtTheReferenceReportWhenItCantBeTaken(t *testing.T) {
 	assert.Contains(t, err.Error(), "couldn't take the reference screenshots")
 	assert.Contains(t, err.Error(), "show-report tmp/visual/report-reference")
 	assert.Contains(t, h.stdout.String(), "didn't come out the same twice:\n  [chromium-desktop] signed out › home\n")
+}
+
+func TestVisualRemovesTheLastReviewPageWhenItStopsEarly(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	page := filepath.Join(reviewDir(h.env), "index.html")
+	writeFile(t, page, "the last run's page")
+	h.processes.visualErr = map[string]error{"reference": fmt.Errorf("pnpm exited: exit status 1")}
+
+	require.Error(t, h.app.Run(context.Background(), []string{"visual", "chromium"}))
+
+	assert.NoFileExists(t, page, "it showed the last run's screenshots, which the reference side clears")
+}
+
+func TestVisualWritesTheReviewPage(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	h.processes.visualReports = map[string]string{"branch": `{"errors": [], "suites": []}`}
+	h.processes.visualErr = map[string]error{"branch": &VisualFailure{
+		Differ: []string{"[chromium-desktop] signed out › login"},
+	}}
+
+	err := h.app.Run(context.Background(), []string{"visual", "chromium"})
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "the comparison with origin/master (abc1234) didn't pass", "the page doesn't change the result")
+	assert.Contains(t, h.stdout.String(), "\nEvery screenshot, before and after: tmp/visual/review/index.html\n")
+	assert.FileExists(t, filepath.Join(reviewDir(h.env), "index.html"))
+}
+
+func TestVisualOnlyWarnsWhenItCantWriteTheReviewPage(t *testing.T) {
+	h := newHarness(t, false)
+	writeSeeds(t, h)
+	h.processes.visualReports = map[string]string{"branch": "not json"}
+
+	require.NoError(t, h.app.Run(context.Background(), []string{"visual", "chromium"}))
+
+	assert.Contains(t, h.stdout.String(), "Couldn't write the review page: read ")
+	assert.Contains(t, h.stdout.String(), "No visual differences from origin/master (abc1234).")
 }

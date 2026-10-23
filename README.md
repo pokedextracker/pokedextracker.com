@@ -95,10 +95,12 @@ that changes that dex may mean updating them too.
 
 ### Visual comparison
 
-For changes that shouldn't alter how the site looks (dependency upgrades,
-styling refactors), `mise test:visual` screenshots about 25 page states at a
-desktop and a phone width, once with `master`'s build and once with this
-branch's, and reports anything that changed. It needs Docker.
+`mise test:visual` screenshots the site's page states at a desktop and a
+phone width, once with `master`'s build and once with this branch's, and
+reports anything that changed. For a change that shouldn't alter how the site
+looks (a dependency upgrade, a refactor), that list should be empty. For one
+that should, its review page shows each difference to approve. It needs
+Docker.
 
 ```sh
 mise test:visual            # Chromium, compared with master (origin/master)
@@ -121,8 +123,13 @@ when more than 5 pixels change color at all, and a failure is retried twice. A
 test that passes only on a retry doesn't pass either, unless what it retried
 was a timeout or a dropped connection: it's listed separately, since it's
 either noise or a change that only happens some of the time, and running the
-comparison again tells you which. The report, with each difference
-highlighted, is in `tmp/visual/report`
+comparison again tells you which.
+
+The review page, `tmp/visual/review/index.html`, shows every screenshot: each
+one that changed before and after, with the difference highlighted, and the
+ones that didn't, by project (browser, size, and day or night). It links to
+the images where the run left them, so the next run replaces it. Playwright's
+report, with each failure's details, is in `tmp/visual/report`
 (`pnpm exec playwright show-report tmp/visual/report`), and the servers' logs
 are in `tmp/visual/server-*.log`. Google Fonts are cached in
 `tmp/visual/fonts` so both sides get the same files; delete it if the site's
