@@ -51,6 +51,34 @@ test("marking a Pokémon as caught is saved", async ({ page, request }) => {
   );
 });
 
+// A printed dex is just its boxes, in the desktop grid even though a page is
+// narrower than the phone breakpoint, with the caught colors and sprites kept.
+test("a dex prints as a grid of its boxes", async ({ page, request }) => {
+  const user = await createUser(request);
+  await signIn(page, user);
+  await page.setViewportSize({ width: 740, height: 960 });
+  await page.goto(`/u/${user.username}/${user.slug}`);
+  const markAll = page.getByRole("button", { name: "Mark All" }).first();
+  await expect(markAll).toBeVisible();
+
+  await page.emulateMedia({ media: "print" });
+  // Six to a row: the sixth shares the first's row, and the seventh starts
+  // the next.
+  const first = await tile(page, "Chikorita").boundingBox();
+  const sixth = await tile(page, "Emboar").boundingBox();
+  const seventh = await tile(page, "Totodile").boundingBox();
+  expect(sixth?.y).toBe(first?.y);
+  expect(seventh?.y).toBeGreaterThan(first?.y ?? 0);
+  expect(seventh?.x).toBe(first?.x);
+  await expect(tile(page, "Chikorita")).toHaveCSS(
+    "print-color-adjust",
+    "exact",
+  );
+  await expect(page.getByTestId("info-main")).toBeHidden();
+  await expect(page.getByPlaceholder(/Search by name/)).toBeHidden();
+  await expect(markAll).toBeHidden();
+});
+
 test("the info panel shows the chosen Pokémon", async ({ page, request }) => {
   const user = await createUser(request);
   await page.goto(`/u/${user.username}/${user.slug}`);

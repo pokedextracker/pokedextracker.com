@@ -90,7 +90,14 @@
       name="msapplication-TileImage"
       content="/favicon/mstile-144x144.png"
     />
-    <meta name="theme-color" content="#ffffff" />
+    <!-- The bar around the page on phones: white by day, and the night nav's
+         color at night, which the script below and the app switch to. -->
+    <meta
+      name="theme-color"
+      content="#ffffff"
+      data-day="#ffffff"
+      data-night="#262626"
+    />
     <meta
       name="description"
       content="A tool for tracking your Living Dex progress. Easily toggle between and track your captured Pokémon, find the locations of those left to be captured, and share a public link with others to see how you can help each other out."
@@ -140,6 +147,8 @@
       }
       if (nightMode) {
         document.documentElement.className += " dark";
+        var themeColor = document.querySelector('meta[name="theme-color"]');
+        themeColor.setAttribute("content", themeColor.dataset.night);
       }
     </script>
   </head>

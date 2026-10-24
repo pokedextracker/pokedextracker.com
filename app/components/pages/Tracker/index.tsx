@@ -118,16 +118,18 @@ function TrackerInner({ initialSelectedPokemon }: TrackerInnerProps) {
     <div className={pageContainer}>
       <Nav />
       <Reload />
-      <div className="relative flex min-h-0 flex-[1_1_auto]">
-        <div className="flex grow flex-col">
+      <div className="relative flex min-h-0 flex-[1_1_auto] print:block">
+        <div className="flex grow flex-col print:block">
           <SearchBar
             hideCaught={hideCaught}
             query={query}
             setHideCaught={setHideCaught}
             setQuery={setQuery}
           />
+          {/* Printed whole, keeping the backgrounds that show the sprites
+              and what's caught, which printing otherwise drops. */}
           <div
-            className="flex grow flex-col overflow-y-scroll"
+            className="flex grow flex-col overflow-y-scroll print:block print:overflow-visible print:[print-color-adjust:exact]"
             onScroll={handleScroll}
             ref={trackerRef}
           >

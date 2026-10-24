@@ -50,6 +50,16 @@ export const LocalStorageContextProvider = ({ children }: Props) => {
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isNightMode);
+    // The bar around the page on phones, in the colors index.html gives it.
+    const themeColor = document.querySelector<HTMLMetaElement>(
+      'meta[name="theme-color"]',
+    );
+    const color = isNightMode
+      ? themeColor?.dataset.night
+      : themeColor?.dataset.day;
+    if (themeColor && color) {
+      themeColor.content = color;
+    }
   }, [isNightMode]);
 
   const contextValue = useMemo<LocalStorageContextState>(

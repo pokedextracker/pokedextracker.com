@@ -55,7 +55,7 @@ export function SearchBar({
   };
 
   return (
-    <div className="border-b border-gray-light bg-surface p-10 dark:border-night-mode-dark max-400:pr-35">
+    <div className="border-b border-gray-light bg-surface p-10 dark:border-night-mode-dark print:hidden max-400:pr-35">
       <div className={wrapper}>
         <div className="relative">
           <FontAwesomeIcon

@@ -66,7 +66,7 @@ export function Profile() {
     <div className={pageContainer}>
       <Nav />
       <Reload />
-      <div className="relative top-70 flex-[1_0_auto] animate-slide-fast overflow-y-scroll px-0 pt-100 pb-60 dark:bg-night-mode max-750:px-15 max-750:pt-40 max-750:pb-20">
+      <div className="relative top-70 flex-[1_0_auto] animate-slide-fast overflow-y-auto px-0 pt-100 pb-60 dark:bg-night-mode max-750:px-15 max-750:pt-40 max-750:pb-20">
         <div className={wrapper}>
           <header>
             <Notification />
