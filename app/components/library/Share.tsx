@@ -20,7 +20,7 @@ export function Share({ profile }: Props) {
 
   return (
     <div
-      className="absolute bottom-[200%] left-1/2 z-1 -ml-150 w-300 border-2 border-solid border-gray-light bg-surface p-10 text-14 after:absolute after:top-full after:left-1/2 after:-ml-8 after:border-8 after:border-solid after:border-transparent after:border-t-gray-light after:content-['_'] dark:border-night-mode-02dp dark:text-white dark:after:border-t-night-mode-02dp"
+      className="absolute bottom-[200%] left-1/2 z-1 -ml-150 w-300 border-2 border-solid border-gray-100 bg-surface p-10 text-14 after:absolute after:top-full after:left-1/2 after:-ml-8 after:border-8 after:border-solid after:border-transparent after:border-t-gray-100 after:content-['_'] dark:border-night-02dp dark:text-white dark:after:border-t-night-02dp"
       onClick={(e) => e.stopPropagation()}
     >
       Share this {profile ? "Profile" : "Living Dex"}:

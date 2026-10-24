@@ -10,14 +10,14 @@ interface Props {
   dex: Dex;
 }
 
-const label = tw`ml-7 rounded-3 bg-gray-light px-6 py-4 font-secondary text-10 font-medium uppercase dark:bg-night-mode-04dp`;
+const label = tw`ml-7 rounded-3 bg-gray-100 px-6 py-4 font-secondary text-10 font-medium uppercase dark:bg-night-04dp`;
 
 export function DexIndicator({ dex }: Props) {
   return (
     <div className="ml-auto shrink-0 pl-30 max-500:hidden">
       {dex.shiny && (
         <FontAwesomeIcon
-          className="text-8 text-shiny-star"
+          className="text-8 text-red-700"
           icon={faStar}
           title="Shiny"
         />

@@ -29,15 +29,15 @@ export const fieldSize = tw`h-43 py-0 pr-32 text-15`;
 // formControlClassName styles a text input or select, by default at its size
 // in a field.
 export function formControlClassName(size = tw`${fieldSize} pl-10`): string {
-  return tw`w-full appearance-none rounded-none border-2 border-solid border-brand-secondary-light bg-surface-2 font-primary invalid:[box-shadow:none] focus:border-brand-secondary-dark dark:border-night-mode-02dp dark:text-white dark:focus:border-night-mode-02dp ${size}`;
+  return tw`w-full appearance-none rounded-none border-2 border-solid border-blue-500 bg-surface-2 font-primary invalid:[box-shadow:none] focus:border-blue-700 dark:border-night-02dp dark:text-white dark:focus:border-night-02dp ${size}`;
 }
 
 // The asterisk on a required input, and the chevron on a select.
-export const inputIcon = tw`absolute right-15 bottom-16 text-10 text-brand-primary`;
-export const selectIcon = tw`absolute right-15 bottom-17 text-9 text-brand-secondary`;
+export const inputIcon = tw`absolute right-15 bottom-16 text-10 text-yellow-400`;
+export const selectIcon = tw`absolute right-15 bottom-17 text-9 text-blue-600`;
 
 // A note across from a field's label, like the URL a title makes.
-export const formNote = tw`relative bottom-2 float-right w-240 truncate text-right text-13 text-gray-dark`;
+export const formNote = tw`relative bottom-2 float-right w-240 truncate text-right text-13 text-gray-400`;
 
 // One option in a list of radios or checkboxes.
 export const formOption = tw`mb-5 flex`;
@@ -70,10 +70,10 @@ function ChoiceInput({
       <label className="mb-0 block cursor-pointer font-primary text-15 font-normal tracking-0 normal-case">
         <input {...props} className="hidden" type={type} />
         <span
-          className={`relative top-3 right-7 inline-block h-16 w-16 border border-gray-medium bg-white dark:border-night-mode-24dp dark:bg-night-mode-24dp ${box}`}
+          className={`relative top-3 right-7 inline-block h-16 w-16 border border-gray-300 bg-white dark:border-night-24dp dark:bg-night-24dp ${box}`}
         >
           <span
-            className={`absolute top-1/2 left-1/2 -mt-5 -ml-5 inline-block h-10 w-10 bg-brand-primary opacity-0 transition-all duration-150 ease-out [:checked+*>&]:opacity-100 ${mark}`}
+            className={`absolute top-1/2 left-1/2 -mt-5 -ml-5 inline-block h-10 w-10 bg-yellow-400 opacity-0 transition-all duration-150 ease-out [:checked+*>&]:opacity-100 ${mark}`}
           />
         </span>
         {children}

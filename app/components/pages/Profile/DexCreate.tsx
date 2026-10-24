@@ -326,7 +326,7 @@ export function DexCreate({ onRequestClose }: Props) {
                       <Tooltip
                         className="ml-5"
                         icon={faQuestionCircle}
-                        iconClassName="text-12 text-brand-secondary"
+                        iconClassName="text-12 text-blue-600"
                       >
                         {dt.description}
                       </Tooltip>

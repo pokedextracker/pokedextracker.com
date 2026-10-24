@@ -464,7 +464,7 @@ export function Register() {
                             className="ml-5"
                             data-testid="dex-type-info"
                             icon={faQuestionCircle}
-                            iconClassName="text-12 text-brand-secondary"
+                            iconClassName="text-12 text-blue-600"
                           >
                             {dt.description}
                           </Tooltip>

@@ -17,7 +17,7 @@ export function NotFound() {
           src="/missingno.svg"
         />
         <div className="relative top-100 animate-slide">
-          <h1 className="mx-0 mt-15 mb-0 font-secondary text-50 font-bold tracking-1 text-brand-secondary uppercase no-underline max-700:text-35">
+          <h1 className="mx-0 mt-15 mb-0 font-secondary text-50 font-bold tracking-1 text-blue-600 uppercase no-underline max-700:text-35">
             404 Error
             <br />
             Wild MISSINGNO.

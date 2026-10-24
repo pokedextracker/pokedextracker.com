@@ -60,115 +60,82 @@
 
     /* A link that doesn't set its own color takes night mode's. */
     .dark a {
-      color: var(--color-night-mode-link);
+      color: var(--color-blue-300);
     }
 
     .dark a:hover {
-      color: var(--color-night-mode-link-dark);
+      color: var(--color-blue-400);
     }
   }
 }
 
 @theme {
-  /* Only the site's colors, as the old stylesheets' Sass computed them, so a
-     utility can't pick a color the site doesn't use. */
+  /* Only the site's colors, so a utility can't pick one the site doesn't
+     use. Components mostly use the role colors below, which pick from these
+     by day and at night. */
   --color-*: initial;
-  --color-white: #fff;
-  --color-black: #000;
-  --color-brand-primary: #ffd924;
-  --color-brand-primary-light: rgb(100%, 92.0386784851%, 54.1176470588%);
-  --color-brand-primary-dark: rgb(100%, 82.6688154714%, 0.1176470588%);
-  --color-brand-secondary: #18447d;
-  --color-brand-secondary-light: rgb(
-    11.6667982629%,
-    33.0559284116%,
-    60.7645742861%
-  );
-  --color-brand-secondary-dark: rgb(
-    7.1567311488%,
-    20.2774049217%,
-    37.2746414002%
-  );
-  --color-error: #ff0000;
-  --color-success: #00cc66;
-  --color-gray-light: #f1f1f1;
-  --color-gray-medium: #d2d2d2;
-  --color-gray-dark: #ababab;
-  /* Computed in the old stylesheets where they were used. */
-  --color-brand-primary-lighter: rgb(100%, 97.2441579371%, 84.1176470588%);
-  --color-gray-darker: #787878;
-  --color-gray-darkest: #454545;
-  --color-brand-primary-lighten-10: rgb(100%, 88.5683588504%, 34.1176470588%);
-  --color-brand-primary-lighten-15: rgb(100%, 90.3035186677%, 44.1176470588%);
-  --color-error-darken-5: rgb(90%, 0%, 0%);
-  --color-white-darken-1: rgb(99%, 99%, 99%);
-  --color-black-lighten-25: rgb(25%, 25%, 25%);
-  --color-black-lighten-35: rgb(35%, 35%, 35%);
-  --color-shiny-star: #d81118;
-  --color-brand-secondary-dark-darken-3: rgb(
-    6.1902881958%,
-    17.5391498881%,
-    32.2410843532%
-  );
-  --color-brand-secondary-dark-darken-5: rgb(
-    5.5459928938%,
-    15.7136465324%,
-    28.8853796552%
-  );
-  --color-night-mode-secondary-darken-4: rgb(
-    4.9683873549%,
-    13.9735894358%,
-    25.4629851941%
-  );
-  --color-night-mode-secondary-darken-6: rgb(
-    4.3153261305%,
-    12.1368547419%,
-    22.1160464186%
-  );
-  --color-gray-light-darken-6: rgb(
-    88.5098039216%,
-    88.5098039216%,
-    88.5098039216%
-  );
-  --color-night-mode: #121212;
-  --color-night-mode-01dp: rgb(12.0588235294%, 12.0588235294%, 12.0588235294%);
-  --color-night-mode-02dp: rgb(14.0588235294%, 14.0588235294%, 14.0588235294%);
-  --color-night-mode-03dp: rgb(15.0588235294%, 15.0588235294%, 15.0588235294%);
-  --color-night-mode-04dp: rgb(16.0588235294%, 16.0588235294%, 16.0588235294%);
-  --color-night-mode-06dp: rgb(18.0588235294%, 18.0588235294%, 18.0588235294%);
-  --color-night-mode-16dp: rgb(22.0588235294%, 22.0588235294%, 22.0588235294%);
-  --color-night-mode-24dp: rgb(23.0588235294%, 23.0588235294%, 23.0588235294%);
-  --color-night-mode-dark: rgb(0.0588235294%, 0.0588235294%, 0.0588235294%);
-  --color-night-mode-primary: #c7bd7d;
-  --color-night-mode-primary-dark: rgb(
-    67.8368121442%,
-    62.6185958254%,
-    29.2220113852%
-  );
-  --color-night-mode-secondary: #102d52;
-  --color-night-mode-secondary-dark: rgb(
-    3.9887955182%,
-    11.218487395%,
-    20.4425770308%
-  );
-  --color-night-mode-link: #3777ca;
-  --color-night-mode-link-dark: rgb(
-    18.180113152%,
-    40.1334573355%,
-    68.6042005735%
-  );
-  --color-night-mode-link-gray: #5f5f5f;
-  --color-night-mode-link-gray-dark: rgb(
-    30.2549019608%,
-    30.2549019608%,
-    30.2549019608%
-  );
-  --color-night-mode-error: #bb2323;
-  --color-night-mode-error-dark: rgb(
-    61.5405405405%,
-    11.5182829889%,
-    11.5182829889%
-  );
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --color-gray-50: #fcfcfc;
+  --color-gray-100: #f1f1f1;
+  --color-gray-200: #e2e2e2;
+  --color-gray-300: #d2d2d2;
+  --color-gray-400: #ababab;
+  --color-gray-500: #787878;
+  --color-gray-600: #5f5f5f;
+  --color-gray-700: #4d4d4d;
+  --color-gray-800: #454545;
+
+  /* Night mode's surfaces: its background, and each level raised above it,
+     named for Material's elevations. */
+  --color-night: #121212;
+  --color-night-01dp: #1f1f1f;
+  --color-night-02dp: #242424;
+  --color-night-03dp: #262626;
+  --color-night-04dp: #292929;
+  --color-night-06dp: #2e2e2e;
+  --color-night-24dp: #3b3b3b;
+
+  /* The brand's yellow is yellow-400, and its blue is blue-600. Gold is
+     night mode's yellow. */
+  --color-yellow-50: #fff8d7;
+  --color-yellow-100: #ffeb8a;
+  --color-yellow-200: #ffe671;
+  --color-yellow-300: #ffe257;
+  --color-yellow-400: #ffd924;
+  --color-yellow-500: #ffd300;
+  --color-gold-400: #c7bd7d;
+  --color-gold-500: #ada04b;
+
+  --color-blue-300: #3777ca;
+  --color-blue-400: #2e66af;
+  --color-blue-500: #1e549b;
+  --color-blue-600: #18447d;
+  --color-blue-700: #12345f;
+  --color-blue-800: #102d52;
+  --color-blue-900: #0d2441;
+  --color-blue-950: #0a1d34;
+
+  --color-red-500: #ff0000;
+  --color-red-600: #e60000;
+  --color-red-700: #d81118;
+  --color-red-800: #bb2323;
+  --color-red-900: #9d1d1d;
+
+  --color-green-500: #00cc66;
+
+  /* See-through: the shade behind a modal, and the circle behind a Legends:
+     Arceus icon in the info panel. */
+  --color-shade: rgba(0, 0, 0, 0.35);
+  --color-info-icon-circle: rgba(241, 241, 241, 0.3);
+
+  /* To merge into their neighbors on the scales. */
+  --color-black-lighten-35: #595959;
+  --color-black-lighten-25: #404040;
+  --color-night-mode-16dp: #383838;
+  --color-brand-secondary-dark-darken-5: #0e284a;
+  --color-night-mode-secondary-darken-6: #0b1f38;
 
   --font-*: initial;
   --font-primary: "Alegreya Sans", "Helvetica", sans-serif;
@@ -257,10 +224,15 @@
   /* Raised a step (the progress bar's track), and two (inputs). */
   --color-surface-1: var(--surface-1);
   --color-surface-2: var(--surface-2);
-  /* The dex's grid lines, a caught tile's, and a caught tile. */
+  /* The dex's grid lines, a caught tile's, a caught tile, and a tile that's
+     saving. */
   --color-line: var(--line);
   --color-line-caught: var(--line-caught);
   --color-caught: var(--caught);
+  --color-pending: var(--pending);
+  /* The circle behind a Legends: Arceus icon on a tile, and on a caught one. */
+  --color-icon-circle: var(--icon-circle);
+  --color-icon-circle-caught: var(--icon-circle-caught);
   /* The progress bar's fill and frame. */
   --color-progress: var(--progress);
   /* Form titles, the home page's title and the loading text; and text in the
@@ -303,73 +275,79 @@
     --surface: var(--color-white);
     --surface-1: var(--color-white);
     --surface-2: var(--color-white);
-    --line: var(--color-gray-light);
-    --line-caught: var(--color-brand-primary-lighten-15);
-    --caught: var(--color-brand-primary-light);
-    --progress: var(--color-brand-primary);
-    --heading: var(--color-brand-secondary);
-    --strong: var(--color-brand-secondary);
-    --link: var(--color-brand-secondary-light);
-    --link-hover: var(--color-brand-secondary-dark);
+    --line: var(--color-gray-100);
+    --line-caught: var(--color-yellow-200);
+    --caught: var(--color-yellow-100);
+    --pending: rgba(255, 235, 138, 0.5);
+    --icon-circle: rgba(210, 210, 210, 0.4);
+    --icon-circle-caught: rgba(255, 255, 255, 0.5);
+    --progress: var(--color-yellow-400);
+    --heading: var(--color-blue-600);
+    --strong: var(--color-blue-600);
+    --link: var(--color-blue-500);
+    --link-hover: var(--color-blue-700);
     --muted-link: var(--color-black-lighten-25);
     --muted-link-hover: var(--color-black);
-    --danger: var(--color-error);
-    --danger-hover: var(--color-error-darken-5);
-    --info: var(--color-brand-secondary);
-    --info-edge: var(--color-brand-secondary-dark-darken-3);
-    --info-link: var(--color-brand-secondary-dark);
-    --info-link-hover: var(--color-brand-secondary-dark-darken-3);
-    --nav: var(--color-brand-primary);
-    --nav-hover: var(--color-brand-primary-lighten-10);
-    --nav-text-hover: var(--color-brand-secondary);
-    --nav-raised: var(--color-brand-primary-lighten-10);
-    --nav-raised-hover: var(--color-brand-primary-lighten-15);
-    --button-blue: var(--color-brand-secondary-light);
-    --button-blue-hover: var(--color-brand-secondary);
+    --danger: var(--color-red-500);
+    --danger-hover: var(--color-red-600);
+    --info: var(--color-blue-600);
+    --info-edge: var(--color-blue-800);
+    --info-link: var(--color-blue-700);
+    --info-link-hover: var(--color-blue-800);
+    --nav: var(--color-yellow-400);
+    --nav-hover: var(--color-yellow-300);
+    --nav-text-hover: var(--color-blue-600);
+    --nav-raised: var(--color-yellow-300);
+    --nav-raised-hover: var(--color-yellow-200);
+    --button-blue: var(--color-blue-500);
+    --button-blue-hover: var(--color-blue-600);
     --button-white: var(--color-white);
-    --button-white-text: var(--color-brand-secondary);
-    --button-white-hover: var(--color-white-darken-1);
-    --button-yellow: var(--color-brand-primary);
-    --button-yellow-text: var(--color-brand-secondary);
-    --button-yellow-hover: var(--color-brand-primary-dark);
+    --button-white-text: var(--color-blue-600);
+    --button-white-hover: var(--color-gray-50);
+    --button-yellow: var(--color-yellow-400);
+    --button-yellow-text: var(--color-blue-600);
+    --button-yellow-hover: var(--color-yellow-500);
   }
 
   /* Screens only, like the night base styles above. */
   @media not print {
     .dark {
       --text: var(--color-white);
-      --surface: var(--color-night-mode);
-      --surface-1: var(--color-night-mode-01dp);
-      --surface-2: var(--color-night-mode-02dp);
-      --line: var(--color-night-mode-01dp);
-      --line-caught: var(--color-night-mode-primary-dark);
-      --caught: var(--color-night-mode-primary);
-      --progress: var(--color-night-mode-primary-dark);
-      --heading: var(--color-night-mode-link);
+      --surface: var(--color-night);
+      --surface-1: var(--color-night-01dp);
+      --surface-2: var(--color-night-02dp);
+      --line: var(--color-night-01dp);
+      --line-caught: var(--color-gold-500);
+      --caught: var(--color-gold-400);
+      --pending: rgba(199, 189, 125, 0.5);
+      --icon-circle: rgba(241, 241, 241, 0.2);
+      --icon-circle-caught: rgba(255, 255, 255, 0.35);
+      --progress: var(--color-gold-500);
+      --heading: var(--color-blue-300);
       --strong: var(--color-white);
-      --link: var(--color-night-mode-link);
-      --link-hover: var(--color-night-mode-link-dark);
-      --muted-link: var(--color-night-mode-link-gray);
-      --muted-link-hover: var(--color-night-mode-link-gray-dark);
-      --danger: var(--color-night-mode-error);
-      --danger-hover: var(--color-night-mode-error-dark);
-      --info: var(--color-night-mode-secondary);
-      --info-edge: var(--color-night-mode-secondary-dark);
-      --info-link: var(--color-night-mode-secondary-darken-4);
+      --link: var(--color-blue-300);
+      --link-hover: var(--color-blue-400);
+      --muted-link: var(--color-gray-600);
+      --muted-link-hover: var(--color-gray-700);
+      --danger: var(--color-red-800);
+      --danger-hover: var(--color-red-900);
+      --info: var(--color-blue-800);
+      --info-edge: var(--color-blue-950);
+      --info-link: var(--color-blue-900);
       --info-link-hover: var(--color-night-mode-secondary-darken-6);
-      --nav: var(--color-night-mode-03dp);
-      --nav-hover: var(--color-night-mode-06dp);
-      --nav-text-hover: var(--color-night-mode-primary);
-      --nav-raised: var(--color-night-mode-04dp);
-      --nav-raised-hover: var(--color-night-mode-06dp);
-      --button-blue: var(--color-night-mode-secondary);
-      --button-blue-hover: var(--color-night-mode-secondary-dark);
-      --button-white: var(--color-gray-light);
-      --button-white-text: var(--color-night-mode-secondary);
-      --button-white-hover: var(--color-gray-light-darken-6);
-      --button-yellow: var(--color-night-mode-primary);
+      --nav: var(--color-night-03dp);
+      --nav-hover: var(--color-night-06dp);
+      --nav-text-hover: var(--color-gold-400);
+      --nav-raised: var(--color-night-04dp);
+      --nav-raised-hover: var(--color-night-06dp);
+      --button-blue: var(--color-blue-800);
+      --button-blue-hover: var(--color-blue-950);
+      --button-white: var(--color-gray-100);
+      --button-white-text: var(--color-blue-800);
+      --button-white-hover: var(--color-gray-200);
+      --button-yellow: var(--color-gold-400);
       --button-yellow-text: var(--color-white);
-      --button-yellow-hover: var(--color-night-mode-primary-dark);
+      --button-yellow-hover: var(--color-gold-500);
     }
   }
 }

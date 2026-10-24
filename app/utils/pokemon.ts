@@ -37,7 +37,7 @@ interface Pokemon {
 
 // The circle behind a Legends: Arceus icon in the info panel. Those icons sit
 // in a circle, whose color depends on what's behind it.
-export const infoIconCircle = tw`bg-[rgba(241,241,241,0.3)]`;
+export const infoIconCircle = tw`bg-info-icon-circle`;
 
 // iconClass is the sprite for a Pokémon in a dex, with circle as its
 // background if it's a Legends: Arceus icon.
