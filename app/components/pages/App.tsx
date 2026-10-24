@@ -26,7 +26,7 @@ export function App() {
   return (
     <BrowserRouter>
       <RollbarContext />
-      <div className="flex h-screen flex-col">
+      <div className="flex h-screen flex-col print:block print:h-auto">
         <Routes>
           <Route element={<Home />} path="/" />
           <Route element={<Login />} path="/login" />

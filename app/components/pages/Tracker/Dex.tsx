@@ -70,9 +70,11 @@ export function Dex({
   }, [groupedCaptures, dex.total, setSelectedPokemon]);
 
   return (
-    // Printed at 70%, so two boxes fit on a page.
+    // A printed dex is scaled to 70%, so two boxes fit on a Letter or A4 page.
+    // Its column gets 2px more there: at 70%, six tiles' rounded widths can
+    // come to more than the column's, which would wrap each row at five.
     <div className="flex-[1_0_auto] px-0 py-100 print:[zoom:0.7] max-750:p-15 max-400:pr-35">
-      <div className={wrapper}>
+      <div className={`${wrapper} print:w-664`}>
         <Scroll onClick={onScrollButtonClick} showScroll={showScrollButton} />
         <Notification />
         <header>

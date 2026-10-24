@@ -45,9 +45,7 @@ function tileClassName({
   searchResult?: boolean;
 }): string {
   return classNames(
-    // A printout scales the tracker down, where six tiles' rounded widths
-    // can overflow a row, so each takes exactly a sixth.
-    "group/tile relative flex h-110 w-110 print:w-1/6 max-750:h-80 max-750:w-full",
+    "group/tile relative flex h-110 w-110 max-750:h-80 max-750:w-full",
     captured ? "bg-caught dark:text-black" : "",
     pending &&
       "bg-[rgba(100%,92.0386784851%,54.1176470588%,0.5)] dark:bg-[rgba(199,189,125,0.5)]",

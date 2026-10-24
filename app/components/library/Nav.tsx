@@ -103,7 +103,7 @@ export function Nav() {
             className="invisible absolute top-[70%] right-0 z-10 m-0 w-230 list-none p-0 text-right opacity-0 transition-all duration-100 ease-out group-hover/dropdown:visible group-hover/dropdown:top-full group-hover/dropdown:opacity-100"
             data-testid="nav-dropdown-menu"
           >
-            <div className="max-h-242 overflow-y-auto">
+            <div className="max-h-242 overflow-y-scroll">
               {sessionUser?.dexes.map((dex) => (
                 <li key={dex.id}>
                   <Link

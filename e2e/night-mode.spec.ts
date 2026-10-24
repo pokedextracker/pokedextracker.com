@@ -60,10 +60,18 @@ test("the browser's parts follow night mode", async ({ page }) => {
 // Printing drops backgrounds, which would leave night mode's light text on
 // white paper, so it prints in day colors.
 test("night mode prints in day colors", async ({ page }) => {
-  await page.emulateMedia({ colorScheme: "dark" });
+  const field = page.locator("#username");
+  await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/login");
+  const dayBorder = await field.evaluate(
+    (element) => getComputedStyle(element).borderTopColor,
+  );
+
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.reload();
   const heading = page.getByRole("heading", { name: "Login" });
   await expect(page.locator("html")).toHaveCSS("color", "rgb(255, 255, 255)");
+  await expect(field).not.toHaveCSS("border-top-color", dayBorder);
 
   await page.emulateMedia({ media: "print" });
   await expect(page.locator("html")).toHaveCSS("color", "rgb(0, 0, 0)");
@@ -73,6 +81,8 @@ test("night mode prints in day colors", async ({ page }) => {
   );
   await expect(page.locator("html")).toHaveCSS("color-scheme", "normal");
   await expect(heading).toHaveCSS("color", "rgb(24, 68, 125)");
+  // The field's border is a night class rather than a role.
+  await expect(field).toHaveCSS("border-top-color", dayBorder);
 });
 
 // index.html sets the mode before the app loads, so the page doesn't flash the

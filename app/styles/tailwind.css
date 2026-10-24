@@ -334,6 +334,7 @@
     --button-yellow-hover: var(--color-brand-primary-dark);
   }
 
+  /* Screens only, like the night base styles above. */
   @media not print {
     .dark {
       --text: var(--color-white);
@@ -398,9 +399,9 @@
 /* The old stylesheets' breakpoints, exactly. Tailwind's max-* variants use
    width < N rather than max-width: N, a pixel off. Widest first: utilities
    come out in this order, so a narrower one wins where both apply, as the
-   later rule did in the old stylesheets. They're for screens: a printed page
-   is about 740px wide after its margins, and gets the desktop layout rather
-   than the phone's. */
+   later rule did in the old stylesheets. They're for screens: a Letter or A4
+   page is narrower than 751px after its margins, but a printout gets the
+   desktop layout (min-751 includes print) rather than the phone's. */
 @custom-variant max-1100 (@media screen and (max-width: 1100px));
 @custom-variant max-750 (@media screen and (max-width: 750px));
 @custom-variant max-700 (@media screen and (max-width: 700px));
@@ -408,7 +409,8 @@
 @custom-variant max-550 (@media screen and (max-width: 550px));
 @custom-variant max-500 (@media screen and (max-width: 500px));
 @custom-variant max-400 (@media screen and (max-width: 400px));
-/* The block form, since the short form splits at the comma. */
+/* The block form, since the short form would split the query at its
+   comma. */
 @custom-variant min-751 {
   @media print, (min-width: 751px) {
     @slot;
