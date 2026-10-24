@@ -261,7 +261,7 @@ export function Pokemon({
         onClick={handleSetInfoClick}
       >
         <FontAwesomeIcon
-          className="m-2 h-21 w-21 rounded-half border-2 border-solid border-link p-4 text-14 text-link group-hover/info:m-3 group-hover/info:h-22 group-hover/info:w-22 group-hover/info:border-brand-secondary-dark-darken-5 group-hover/info:text-brand-secondary-dark-darken-5 dark:group-hover/info:border-blue-400 dark:group-hover/info:text-blue-400"
+          className="m-2 h-21 w-21 rounded-half border-2 border-solid border-link p-4 text-14 text-link group-hover/info:m-3 group-hover/info:h-22 group-hover/info:w-22 group-hover/info:border-blue-900 group-hover/info:text-blue-900 dark:group-hover/info:border-blue-400 dark:group-hover/info:text-blue-400"
           icon={faInfo}
         />
       </div>

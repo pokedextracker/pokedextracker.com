@@ -130,13 +130,6 @@
   --color-shade: rgba(0, 0, 0, 0.35);
   --color-info-icon-circle: rgba(241, 241, 241, 0.3);
 
-  /* To merge into their neighbors on the scales. */
-  --color-black-lighten-35: #595959;
-  --color-black-lighten-25: #404040;
-  --color-night-mode-16dp: #383838;
-  --color-brand-secondary-dark-darken-5: #0e284a;
-  --color-night-mode-secondary-darken-6: #0b1f38;
-
   --font-*: initial;
   --font-primary: "Alegreya Sans", "Helvetica", sans-serif;
   --font-secondary: "Montserrat", "Helvetica", sans-serif;
@@ -286,7 +279,7 @@
     --strong: var(--color-blue-600);
     --link: var(--color-blue-500);
     --link-hover: var(--color-blue-700);
-    --muted-link: var(--color-black-lighten-25);
+    --muted-link: var(--color-gray-800);
     --muted-link-hover: var(--color-black);
     --danger: var(--color-red-500);
     --danger-hover: var(--color-red-600);
@@ -334,7 +327,7 @@
       --info: var(--color-blue-800);
       --info-edge: var(--color-blue-950);
       --info-link: var(--color-blue-900);
-      --info-link-hover: var(--color-night-mode-secondary-darken-6);
+      --info-link-hover: var(--color-blue-950);
       --nav: var(--color-night-03dp);
       --nav-hover: var(--color-night-06dp);
       --nav-text-hover: var(--color-gold-400);
