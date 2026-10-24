@@ -77,7 +77,6 @@
   --color-white: #ffffff;
   --color-black: #000000;
 
-  --color-gray-50: #fcfcfc;
   --color-gray-100: #f1f1f1;
   --color-gray-200: #e2e2e2;
   --color-gray-300: #d2d2d2;
@@ -296,7 +295,7 @@
     --button-blue-hover: var(--color-blue-600);
     --button-white: var(--color-white);
     --button-white-text: var(--color-blue-600);
-    --button-white-hover: var(--color-gray-50);
+    --button-white-hover: var(--color-gray-100);
     --button-yellow: var(--color-yellow-400);
     --button-yellow-text: var(--color-blue-600);
     --button-yellow-hover: var(--color-yellow-500);
