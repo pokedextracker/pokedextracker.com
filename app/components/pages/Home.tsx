@@ -27,7 +27,7 @@ export function Home() {
 
   return (
     <div className="flex flex-[1_1_auto] flex-col bg-brand-primary bg-[url(/pattern.png)] bg-[size:500px_250px] bg-center bg-repeat text-center dark:bg-night-mode dark:bg-[url(/pattern-night.png)]">
-      <div className="flex grow flex-col justify-center overflow-y-scroll pt-20">
+      <div className="flex grow flex-col justify-center overflow-y-auto pt-20">
         <div className="relative -top-100 animate-slide">
           <img
             alt="Gotta catch 'em all!"

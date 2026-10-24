@@ -47,7 +47,7 @@ interface Props {
 // The panel beside the dex, which a phone shows over it.
 function infoClassName(showInfo: boolean): string {
   return classNames(
-    "relative z-2 flex max-400:absolute max-400:right-0 max-400:left-auto max-400:h-full",
+    "relative z-2 flex print:hidden max-400:absolute max-400:right-0 max-400:left-auto max-400:h-full",
     showInfo ? "max-400:w-full" : "max-400:w-[inherit]",
   );
 }

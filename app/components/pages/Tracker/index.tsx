@@ -127,7 +127,7 @@ function TrackerInner({ initialSelectedPokemon }: TrackerInnerProps) {
             setQuery={setQuery}
           />
           <div
-            className="flex grow flex-col overflow-y-scroll"
+            className="flex grow flex-col overflow-y-scroll print:overflow-visible print:[print-color-adjust:exact]"
             onScroll={handleScroll}
             ref={trackerRef}
           >

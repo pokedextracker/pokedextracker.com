@@ -13,7 +13,7 @@ export function Notification() {
   const handleClick = () => setHideNotification(true);
 
   return (
-    <div className="relative mb-50 border-2 border-solid border-gray-medium p-11 text-center text-14 text-gray-darker dark:border-night-mode-01dp dark:bg-night-mode-01dp dark:text-white">
+    <div className="relative mb-50 border-2 border-solid border-gray-medium p-11 text-center text-14 text-gray-darker dark:border-night-mode-01dp dark:bg-night-mode-01dp dark:text-white print:hidden">
       <FontAwesomeIcon
         className="absolute top-8 right-8 text-gray-medium transition-all duration-100 ease-out hover:cursor-pointer hover:text-gray-dark"
         icon={faTimes}

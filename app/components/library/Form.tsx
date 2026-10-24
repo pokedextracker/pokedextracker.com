@@ -3,7 +3,7 @@ import type { InputHTMLAttributes, ReactNode } from "react";
 import { tw } from "../../utils/tw";
 
 // The page a form takes up, like the login page, or a dex modal.
-export const formPage = tw`flex flex-[1_0_auto] flex-col items-center overflow-y-scroll px-0 pt-50 pb-100`;
+export const formPage = tw`flex flex-[1_0_auto] flex-col items-center overflow-y-auto px-0 pt-50 pb-100`;
 
 // The form page's title.
 export const formTitle = tw`mb-17 text-heading`;

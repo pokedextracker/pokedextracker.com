@@ -51,6 +51,28 @@ test("marking a Pokémon as caught is saved", async ({ page, request }) => {
   );
 });
 
+// A printed dex is just its boxes, in the desktop grid even though a page is
+// narrower than the phone breakpoint, with the caught colors and sprites kept.
+test("a dex prints as a grid of its boxes", async ({ page, request }) => {
+  const user = await createUser(request);
+  await page.setViewportSize({ width: 740, height: 960 });
+  await page.emulateMedia({ media: "print" });
+  await page.goto(`/u/${user.username}/${user.slug}`);
+
+  await expect(tile(page, "Chikorita")).toBeVisible();
+  const first = await tile(page, "Chikorita").boundingBox();
+  const second = await tile(page, "Bayleef").boundingBox();
+  expect(second?.y).toBe(first?.y);
+  expect(second?.x).toBeGreaterThan(first?.x ?? 0);
+  await expect(tile(page, "Chikorita")).toHaveCSS(
+    "print-color-adjust",
+    "exact",
+  );
+  await expect(page.getByTestId("info-main")).toBeHidden();
+  await expect(page.getByPlaceholder(/Search by name/)).toBeHidden();
+  await expect(page.getByRole("button", { name: "Mark All" })).toHaveCount(0);
+});
+
 test("the info panel shows the chosen Pokémon", async ({ page, request }) => {
   const user = await createUser(request);
   await page.goto(`/u/${user.username}/${user.slug}`);

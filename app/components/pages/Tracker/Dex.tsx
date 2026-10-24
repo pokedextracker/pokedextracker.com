@@ -70,7 +70,8 @@ export function Dex({
   }, [groupedCaptures, dex.total, setSelectedPokemon]);
 
   return (
-    <div className="flex-[1_0_auto] px-0 py-100 max-750:p-15 max-400:pr-35">
+    // Printed at 70%, so two boxes fit on a page.
+    <div className="flex-[1_0_auto] px-0 py-100 print:[zoom:0.7] max-750:p-15 max-400:pr-35">
       <div className={wrapper}>
         <Scroll onClick={onScrollButtonClick} showScroll={showScrollButton} />
         <Notification />
