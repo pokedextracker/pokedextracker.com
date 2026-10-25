@@ -60,11 +60,11 @@
 
     /* A link that doesn't set its own color takes night mode's. */
     .dark a {
-      color: var(--color-blue-300);
+      color: var(--color-link);
     }
 
     .dark a:hover {
-      color: var(--color-blue-400);
+      color: var(--color-link-hover);
     }
   }
 }
@@ -123,11 +123,6 @@
   --color-red-900: #9d1d1d;
 
   --color-green-500: #00cc66;
-
-  /* See-through: the shade behind a modal, and the circle behind a Legends:
-     Arceus icon in the info panel. */
-  --color-shade: rgba(0, 0, 0, 0.35);
-  --color-info-icon-circle: rgba(241, 241, 241, 0.3);
 
   --font-*: initial;
   --font-primary: "Alegreya Sans", "Helvetica", sans-serif;
@@ -204,8 +199,9 @@
 
 /* Role colors: what a color is for, with its value by day and in night mode,
    so a class like bg-surface is right in both and needs no dark: variant.
-   The values are the palette colors above; dark: is left for the few places
-   whose night color is their own. A -hover role is what its base turns on
+   The values are the palette colors above, a few of them see-through (written
+   out, since Tailwind's opacity modifier mixes to slightly different colors);
+   dark: is left for the few places whose night color is their own. A -hover role is what its base turns on
    hover or focus. A new role takes a line in each of the three lists below,
    in the same order. */
 @theme inline {
@@ -225,6 +221,10 @@
   /* The circle behind a Legends: Arceus icon on a tile, and on a caught one. */
   --color-icon-circle: var(--icon-circle);
   --color-icon-circle-caught: var(--icon-circle-caught);
+  /* The circle behind a Legends: Arceus icon in the info panel, and the shade
+     behind a modal. */
+  --color-info-icon-circle: var(--info-icon-circle);
+  --color-shade: var(--shade);
   /* The progress bar's fill and frame. */
   --color-progress: var(--progress);
   /* Form titles, the home page's title and the loading text; and text in the
@@ -273,6 +273,8 @@
     --pending: rgba(255, 235, 138, 0.5);
     --icon-circle: rgba(210, 210, 210, 0.4);
     --icon-circle-caught: rgba(255, 255, 255, 0.5);
+    --info-icon-circle: rgba(241, 241, 241, 0.3);
+    --shade: rgba(0, 0, 0, 0.35);
     --progress: var(--color-yellow-400);
     --heading: var(--color-blue-600);
     --strong: var(--color-blue-600);
@@ -314,6 +316,8 @@
       --pending: rgba(199, 189, 125, 0.5);
       --icon-circle: rgba(241, 241, 241, 0.2);
       --icon-circle-caught: rgba(255, 255, 255, 0.35);
+      --info-icon-circle: rgba(241, 241, 241, 0.3);
+      --shade: rgba(0, 0, 0, 0.35);
       --progress: var(--color-gold-500);
       --heading: var(--color-blue-300);
       --strong: var(--color-white);
