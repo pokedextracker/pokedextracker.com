@@ -25,7 +25,7 @@ export function Reload() {
 
   return (
     <div
-      className="bg-brand-primary-lighter px-30 py-10 text-center text-14 dark:bg-night-mode-16dp"
+      className="bg-yellow-50 px-30 py-10 text-center text-14 dark:bg-night-24dp"
       data-testid="reload-banner"
     >
       <FontAwesomeIcon className="mr-2 text-10" icon={faExclamationCircle} />

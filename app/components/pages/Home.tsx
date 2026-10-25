@@ -26,7 +26,7 @@ export function Home() {
   }, []);
 
   return (
-    <div className="flex flex-[1_1_auto] flex-col bg-brand-primary bg-[url(/pattern.png)] bg-[size:500px_250px] bg-center bg-repeat text-center dark:bg-night-mode dark:bg-[url(/pattern-night.png)]">
+    <div className="flex flex-[1_1_auto] flex-col bg-yellow-400 bg-[url(/pattern.png)] bg-[size:500px_250px] bg-center bg-repeat text-center dark:bg-night dark:bg-[url(/pattern-night.png)]">
       <div className="flex grow flex-col justify-center overflow-y-auto pt-20">
         <div className="relative -top-100 animate-slide">
           <img
@@ -304,7 +304,7 @@ export function Home() {
           </div>
         </div>
       </div>
-      <div className="z-1 mt-auto w-full bg-brand-primary-light p-10 font-secondary text-11 font-bold tracking-1 text-brand-secondary uppercase dark:bg-night-mode-dark">
+      <div className="z-1 mt-auto w-full bg-yellow-100 p-10 font-secondary text-11 font-bold tracking-1 text-blue-600 uppercase dark:bg-black">
         {"Made with "}
         <i className="pkicon pkicon-ball-love mx-3 my-5 align-middle" /> in San
         Francisco

@@ -94,7 +94,7 @@ export function SearchResults({
   }
 
   return (
-    <div className="mt-60 flex flex-wrap max-750:border max-750:border-gray-light">
+    <div className="mt-60 flex flex-wrap max-750:border max-750:border-gray-100">
       {filteredCaptures.map((capture, i) => (
         <Pokemon
           capture={capture}

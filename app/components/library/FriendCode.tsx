@@ -36,14 +36,14 @@ export function FriendCode() {
     <div>
       <h2 className={friendCode}>
         <b className="font-medium">3DS FC</b>:{" "}
-        <span className={user.friend_code_3ds ? "" : "text-gray-medium"}>
+        <span className={user.friend_code_3ds ? "" : "text-gray-300"}>
           {user.friend_code_3ds || "XXXX-XXXX-XXXX"}
         </span>{" "}
         {editAccountBtn}
       </h2>
       <h2 className={friendCode}>
         <b className="font-medium">Switch FC</b>:{" "}
-        <span className={user.friend_code_switch ? "" : "text-gray-medium"}>
+        <span className={user.friend_code_switch ? "" : "text-gray-300"}>
           {user.friend_code_switch || "SW-XXXX-XXXX-XXXX"}
         </span>{" "}
         {editAccountBtn}

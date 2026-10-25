@@ -11,8 +11,8 @@ interface Props {
 
 const types = {
   // In night mode the text is white, and an error keeps a red border.
-  error: tw`border-danger text-error`,
-  success: tw`border-success text-success`,
+  error: tw`border-danger text-red-500`,
+  success: tw`border-green-500 text-green-500`,
 };
 
 export function Alert({ className, message, type }: Props) {
@@ -23,7 +23,7 @@ export function Alert({ className, message, type }: Props) {
   return (
     <div
       className={classNames(
-        "relative mb-20 border-2 border-solid p-11 text-center text-14 dark:bg-night-mode-02dp dark:text-white",
+        "relative mb-20 border-2 border-solid p-11 text-center text-14 dark:bg-night-02dp dark:text-white",
         types[type],
         className,
       )}

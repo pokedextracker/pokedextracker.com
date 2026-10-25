@@ -55,7 +55,7 @@ export function SearchBar({
   };
 
   return (
-    <div className="border-b border-gray-light bg-surface p-10 dark:border-night-mode-dark print:hidden max-400:pr-35">
+    <div className="border-b border-gray-100 bg-surface p-10 dark:border-black print:hidden max-400:pr-35">
       <div className={wrapper}>
         <div className="relative">
           <FontAwesomeIcon
@@ -82,7 +82,7 @@ export function SearchBar({
               onClick={handleClearClick}
             >
               <FontAwesomeIcon
-                className="static text-10 text-gray-medium group-hover:text-gray-dark"
+                className="static text-10 text-gray-300 group-hover:text-gray-400"
                 icon={faTimes}
               />
             </a>

@@ -47,8 +47,7 @@ function tileClassName({
   return classNames(
     "group/tile relative flex h-110 w-110 max-750:h-80 max-750:w-full",
     captured ? "bg-caught dark:text-black" : "",
-    pending &&
-      "bg-[rgba(100%,92.0386784851%,54.1176470588%,0.5)] dark:bg-[rgba(199,189,125,0.5)]",
+    pending && "bg-pending",
     !empty && !readOnly && "hover:cursor-pointer",
     empty && "max-750:hidden",
     searchResult &&
@@ -197,8 +196,8 @@ export function Pokemon({
 
   // The circle behind a Legends: Arceus icon, lighter on a caught tile.
   const circle = capture.captured
-    ? tw`bg-[rgba(255,255,255,0.5)] dark:bg-[rgba(255,255,255,0.35)]`
-    : tw`bg-[rgba(210,210,210,0.4)] dark:bg-[rgba(241,241,241,0.2)]`;
+    ? tw`bg-icon-circle-caught`
+    : tw`bg-icon-circle`;
 
   const regional = dex.dex_type.tags.includes("regional");
   const idToDisplay = regional
@@ -262,7 +261,7 @@ export function Pokemon({
         onClick={handleSetInfoClick}
       >
         <FontAwesomeIcon
-          className="m-2 h-21 w-21 rounded-half border-2 border-solid border-link p-4 text-14 text-link group-hover/info:m-3 group-hover/info:h-22 group-hover/info:w-22 group-hover/info:border-brand-secondary-dark-darken-5 group-hover/info:text-brand-secondary-dark-darken-5 dark:group-hover/info:border-night-mode-link-dark dark:group-hover/info:text-night-mode-link-dark"
+          className="m-2 h-21 w-21 rounded-half border-2 border-solid border-link p-4 text-14 text-link group-hover/info:m-3 group-hover/info:h-22 group-hover/info:w-22 group-hover/info:border-blue-900 group-hover/info:text-blue-900 dark:group-hover/info:border-blue-400 dark:group-hover/info:text-blue-400"
           icon={faInfo}
         />
       </div>
