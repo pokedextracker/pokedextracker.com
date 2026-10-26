@@ -8,7 +8,8 @@ import {
 
 import { useLocalStorage, type SetLocalStorageFn } from "../use-local-storage";
 
-const MOBILE_WIDTH = 1100;
+// The max-1100 breakpoint, below which the info panel lies over the dex.
+const MOBILE = "(max-width: 68.75em)";
 
 interface LocalStorageContextState {
   hideNotification: boolean;
@@ -44,7 +45,7 @@ export const LocalStorageContextProvider = ({ children }: Props) => {
     parseAsJson: true,
   });
   const [showInfo, setShowInfo] = useLocalStorage("showInfo", {
-    defaultValue: window.innerWidth > MOBILE_WIDTH,
+    defaultValue: !matchMedia(MOBILE).matches,
     parseAsJson: true,
   });
 
