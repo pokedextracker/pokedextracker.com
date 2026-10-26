@@ -21,6 +21,11 @@ type VisualFailure struct {
 	// error that isn't a known hiccup. That's either noise or a change that
 	// only happens some of the time, so it isn't a pass.
 	Flaky []string
+	// Slow are tests that hit only hiccups, like running out of time or a
+	// dropped connection, on every attempt. They have no screenshot, so they
+	// don't pass, but they say the machine was too busy rather than anything
+	// about the page.
+	Slow []string
 }
 
 func (f *VisualFailure) Error() string {
@@ -33,6 +38,9 @@ func (f *VisualFailure) Error() string {
 	}
 	if n := len(f.Flaky); n > 0 {
 		parts = append(parts, fmt.Sprintf("%d passed only on a retry", n))
+	}
+	if n := len(f.Slow); n > 0 {
+		parts = append(parts, fmt.Sprintf("%d couldn't be taken", n))
 	}
 	return "visual tests: " + strings.Join(parts, ", ")
 }
@@ -115,13 +123,15 @@ func (r *playwrightReport) failure(runErr error) (retried []string, err error) {
 			failure.Failed = append(failure.Failed, test.name)
 		case outcomeFlaky:
 			failure.Flaky = append(failure.Flaky, test.name)
+		case outcomeSlow:
+			failure.Slow = append(failure.Slow, test.name)
 		case outcomeRetried:
 			hiccup, _ := onlyHiccups(test.Results)
 			retried = append(retried, test.name+" ("+hiccup+")")
 		case outcomePassed:
 		}
 	}
-	if len(failure.Differ)+len(failure.Failed)+len(failure.Flaky) > 0 {
+	if len(failure.Differ)+len(failure.Failed)+len(failure.Flaky)+len(failure.Slow) > 0 {
 		return retried, &failure
 	}
 	if len(retried) > 0 {
@@ -174,6 +184,8 @@ const (
 	outcomeFlaky
 	// It passed on a retry after only hiccups, which counts as a pass.
 	outcomeRetried
+	// It hit only hiccups on every attempt, so it has no screenshot.
+	outcomeSlow
 )
 
 func (t playwrightTest) outcome() visualOutcome {
@@ -186,6 +198,9 @@ func (t playwrightTest) outcome() visualOutcome {
 	case "unexpected":
 		if differed(t.Results) {
 			return outcomeDiffer
+		}
+		if _, ok := onlyHiccups(t.Results); ok {
+			return outcomeSlow
 		}
 		return outcomeFailed
 	}
@@ -275,7 +290,13 @@ func stillWaiting(message string) bool {
 			last = step
 		}
 	}
-	return strings.HasPrefix(last, "waiting for ")
+	if strings.HasPrefix(last, "waiting for ") {
+		return true
+	}
+	// A screenshot that ran out of time while it was still being taken, before
+	// anything was compared. One that kept changing logs the pixels that did.
+	return strings.Contains(firstLine(message), "toHaveScreenshot") && last != "" &&
+		!strings.Contains(log, "pixels") && !strings.Contains(log, "different")
 }
 
 // differed reports whether any attempt at a test found its screenshot

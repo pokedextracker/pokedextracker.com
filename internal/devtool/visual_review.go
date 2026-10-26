@@ -94,6 +94,11 @@ func buildVisualReview(env Environment, ref string, report *playwrightReport) (*
 	compared := map[string]bool{}
 	for _, test := range report.tests() {
 		outcome := test.outcome()
+		if outcome == outcomeSlow {
+			review.Failed = append(review.Failed, reviewFailure{Name: test.name + " (only timeouts or dropped connections, on every attempt)", Error: firstError(test.Results)})
+			review.Uncompared = true
+			continue
+		}
 		if outcome != outcomeDiffer && outcome != outcomeFailed && outcome != outcomeFlaky {
 			continue
 		}

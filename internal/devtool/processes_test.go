@@ -90,6 +90,51 @@ func TestCaptureReferenceGivesUpOnAReferenceThatNeverReproduces(t *testing.T) {
 	assert.Equal(t, 1+referenceAttempts+(referenceAttempts-1), runs, "a capture, then each check, with a retake between checks")
 }
 
+func TestCaptureReferenceRetakesWhatItCouldNotTake(t *testing.T) {
+	lastRun := filepath.Join(t.TempDir(), ".last-run.json")
+	var runs []string
+	results := []error{&VisualFailure{Slow: []string{"register"}}, nil, nil}
+	playwright := func(_ context.Context, args ...string) error {
+		command := strings.Join(args, " ")
+		if strings.Contains(command, "--last-failed") {
+			recorded, err := os.ReadFile(lastRun)
+			require.NoError(t, err)
+			command += " (" + string(recorded) + ")"
+		}
+		runs = append(runs, command)
+		err := results[0]
+		results = results[1:]
+		recorded := "none"
+		if err != nil {
+			recorded = "register"
+		}
+		require.NoError(t, os.WriteFile(lastRun, []byte(recorded), 0o644))
+		return err
+	}
+
+	require.NoError(t, captureReference(context.Background(), lastRun, playwright))
+
+	assert.Equal(t, []string{
+		"--update-snapshots=all",
+		"--last-failed --update-snapshots=all (register)",
+		"--retries=0",
+	}, runs, "what a busy machine couldn't take is taken again, then everything is checked")
+}
+
+func TestCaptureReferenceGivesUpOnScreenshotsItNeverTakes(t *testing.T) {
+	runs := 0
+	playwright := func(context.Context, ...string) error {
+		runs++
+		return &VisualFailure{Slow: []string{"register"}}
+	}
+
+	err := captureReference(context.Background(), filepath.Join(t.TempDir(), ".last-run.json"), playwright)
+
+	var failure *VisualFailure
+	assert.ErrorAs(t, err, &failure)
+	assert.Equal(t, referenceAttempts, runs, "a capture, then a retake until the attempts run out")
+}
+
 func TestCaptureReferenceStopsOnOtherErrors(t *testing.T) {
 	runs := 0
 	playwright := func(context.Context, ...string) error {

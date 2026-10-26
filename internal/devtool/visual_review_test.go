@@ -30,7 +30,7 @@ func reviewFixture(t *testing.T) (Environment, *playwrightReport) {
 	t.Helper()
 	env := Environment{CurrentRoot: t.TempDir()}
 	shots := filepath.Join(visualDir(env), "screenshots", "chromium-desktop", "pages.spec.ts")
-	for _, name := range []string{"home", "login", "register", "account", "profile", "search", "tracker", "pokedex", "dex-a", "dex-b"} {
+	for _, name := range []string{"home", "login", "register", "account", "profile", "search", "tracker", "pokedex", "share", "dex-a", "dex-b"} {
 		writeFile(t, filepath.Join(shots, name+".png"), "reference "+name)
 	}
 	results := filepath.Join(visualDir(env), "results-branch")
@@ -70,6 +70,7 @@ func reviewFixture(t *testing.T) (Environment, *playwrightReport) {
 		test("search", "flaky", attempt(hiccupMessage, ""), attempt("", "")),
 		test("tracker", "unexpected", attempt(differMessage, "")),
 		test("pokedex", "flaky", attempt(differMessage, ""), attempt("", "")),
+		test("share", "unexpected", attempt(hiccupMessage, ""), attempt(hiccupMessage, "")),
 		test("dex", "unexpected", attempt(differMessage, ""), attempt(differMessage, attachments("pages-dex-retry1", "dex-b", "dex-a"))),
 	}, ", ")+`]
 	}]}]}`)
@@ -115,6 +116,7 @@ func TestVisualReviewSortsScreenshotsLikeTheTerminal(t *testing.T) {
 	assert.Equal(t, []reviewFailure{
 		{Name: "[chromium-desktop] pages › account", Error: "Error: locator.click: Timeout 10000ms exceeded."},
 		{Name: "[chromium-desktop] pages › profile (then passed on a retry)", Error: "Error: locator.click: Timeout 10000ms exceeded."},
+		{Name: "[chromium-desktop] pages › share (only timeouts or dropped connections, on every attempt)", Error: "Test timeout of 60000ms exceeded."},
 	}, review.Failed)
 	// search only hit a hiccup and profile's retry matched, so they passed.
 	// account's screenshot wasn't compared, but the report doesn't say which
@@ -126,7 +128,7 @@ func TestVisualReviewSortsScreenshotsLikeTheTerminal(t *testing.T) {
 			unchanged = append(unchanged, shot.Name)
 		}
 	}
-	assert.Equal(t, []string{"account", "home", "pokedex", "profile", "search", "tracker"}, unchanged)
+	assert.Equal(t, []string{"account", "home", "pokedex", "profile", "search", "share", "tracker"}, unchanged)
 	assert.True(t, review.Uncompared)
 	assert.Equal(t, "../screenshots/chromium-desktop/pages.spec.ts/account.png", review.Unchanged[0].Shots[0].Path)
 }

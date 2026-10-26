@@ -231,8 +231,8 @@ func (p *OSProcesses) Visual(ctx context.Context, site, tests Environment, targe
 	return retried, err
 }
 
-// referenceAttempts is how many times a reference screenshot that doesn't
-// reproduce is taken again before the comparison gives up.
+// referenceAttempts is how many times a reference screenshot is tried, both
+// to take it and to check that it reproduces, before the comparison gives up.
 const referenceAttempts = 3
 
 // captureReference takes the reference screenshots, then checks that taking
@@ -244,8 +244,15 @@ const referenceAttempts = 3
 // lastRun is the file where Playwright records which tests failed, which
 // --last-failed reads.
 func captureReference(ctx context.Context, lastRun string, playwright func(context.Context, ...string) error) error {
-	if err := playwright(ctx, "--update-snapshots=all"); err != nil {
-		return err
+	// Whatever couldn't be taken, like on a machine too busy to take it in
+	// time, is taken again before the check.
+	err := playwright(ctx, "--update-snapshots=all")
+	for attempt := 1; err != nil; attempt++ {
+		var failure *VisualFailure
+		if !errors.As(err, &failure) || attempt == referenceAttempts {
+			return err
+		}
+		err = playwright(ctx, "--last-failed", "--update-snapshots=all")
 	}
 	verify := []string{"--retries=0"}
 	for attempt := 1; ; attempt++ {
