@@ -21,6 +21,16 @@ type VisualFailure struct {
 	// error that isn't a known hiccup. That's either noise or a change that
 	// only happens some of the time, so it isn't a pass.
 	Flaky []string
+	// Interrupted are tests that only timed out or lost their connection, on
+	// every attempt. They have no screenshot, so they don't pass, but they say
+	// the machine or Docker had trouble rather than anything about the page.
+	Interrupted []string
+}
+
+// onlyInterrupted reports whether every test that didn't pass was cut off,
+// rather than failing or differing.
+func (f *VisualFailure) onlyInterrupted() bool {
+	return len(f.Interrupted) > 0 && len(f.Differ)+len(f.Failed)+len(f.Flaky) == 0
 }
 
 func (f *VisualFailure) Error() string {
@@ -33,6 +43,9 @@ func (f *VisualFailure) Error() string {
 	}
 	if n := len(f.Flaky); n > 0 {
 		parts = append(parts, fmt.Sprintf("%d passed only on a retry", n))
+	}
+	if n := len(f.Interrupted); n > 0 {
+		parts = append(parts, fmt.Sprintf("%d timed out", n))
 	}
 	return "visual tests: " + strings.Join(parts, ", ")
 }
@@ -115,13 +128,15 @@ func (r *playwrightReport) failure(runErr error) (retried []string, err error) {
 			failure.Failed = append(failure.Failed, test.name)
 		case outcomeFlaky:
 			failure.Flaky = append(failure.Flaky, test.name)
+		case outcomeInterrupted:
+			failure.Interrupted = append(failure.Interrupted, test.name)
 		case outcomeRetried:
 			hiccup, _ := onlyHiccups(test.Results)
 			retried = append(retried, test.name+" ("+hiccup+")")
 		case outcomePassed:
 		}
 	}
-	if len(failure.Differ)+len(failure.Failed)+len(failure.Flaky) > 0 {
+	if len(failure.Differ)+len(failure.Failed)+len(failure.Flaky)+len(failure.Interrupted) > 0 {
 		return retried, &failure
 	}
 	if len(retried) > 0 {
@@ -174,6 +189,9 @@ const (
 	outcomeFlaky
 	// It passed on a retry after only hiccups, which counts as a pass.
 	outcomeRetried
+	// Every attempt only timed out or lost its connection, at least one cut off
+	// while it wasn't waiting for an element, so it has no screenshot.
+	outcomeInterrupted
 )
 
 func (t playwrightTest) outcome() visualOutcome {
@@ -187,16 +205,22 @@ func (t playwrightTest) outcome() visualOutcome {
 		if differed(t.Results) {
 			return outcomeDiffer
 		}
+		// Only timeouts on every attempt, so there's no screenshot. Waits alone,
+		// like an element missing every time, could be the page.
+		if _, ok := onlyHiccups(t.Results); ok && interrupted(t.Results) {
+			return outcomeInterrupted
+		}
 		return outcomeFailed
 	}
 	return outcomePassed
 }
 
-// hiccups are errors that say something went wrong around a test rather than
-// with the page: a busy machine, or Docker's connection to the server. They're
-// matched in lowercase against the first line of an error, which says what
-// failed. The rest can say "timeout" for any reason: every failed assertion
-// lists how long it waited.
+// hiccups are errors that say something interrupted a test rather than went
+// wrong with the page: a busy machine, or Docker's connection to the server.
+// They're matched in lowercase against the first line of an error, which says
+// what failed. The rest can say "timeout" for any reason: every failed
+// assertion lists how long it waited, so assertions go by ranOutWaiting
+// instead.
 var hiccups = []string{
 	"test timeout of",
 	"page.goto: timeout",
@@ -209,12 +233,34 @@ var hiccups = []string{
 	"operation was cancelled",
 	"could not connect",
 	"has been closed",
+	// What a test timeout interrupts, once its page is gone.
+	"page closed",
+	"test ended",
+	"exceeded during teardown",
+}
+
+// interrupted reports whether any attempt at a test was cut off by one of the
+// hiccups while it wasn't waiting for an element. An action like a click
+// waits for its element until the test runs out of time, so an element that
+// never appears can also end in a test timeout.
+func interrupted(results []playwrightResult) bool {
+	for _, result := range results {
+		cutOff, waiting := false, false
+		for _, err := range result.Errors {
+			cutOff = cutOff || isInterruption(err.Message)
+			waiting = waiting || waitingForElement(lastStep(ansiCodes.ReplaceAllString(err.Message, "")))
+		}
+		if cutOff && !waiting {
+			return true
+		}
+	}
+	return false
 }
 
 // onlyHiccups reports whether every error in a test's attempts was a hiccup
 // and none was a difference, and returns the first one. It errs towards no:
-// an error it doesn't recognize, including a reworded difference, keeps the
-// test from passing.
+// an error it doesn't recognize, including a reworded difference or a step
+// ranOutWaiting doesn't know, keeps the test from passing.
 func onlyHiccups(results []playwrightResult) (string, bool) {
 	if differed(results) {
 		return "", false
@@ -222,22 +268,31 @@ func onlyHiccups(results []playwrightResult) (string, bool) {
 	first := ""
 	for _, result := range results {
 		for _, err := range result.Errors {
-			line := firstLine(err.Message)
-			if !isHiccup(line) {
+			if !isHiccup(err.Message) {
 				return "", false
 			}
 			if first == "" {
-				first = line
+				first = firstLine(err.Message)
 			}
 		}
 	}
 	return first, first != ""
 }
 
-// isHiccup reports whether the first line of an error is a hiccup. A failed
-// assertion never is, whatever it says.
-func isHiccup(line string) bool {
-	lower := strings.ToLower(line)
+// isHiccup reports whether an error is a hiccup: an interruption (see
+// hiccups), or an assertion that ran out of time before it saw the page (see
+// ranOutWaiting). An assertion that saw the page and got the wrong value, or a
+// screenshot that came out wrong, is a result.
+func isHiccup(message string) bool {
+	if strings.Contains(strings.ToLower(firstLine(message)), "expect(") {
+		return ranOutWaiting(ansiCodes.ReplaceAllString(message, ""))
+	}
+	return isInterruption(message)
+}
+
+// isInterruption reports whether an error's first line is one of the hiccups.
+func isInterruption(message string) bool {
+	lower := strings.ToLower(firstLine(message))
 	if strings.Contains(lower, "expect(") {
 		return false
 	}
@@ -247,6 +302,72 @@ func isHiccup(line string) bool {
 		}
 	}
 	return false
+}
+
+// ranOutWaiting reports whether a failed assertion ran out of time before it
+// saw the page: still waiting for its element to appear, or still taking its
+// screenshot. It goes by the last step in Playwright's call log and accepts
+// only those steps, so anything else, like an element that isn't visible or a
+// screenshot that couldn't be taken, keeps it a result.
+func ranOutWaiting(message string) bool {
+	for _, saw := range []string{"\nReceived", "not visible", "failed to take screenshot"} {
+		if strings.Contains(message, saw) {
+			return false
+		}
+	}
+	if strings.Contains(message, "element(s) not found") {
+		return true
+	}
+	last := lastStep(message)
+	if waitingForElement(last) {
+		return true
+	}
+	// A screenshot compares only once it's taken, and one that kept changing
+	// logs the pixels that did.
+	if !strings.Contains(firstLine(message), "toHaveScreenshot") || strings.Contains(message, "pixels") {
+		return false
+	}
+	for _, step := range screenshotSteps {
+		if strings.HasPrefix(last, step) {
+			return true
+		}
+	}
+	return false
+}
+
+// lastStep is the last step in an error's call log, apart from the timeout
+// itself, or empty when it has none.
+func lastStep(message string) string {
+	_, log, ok := strings.Cut(message, "Call log:")
+	if !ok {
+		return ""
+	}
+	last := ""
+	for _, line := range strings.Split(log, "\n") {
+		step, ok := strings.CutPrefix(strings.TrimSpace(line), "- ")
+		if ok && !strings.HasPrefix(step, "Timeout ") {
+			last = step
+		}
+	}
+	return last
+}
+
+// waitingForElement reports whether a call log's last step is waiting for an
+// element to appear.
+func waitingForElement(step string) bool {
+	return strings.HasPrefix(step, "waiting for getBy") || strings.HasPrefix(step, "waiting for locator(")
+}
+
+// screenshotSteps are the steps Playwright logs while it's taking a
+// screenshot, before it compares anything.
+var screenshotSteps = []string{
+	"generating new stable screenshot expectation",
+	"verifying given screenshot expectation",
+	"taking page screenshot",
+	"taking element screenshot",
+	"disabled all CSS animations",
+	"waiting for fonts to load",
+	"fonts loaded",
 }
 
 // differed reports whether any attempt at a test found its screenshot

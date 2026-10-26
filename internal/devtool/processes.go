@@ -231,20 +231,35 @@ func (p *OSProcesses) Visual(ctx context.Context, site, tests Environment, targe
 	return retried, err
 }
 
-// referenceAttempts is how many times a reference screenshot that doesn't
-// reproduce is taken again before the comparison gives up.
+// take runs Playwright to take reference screenshots with args, then takes
+// again what only timed out or lost its connection, like on a machine too busy
+// to take it in time. Any other failure ends it.
+func take(ctx context.Context, playwright func(context.Context, ...string) error, args ...string) error {
+	err := playwright(ctx, args...)
+	for attempt := 1; attempt < referenceAttempts; attempt++ {
+		var failure *VisualFailure
+		if err == nil || !errors.As(err, &failure) || !failure.onlyInterrupted() {
+			return err
+		}
+		err = playwright(ctx, "--last-failed", "--update-snapshots=all")
+	}
+	return err
+}
+
+// referenceAttempts is how many runs taking the reference screenshots gets,
+// and how many checking them gets, before the comparison gives up.
 const referenceAttempts = 3
 
 // captureReference takes the reference screenshots, then checks that taking
 // them again gives the same result. A page caught mid-change (an icon a pixel
 // off while the layout settles) would otherwise become the reference and make
 // every comparison against it fail. Anything that doesn't reproduce is taken
-// again.
+// again, and so is anything a busy machine cut off (see take).
 //
 // lastRun is the file where Playwright records which tests failed, which
 // --last-failed reads.
 func captureReference(ctx context.Context, lastRun string, playwright func(context.Context, ...string) error) error {
-	if err := playwright(ctx, "--update-snapshots=all"); err != nil {
+	if err := take(ctx, playwright, "--update-snapshots=all"); err != nil {
 		return err
 	}
 	verify := []string{"--retries=0"}
@@ -262,7 +277,7 @@ func captureReference(ctx context.Context, lastRun string, playwright func(conte
 		if err != nil {
 			return fmt.Errorf("read the failed reference screenshots: %w", err)
 		}
-		if err := playwright(ctx, "--last-failed", "--update-snapshots=all"); err != nil {
+		if err := take(ctx, playwright, "--last-failed", "--update-snapshots=all"); err != nil {
 			return err
 		}
 		if err := os.WriteFile(lastRun, failedTests, 0o600); err != nil {
