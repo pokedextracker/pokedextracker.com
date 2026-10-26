@@ -10,7 +10,6 @@ import { useUserParams } from "../../hooks/use-user-params";
 import type { Dex } from "../../types";
 import { trackEvent } from "../../utils/analytics";
 import { tw } from "../../utils/tw";
-import { DexIndicator } from "./DexIndicator";
 import { DonatedFlair } from "./DonatedFlair";
 import { Share } from "./Share";
 
@@ -56,32 +55,39 @@ export function Header({ profile = false }: Props) {
 
   const ownPage = session?.id === user.id;
 
+  // The icons stay on the title's last word, so a squeezed header wraps them
+  // along with that word instead of on their own.
+  const title = dex?.title || `${user.username}'s Profile`;
+  const lastSpace = title.lastIndexOf(" ");
+
   return (
     <div className="flex items-center">
       <h1 className="relative m-0 inline-block text-40 text-strong max-750:text-30">
-        {dex?.title || `${user.username}'s Profile`}
-        <div className="relative inline-block max-750:hidden">
-          <a
-            className={`${headerLink} relative`}
-            data-testid="share-toggle"
-            onClick={handleShareClick}
-          >
-            <FontAwesomeIcon className={headerIcon} icon={faLink} />
-            {showShare && <Share profile={profile} />}
-          </a>
-          <a
-            className={`${headerLink} relative`}
-            href={`https://twitter.com/intent/tweet?text=Check out ${ownPage ? "my" : `${user.username}'s`} ${profile ? "profile" : "living dex progress"} on @PokedexTracker! https://pokedextracker.com/u/${user.username}${dex ? `/${dex.slug}` : ""}`}
-            onClick={handleTweetClick}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <FontAwesomeIcon className={headerIcon} icon={faTwitter} />
-          </a>
-        </div>
+        {title.slice(0, lastSpace + 1)}
+        <span className="whitespace-nowrap">
+          {title.slice(lastSpace + 1)}
+          <span className="relative inline-block whitespace-normal max-750:hidden">
+            <a
+              className={`${headerLink} relative`}
+              data-testid="share-toggle"
+              onClick={handleShareClick}
+            >
+              <FontAwesomeIcon className={headerIcon} icon={faLink} />
+              {showShare && <Share profile={profile} />}
+            </a>
+            <a
+              className={`${headerLink} relative`}
+              href={`https://twitter.com/intent/tweet?text=Check out ${ownPage ? "my" : `${user.username}'s`} ${profile ? "profile" : "living dex progress"} on @PokedexTracker! https://pokedextracker.com/u/${user.username}${dex ? `/${dex.slug}` : ""}`}
+              onClick={handleTweetClick}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <FontAwesomeIcon className={headerIcon} icon={faTwitter} />
+            </a>
+          </span>
+        </span>
       </h1>
       {profile && <DonatedFlair className="ml-auto h-18" user={user} />}
-      {dex && <DexIndicator dex={dex} />}
     </div>
   );
 }

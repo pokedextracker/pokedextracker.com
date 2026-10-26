@@ -71,6 +71,19 @@ export const USERS = {
       },
     ],
   },
+  // A long title and long tags, which have to share the header's width.
+  serena: {
+    username: "visual_serena",
+    dexes: [
+      {
+        title: "Mega Dimension Shiny Hunt For Every Last Form",
+        shiny: true,
+        captures: [],
+        game: "legends_za_mega_dimension",
+        dexType: 24,
+      },
+    ],
+  },
 } satisfies Record<string, UserSpec>;
 
 async function api(

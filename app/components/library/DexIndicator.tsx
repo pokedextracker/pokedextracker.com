@@ -7,30 +7,45 @@ import { tw } from "../../utils/tw";
 const EXCLUDED_TAGS = ["regional", "game national", "full national"];
 
 interface Props {
+  // Its place on the page, which differs between the profile and a dex.
+  className: string;
   dex: Dex;
+  // Under a dex's title, the tags get a line of their own: they wrap as whole
+  // tags, and the shiny star follows them instead of leading.
+  ownLine?: boolean;
 }
 
-const label = tw`ml-7 rounded-3 bg-gray-100 px-6 py-4 font-secondary text-10 font-medium uppercase dark:bg-night-04dp`;
+const label = tw`rounded-3 bg-gray-100 px-6 py-4 font-secondary text-10 font-medium uppercase dark:bg-night-04dp`;
 
-export function DexIndicator({ dex }: Props) {
+export function DexIndicator({ className, dex, ownLine = false }: Props) {
+  const star = dex.shiny && (
+    <FontAwesomeIcon
+      className="text-8 text-red-700"
+      icon={faStar}
+      title="Shiny"
+    />
+  );
+  const tagClassName = ownLine ? label : `${label} ml-7`;
+
   return (
-    <div className="ml-auto shrink-0 pl-30 max-500:hidden">
-      {dex.shiny && (
-        <FontAwesomeIcon
-          className="text-8 text-red-700"
-          icon={faStar}
-          title="Shiny"
-        />
-      )}
+    <div
+      className={
+        ownLine
+          ? `flex flex-wrap items-center gap-x-7 gap-y-4 ${className}`
+          : className
+      }
+    >
+      {!ownLine && star}
       {[
         dex.dex_type.base_dex_type?.name || dex.dex_type.name,
         ...dex.dex_type.tags.filter((tag) => !EXCLUDED_TAGS.includes(tag)),
       ].map((tag) => (
-        <span className={label} key={tag}>
+        <span className={tagClassName} key={tag}>
           {tag.replace(/^customization-/g, "")}
         </span>
       ))}
-      <span className={label}>{dex.game.name}</span>
+      <span className={tagClassName}>{dex.game.name}</span>
+      {ownLine && star}
     </div>
   );
 }

@@ -10,9 +10,11 @@ const misty = USERS.misty.username;
 const brock = USERS.brock.username;
 const gary = USERS.gary.username;
 const dawn = USERS.dawn.username;
+const serena = USERS.serena.username;
 const livingDex = `/u/${ash}/${slugOf("Living Dex")}`;
 const waterDex = `/u/${misty}/${slugOf("Water Dex")}`;
 const hisuiDex = `/u/${dawn}/${slugOf("Hisui Dex")}`;
+const longDex = `/u/${serena}/${slugOf(USERS.serena.dexes[0].title)}`;
 
 // uncaught is the first tile on the page that isn't caught.
 function uncaught(page: Page): Locator {
@@ -201,6 +203,15 @@ test.describe("tracker", () => {
     );
     await settle(page);
     await expect(page).toHaveScreenshot("dex-info-toggled.png");
+  });
+
+  // The title wraps with its share and tweet icons kept on its last word,
+  // and the tags and shiny star get a line of their own.
+  test("long title and tags", async ({ page }) => {
+    await page.goto(longDex);
+    await expect(page.getByTestId("progress-count")).toContainText("0 caught");
+    await settle(page);
+    await expect(page.locator("header")).toHaveScreenshot("dex-long-title.png");
   });
 
   // Its icons sit in circles, gray behind an uncaught one and white behind a
