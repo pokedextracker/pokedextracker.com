@@ -58,7 +58,10 @@ export function DexPreview({ dex }: Props) {
             )}
           </div>
         )}
-        <DexIndicator dex={dex} />
+        <DexIndicator
+          className="ml-auto shrink-0 pl-30 max-500:hidden"
+          dex={dex}
+        />
       </div>
       <div className="flex justify-between">
         <Progress caught={dex.caught} total={dex.total} />
