@@ -158,6 +158,7 @@
   --text-50: 3.125rem;
   --text-60: 3.75rem;
 
+  /* Like text, named by their size in px at the default font size. */
   --tracking-*: initial;
   --tracking-0: 0;
   --tracking-1: 0.0625rem;
@@ -378,7 +379,8 @@
    desktop layout (min-751 includes print) rather than the phone's. Each is
    named for its width in px at the default font size, and written in em, so
    a reader with a bigger font gets a narrower layout, as with zoom (in a
-   media query, em is the browser's font size, 16px by default). */
+   media query, em is the browser's font size, 16px by default). The info
+   panel's default (use-local-storage-context) checks max-1100 in code too. */
 @custom-variant max-1100 (@media screen and (max-width: 68.75em));
 @custom-variant max-750 (@media screen and (max-width: 46.875em));
 @custom-variant max-700 (@media screen and (max-width: 43.75em));
@@ -387,9 +389,10 @@
 @custom-variant max-500 (@media screen and (max-width: 31.25em));
 @custom-variant max-400 (@media screen and (max-width: 25em));
 /* The block form, since the short form would split the query at its
-   comma. */
+   comma. Wider than max-750 rather than at least 751px, which at a bigger
+   font would leave a width in between with neither layout. */
 @custom-variant min-751 {
-  @media print, (min-width: 46.9375em) {
+  @media print, (width > 46.875em) {
     @slot;
   }
 }
