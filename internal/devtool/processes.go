@@ -232,8 +232,8 @@ func (p *OSProcesses) Visual(ctx context.Context, site, tests Environment, targe
 }
 
 // take runs Playwright to take reference screenshots with args, then takes
-// again just what a test timeout or a dropped connection cut off, like on a
-// machine too busy to take it in time. Any other failure ends it.
+// again what only timed out or lost its connection, like on a machine too busy
+// to take it in time. Any other failure ends it.
 func take(ctx context.Context, playwright func(context.Context, ...string) error, args ...string) error {
 	err := playwright(ctx, args...)
 	for attempt := 1; attempt < referenceAttempts; attempt++ {

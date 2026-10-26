@@ -136,7 +136,7 @@ func buildVisualReview(env Environment, ref string, report *playwrightReport) (*
 // isn't a plain failure.
 var failureNotes = map[visualOutcome]string{
 	outcomeFlaky:       " (then passed on a retry)",
-	outcomeInterrupted: " (cut off by a timeout or dropped connection on every attempt)",
+	outcomeInterrupted: " (only timed out or lost its connection, on every attempt)",
 }
 
 // comparison is one screenshot that didn't match, with the paths of its

@@ -72,7 +72,7 @@ func TestVisualReportSortsWhatDidNotPass(t *testing.T) {
 		"[webkit-phone] profile › create dex modal",
 		"[chromium-phone] profile › someone else's profile",
 	}, failure.Flaky, "a page that only sometimes renders right isn't a pass, though its error says how long it waited")
-	assert.Equal(t, "visual tests: 1 differ, 2 passed only on a retry, 1 cut off", failure.Error())
+	assert.Equal(t, "visual tests: 1 differ, 2 passed only on a retry, 1 timed out", failure.Error())
 }
 
 func TestVisualReportPutsErrorsOutsideTheSpecsFirst(t *testing.T) {
@@ -220,6 +220,14 @@ func TestVisualReportListsTestsCutOffOnEveryAttempt(t *testing.T) {
 				{"errors": [{"message": "Test timeout of 60000ms exceeded."}]},
 				{"errors": [{"message": "Error: locator.click: Element is outside of the viewport"}]}
 			]}]},
+			{"title": "search", "tests": [{"projectName": "webkit-desktop", "status": "unexpected", "results": [
+				{"errors": [{"message": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByTestId('search')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found"}]},
+				{"errors": [{"message": "Test timeout of 60000ms exceeded."}, {"message": "Error: page.goto: Test timeout of 60000ms exceeded.\nCall log:\n  - navigating to \"http://host.docker.internal:8700/login\", waiting until \"load\"\n"}]}
+			]}]},
+			{"title": "night mode toggle", "tests": [{"projectName": "webkit-desktop", "status": "unexpected", "results": [
+				{"errors": [{"message": "Test timeout of 60000ms exceeded."}, {"message": "Error: locator.click: Test timeout of 60000ms exceeded.\nCall log:\n  - waiting for getByTestId('night-mode-toggle')\n"}]},
+				{"errors": [{"message": "Test timeout of 60000ms exceeded."}, {"message": "Error: locator.click: Test timeout of 60000ms exceeded.\nCall log:\n  - waiting for getByTestId('night-mode-toggle')\n"}]}
+			]}]},
 			{"title": "share panel", "tests": [{"projectName": "webkit-desktop", "status": "unexpected", "results": [
 				{"errors": [{"message": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByTestId('share')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found"}]},
 				{"errors": [{"message": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByTestId('share')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found"}]}
@@ -231,12 +239,16 @@ func TestVisualReportListsTestsCutOffOnEveryAttempt(t *testing.T) {
 
 	var failure *VisualFailure
 	require.ErrorAs(t, err, &failure)
-	assert.Equal(t, []string{"[webkit-desktop] tooltips › evolution notes"}, failure.Interrupted)
+	assert.Equal(t, []string{
+		"[webkit-desktop] tooltips › evolution notes",
+		"[webkit-desktop] tooltips › search",
+	}, failure.Interrupted, "a wait on one attempt and a cut-off on the other is still only timeouts")
 	assert.Equal(t, []string{
 		"[webkit-desktop] tooltips › register heading",
+		"[webkit-desktop] tooltips › night mode toggle",
 		"[webkit-desktop] tooltips › share panel",
-	}, failure.Failed, "one real error, or only waiting, makes it a failure")
-	assert.Equal(t, "visual tests: 2 failed, 1 cut off", failure.Error())
+	}, failure.Failed, "one real error, or only waiting for an element, even until the test's time ran out, makes it a failure")
+	assert.Equal(t, "visual tests: 3 failed, 2 timed out", failure.Error())
 }
 
 func TestVisualReportPassesARunWhoseOnlyRetriesWereHiccups(t *testing.T) {

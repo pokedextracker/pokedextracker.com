@@ -21,10 +21,9 @@ type VisualFailure struct {
 	// error that isn't a known hiccup. That's either noise or a change that
 	// only happens some of the time, so it isn't a pass.
 	Flaky []string
-	// Interrupted are tests cut off by a test timeout or a dropped connection
-	// on every attempt. They have no screenshot, so they don't pass, but they
-	// say the machine or Docker had trouble rather than anything about the
-	// page.
+	// Interrupted are tests that only timed out or lost their connection, on
+	// every attempt. They have no screenshot, so they don't pass, but they say
+	// the machine or Docker had trouble rather than anything about the page.
 	Interrupted []string
 }
 
@@ -46,7 +45,7 @@ func (f *VisualFailure) Error() string {
 		parts = append(parts, fmt.Sprintf("%d passed only on a retry", n))
 	}
 	if n := len(f.Interrupted); n > 0 {
-		parts = append(parts, fmt.Sprintf("%d cut off", n))
+		parts = append(parts, fmt.Sprintf("%d timed out", n))
 	}
 	return "visual tests: " + strings.Join(parts, ", ")
 }
@@ -190,7 +189,8 @@ const (
 	outcomeFlaky
 	// It passed on a retry after only hiccups, which counts as a pass.
 	outcomeRetried
-	// Every attempt was cut off by a hiccup, so it has no screenshot.
+	// Every attempt only timed out or lost its connection, at least one cut off
+	// while it wasn't waiting for an element, so it has no screenshot.
 	outcomeInterrupted
 )
 
@@ -205,8 +205,8 @@ func (t playwrightTest) outcome() visualOutcome {
 		if differed(t.Results) {
 			return outcomeDiffer
 		}
-		// Every attempt cut off, so there's no screenshot. Waits alone, like an
-		// element missing every time, could be the page.
+		// Only timeouts on every attempt, so there's no screenshot. Waits alone,
+		// like an element missing every time, could be the page.
 		if _, ok := onlyHiccups(t.Results); ok && interrupted(t.Results) {
 			return outcomeInterrupted
 		}
@@ -240,13 +240,18 @@ var hiccups = []string{
 }
 
 // interrupted reports whether any attempt at a test was cut off by one of the
-// hiccups.
+// hiccups while it wasn't waiting for an element. An action like a click
+// waits for its element until the test runs out of time, so an element that
+// never appears can also end in a test timeout.
 func interrupted(results []playwrightResult) bool {
 	for _, result := range results {
+		cutOff, waiting := false, false
 		for _, err := range result.Errors {
-			if isInterruption(err.Message) {
-				return true
-			}
+			cutOff = cutOff || isInterruption(err.Message)
+			waiting = waiting || waitingForElement(lastStep(ansiCodes.ReplaceAllString(err.Message, "")))
+		}
+		if cutOff && !waiting {
+			return true
 		}
 	}
 	return false
@@ -313,23 +318,13 @@ func ranOutWaiting(message string) bool {
 	if strings.Contains(message, "element(s) not found") {
 		return true
 	}
-	_, log, ok := strings.Cut(message, "Call log:")
-	if !ok {
-		return false
-	}
-	last := ""
-	for _, line := range strings.Split(log, "\n") {
-		step, ok := strings.CutPrefix(strings.TrimSpace(line), "- ")
-		if ok && !strings.HasPrefix(step, "Timeout ") {
-			last = step
-		}
-	}
-	if strings.HasPrefix(last, "waiting for getBy") || strings.HasPrefix(last, "waiting for locator(") {
+	last := lastStep(message)
+	if waitingForElement(last) {
 		return true
 	}
 	// A screenshot compares only once it's taken, and one that kept changing
 	// logs the pixels that did.
-	if !strings.Contains(firstLine(message), "toHaveScreenshot") || strings.Contains(log, "pixels") {
+	if !strings.Contains(firstLine(message), "toHaveScreenshot") || strings.Contains(message, "pixels") {
 		return false
 	}
 	for _, step := range screenshotSteps {
@@ -338,6 +333,29 @@ func ranOutWaiting(message string) bool {
 		}
 	}
 	return false
+}
+
+// lastStep is the last step in an error's call log, apart from the timeout
+// itself, or empty when it has none.
+func lastStep(message string) string {
+	_, log, ok := strings.Cut(message, "Call log:")
+	if !ok {
+		return ""
+	}
+	last := ""
+	for _, line := range strings.Split(log, "\n") {
+		step, ok := strings.CutPrefix(strings.TrimSpace(line), "- ")
+		if ok && !strings.HasPrefix(step, "Timeout ") {
+			last = step
+		}
+	}
+	return last
+}
+
+// waitingForElement reports whether a call log's last step is waiting for an
+// element to appear.
+func waitingForElement(step string) bool {
+	return strings.HasPrefix(step, "waiting for getBy") || strings.HasPrefix(step, "waiting for locator(")
 }
 
 // screenshotSteps are the steps Playwright logs while it's taking a

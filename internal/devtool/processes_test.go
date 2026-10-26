@@ -113,14 +113,18 @@ func TestCaptureReferenceRetakesWhatABusyMachineCutOff(t *testing.T) {
 }
 
 func TestCaptureReferenceDoesNotRetakeAFailure(t *testing.T) {
-	lastRun := filepath.Join(t.TempDir(), ".last-run.json")
-	playwright, runs := fakePlaywright(t, lastRun, &VisualFailure{Failed: []string{"register"}})
+	for _, failure := range []*VisualFailure{
+		{Failed: []string{"register"}},
+		{Failed: []string{"register"}, Interrupted: []string{"login"}},
+	} {
+		lastRun := filepath.Join(t.TempDir(), ".last-run.json")
+		playwright, runs := fakePlaywright(t, lastRun, failure)
 
-	err := captureReference(context.Background(), lastRun, playwright)
+		err := captureReference(context.Background(), lastRun, playwright)
 
-	var failure *VisualFailure
-	assert.ErrorAs(t, err, &failure)
-	assert.Equal(t, []string{"--update-snapshots=all"}, *runs, "a test that fails would only fail again")
+		assert.ErrorIs(t, err, failure)
+		assert.Equal(t, []string{"--update-snapshots=all"}, *runs, "a test that fails would only fail again")
+	}
 }
 
 func TestCaptureReferenceGivesUpOnScreenshotsItNeverTakes(t *testing.T) {

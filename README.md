@@ -118,8 +118,8 @@ text identically from run to run. The WebKit phone is a high-resolution touch
 screen; the other phones are narrow windows with a mouse.
 
 The reference screenshots are taken, then taken again to check they come out
-the same. Any that a busy machine cut off, or that don't come out the same,
-are retaken, up to three times each. On this branch's side, a screenshot fails
+the same. Any that only timed out, or that don't come out the same, are
+retaken, up to three times each. On this branch's side, a screenshot fails
 when more than 5 pixels change color at all, and a failure is retried twice. A
 test that passes only on a retry doesn't pass either: it's listed separately,
 since it's either noise or a change that only happens some of the time, and
@@ -128,9 +128,11 @@ running the comparison again tells you which.
 The exception is a retry after the machine was only slow or lost its
 connection to the server: a test that ran out of time, or that was still
 waiting for its element or still taking its screenshot when its time ran out.
-That passes, and is listed with what it hit. A test cut off like that on every
-attempt has no screenshot, so it doesn't pass, but it's listed apart from real
-failures: run the comparison again when the machine is quieter.
+That passes, and is listed with what it hit. A test that only timed out or lost
+its connection on every attempt has no screenshot, so it doesn't pass, but it's
+listed apart from real failures: run the comparison again when the machine is
+quieter. One that only waited for an element is a failure, since the element
+might be gone.
 
 The review page, `tmp/visual/review/index.html`, shows every screenshot: each
 one that changed before and after, with the difference highlighted, and the

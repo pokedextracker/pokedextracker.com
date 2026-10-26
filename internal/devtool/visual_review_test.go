@@ -116,7 +116,7 @@ func TestVisualReviewSortsScreenshotsLikeTheTerminal(t *testing.T) {
 	assert.Equal(t, []reviewFailure{
 		{Name: "[chromium-desktop] pages › account", Error: "Error: locator.click: Timeout 10000ms exceeded."},
 		{Name: "[chromium-desktop] pages › profile (then passed on a retry)", Error: "Error: locator.click: Timeout 10000ms exceeded."},
-		{Name: "[chromium-desktop] pages › share (cut off by a timeout or dropped connection on every attempt)", Error: "Test timeout of 60000ms exceeded."},
+		{Name: "[chromium-desktop] pages › share (only timed out or lost its connection, on every attempt)", Error: "Test timeout of 60000ms exceeded."},
 	}, review.Failed)
 	// search only hit a hiccup and profile's retry matched, so they passed.
 	// account's screenshot wasn't compared, but the report doesn't say which
