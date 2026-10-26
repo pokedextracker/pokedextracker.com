@@ -209,6 +209,10 @@ var hiccups = []string{
 	"operation was cancelled",
 	"could not connect",
 	"has been closed",
+	// What a test timeout interrupts, once its page is gone.
+	"page closed",
+	"test ended",
+	"exceeded during teardown",
 }
 
 // onlyHiccups reports whether every error in a test's attempts was a hiccup
@@ -222,24 +226,25 @@ func onlyHiccups(results []playwrightResult) (string, bool) {
 	first := ""
 	for _, result := range results {
 		for _, err := range result.Errors {
-			line := firstLine(err.Message)
-			if !isHiccup(line) {
+			if !isHiccup(err.Message) {
 				return "", false
 			}
 			if first == "" {
-				first = line
+				first = firstLine(err.Message)
 			}
 		}
 	}
 	return first, first != ""
 }
 
-// isHiccup reports whether the first line of an error is a hiccup. A failed
-// assertion never is, whatever it says.
-func isHiccup(line string) bool {
-	lower := strings.ToLower(line)
+// isHiccup reports whether an error is a hiccup. A failed assertion only is
+// when it ran out of time still waiting for its element to appear: it never
+// saw the page, so the machine was slow. One that found the element and got
+// the wrong value, or a screenshot that kept changing, is a result.
+func isHiccup(message string) bool {
+	lower := strings.ToLower(firstLine(message))
 	if strings.Contains(lower, "expect(") {
-		return false
+		return stillWaiting(ansiCodes.ReplaceAllString(message, ""))
 	}
 	for _, hiccup := range hiccups {
 		if strings.Contains(lower, hiccup) {
@@ -247,6 +252,30 @@ func isHiccup(line string) bool {
 		}
 	}
 	return false
+}
+
+// stillWaiting reports whether a failed assertion was still waiting for its
+// element when it ran out of time: Playwright found nothing, or the last step
+// in its call log is the wait. Anything it received means it saw the page.
+func stillWaiting(message string) bool {
+	if strings.Contains(message, "\nReceived") {
+		return false
+	}
+	if strings.Contains(message, "element(s) not found") {
+		return true
+	}
+	_, log, ok := strings.Cut(message, "Call log:")
+	if !ok {
+		return false
+	}
+	last := ""
+	for _, line := range strings.Split(log, "\n") {
+		step, ok := strings.CutPrefix(strings.TrimSpace(line), "- ")
+		if ok && !strings.HasPrefix(step, "Timeout ") {
+			last = step
+		}
+	}
+	return strings.HasPrefix(last, "waiting for ")
 }
 
 // differed reports whether any attempt at a test found its screenshot

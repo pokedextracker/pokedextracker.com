@@ -584,7 +584,7 @@ func (a *App) visual(ctx context.Context, env Environment, args []string) error 
 		}
 		retried, err := a.Processes.Visual(ctx, side.site, env, target, lease.Port(), side.name, playwrightArgs...)
 		if len(retried) > 0 {
-			if err := a.printf("\nPassed after a retry for a timeout or dropped connection, not a difference:\n  %s\n", strings.Join(retried, "\n  ")); err != nil {
+			if err := a.printf("\nPassed after a retry for slowness or a dropped connection, not a difference:\n  %s\n", strings.Join(retried, "\n  ")); err != nil {
 				return err
 			}
 		}

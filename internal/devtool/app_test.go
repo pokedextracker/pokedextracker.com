@@ -702,7 +702,7 @@ func TestVisualListsTestsRetriedForAHiccup(t *testing.T) {
 
 	require.NoError(t, h.app.Run(context.Background(), []string{"visual", "webkit"}))
 
-	assert.Contains(t, h.stdout.String(), "Passed after a retry for a timeout or dropped connection, not a difference:\n  [webkit-desktop] tracker › search (Test timeout of 60000ms exceeded.)\n")
+	assert.Contains(t, h.stdout.String(), "Passed after a retry for slowness or a dropped connection, not a difference:\n  [webkit-desktop] tracker › search (Test timeout of 60000ms exceeded.)\n")
 	assert.Contains(t, h.stdout.String(), "No visual differences")
 }
 

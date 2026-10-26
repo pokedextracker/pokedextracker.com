@@ -120,10 +120,12 @@ screen; the other phones are narrow windows with a mouse.
 The reference screenshots are taken twice, and any that don't come out the
 same are retaken, up to three times. On this branch's side, a screenshot fails
 when more than 5 pixels change color at all, and a failure is retried twice. A
-test that passes only on a retry doesn't pass either, unless what it retried
-was a timeout or a dropped connection: it's listed separately, since it's
-either noise or a change that only happens some of the time, and running the
-comparison again tells you which.
+test that passes only on a retry doesn't pass either: it's listed separately,
+since it's either noise or a change that only happens some of the time, and
+running the comparison again tells you which. The exception is a retry after
+the machine was only slow or lost its connection to the server, like a test
+that ran out of time or waited for something that never appeared. That
+passes, and is listed with what it hit.
 
 The review page, `tmp/visual/review/index.html`, shows every screenshot: each
 one that changed before and after, with the difference highlighted, and the

@@ -1,9 +1,11 @@
 package devtool
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -132,6 +134,61 @@ func TestVisualReportPassesTestsRetriedForHiccups(t *testing.T) {
 		"[webkit-desktop] tracker › hide caught (Error: page.goto: Connection terminated unexpectedly)",
 		"[webkit-desktop] tracker › night home (Error: page.goto: Operation was cancelled; maybe frame was detached?)",
 	}, retried, "a busy machine or a dropped connection isn't a difference")
+}
+
+// A test that ran out of time, or waited for something that never appeared,
+// was slow rather than different. These are the messages WebKit's busy
+// attempts leave.
+func TestVisualReportPassesRetriesThatOnlyRanOutOfTime(t *testing.T) {
+	flaky := func(title string, messages ...string) string {
+		var errs []string
+		for _, m := range messages {
+			quoted, _ := json.Marshal(m)
+			errs = append(errs, `{"message": `+string(quoted)+`}`)
+		}
+		return `{"title": "` + title + `", "tests": [{"projectName": "webkit-desktop", "status": "flaky", "results": [
+			{"errors": [` + strings.Join(errs, ", ") + `]}, {"errors": []}
+		]}]}`
+	}
+	report := writeReport(t, `{"errors": [], "suites": [{"title": "pages.spec.ts", "specs": [], "suites": [{
+		"title": "tracker",
+		"specs": [`+strings.Join([]string{
+		// What the timeout interrupted fails too, once the page is gone.
+		flaky("search",
+			"Test timeout of 60000ms exceeded.",
+			"Error: mouse.move: Protocol error (Input.dispatchMouseEvent): Page closed\n\n   at fixtures.ts:147"),
+		flaky("info link hovered",
+			"Test timeout of 60000ms exceeded.",
+			"Error: locator.hover: Test ended.",
+			`Fixture "trace recording" timeout of 60000ms exceeded during teardown.`),
+		// The screenshot's element hadn't appeared, so no screenshot was taken.
+		flaky("info button hovered",
+			"Test timeout of 60000ms exceeded.",
+			"Error: expect(locator).toHaveScreenshot(expected) failed\n\nLocator: getByTestId('box').first()\nTimeout: 10000ms\n  Timeout 10000ms exceeded.\n\n  Snapshot: dex-info-button-hovered.png\n\nCall log:\n  \x1b[2m- Expect \"toHaveScreenshot(dex-info-button-hovered.png)\" getByTestId('box').first() with timeout 10000ms\x1b[22m\n\x1b[2m    - verifying given screenshot expectation\x1b[22m\n\x1b[2m  - waiting for getByTestId('box').first()\x1b[22m\n\x1b[2m  - Timeout 10000ms exceeded.\x1b[22m\n"),
+		flaky("info tab hovered",
+			"Error: expect(locator).toContainText(expected) failed\n\nLocator: getByTestId('progress-count')\nExpected substring: \"7 caught\"\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n  \x1b[2m- Expect \"toContainText\" getByTestId('progress-count') with timeout 10000ms\x1b[22m\n\x1b[2m  - waiting for getByTestId('progress-count')\x1b[22m\n"),
+		// These found the page and it was wrong, so they aren't slowness.
+		flaky("hide caught",
+			"Error: expect(locator).toContainText(expected) failed\n\nLocator: getByTestId('progress-count')\nExpected substring: \"7 caught\"\nReceived string: \"(6 caught, 231 to go)\"\nTimeout: 10000ms\n\nCall log:\n  - Expect \"toContainText\" getByTestId('progress-count') with timeout 10000ms\n  - waiting for getByTestId('progress-count')\n    14 × locator resolved to <p data-testid=\"progress-count\">(6 caught, 231 to go)</p>\n       - unexpected value \"(6 caught, 231 to go)\"\n"),
+		flaky("tile hovered",
+			"Error: expect(locator).toHaveScreenshot(expected) failed\n\nTimeout: 10000ms\n  Timeout 10000ms exceeded.\n\nCall log:\n  - Expect \"toHaveScreenshot(dex-tile-hovered.png)\" getByTestId('box').first() with timeout 10000ms\n    - generating new stable screenshot expectation\n  - waiting for getByTestId('box').first()\n    - locator resolved to <div data-testid=\"box\">…</div>\n  - taking element screenshot\n  - 12 pixels (ratio 0.01 of all image pixels) are different.\n  - waiting 100ms before taking screenshot\n  - Timeout 10000ms exceeded.\n"),
+	}, ", ")+`]
+	}]}]}`)
+
+	retried, err := report.failure(errors.New("exit status 1"))
+
+	var failure *VisualFailure
+	require.ErrorAs(t, err, &failure)
+	assert.Equal(t, []string{
+		"[webkit-desktop] tracker › search (Test timeout of 60000ms exceeded.)",
+		"[webkit-desktop] tracker › info link hovered (Test timeout of 60000ms exceeded.)",
+		"[webkit-desktop] tracker › info button hovered (Test timeout of 60000ms exceeded.)",
+		"[webkit-desktop] tracker › info tab hovered (Error: expect(locator).toContainText(expected) failed)",
+	}, retried)
+	assert.Equal(t, []string{
+		"[webkit-desktop] tracker › hide caught",
+		"[webkit-desktop] tracker › tile hovered",
+	}, failure.Flaky, "a wrong value or a changing screenshot is still a result")
 }
 
 func TestVisualReportPassesARunWhoseOnlyRetriesWereHiccups(t *testing.T) {
