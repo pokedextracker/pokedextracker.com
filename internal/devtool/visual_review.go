@@ -94,25 +94,17 @@ func buildVisualReview(env Environment, ref string, report *playwrightReport) (*
 	compared := map[string]bool{}
 	for _, test := range report.tests() {
 		outcome := test.outcome()
-		if outcome == outcomeSlow {
-			review.Failed = append(review.Failed, reviewFailure{Name: test.name + " (only timeouts or dropped connections, on every attempt)", Error: firstError(test.Results)})
-			review.Uncompared = true
-			continue
-		}
-		if outcome != outcomeDiffer && outcome != outcomeFailed && outcome != outcomeFlaky {
+		if outcome == outcomePassed || outcome == outcomeRetried {
 			continue
 		}
 		// A test that passed on a retry after an error rather than a difference
 		// is listed with the failures, as the terminal lists it apart from
-		// the differences.
-		if outcome == outcomeFailed || (outcome == outcomeFlaky && !differed(test.Results)) {
-			name := test.name
-			if outcome == outcomeFlaky {
-				name += " (then passed on a retry)"
-			}
+		// the differences, and so is one cut off on every attempt.
+		if outcome == outcomeFailed || outcome == outcomeInterrupted || (outcome == outcomeFlaky && !differed(test.Results)) {
+			name := test.name + failureNotes[outcome]
 			review.Failed = append(review.Failed, reviewFailure{Name: name, Error: firstError(test.Results)})
 			// A retry that passed compared its screenshot.
-			review.Uncompared = review.Uncompared || outcome == outcomeFailed
+			review.Uncompared = review.Uncompared || outcome != outcomeFlaky
 			continue
 		}
 		comparisons := failedComparisons(test.name, test.Results)
@@ -138,6 +130,13 @@ func buildVisualReview(env Environment, ref string, report *playwrightReport) (*
 	}
 	review.Unchanged = unchanged
 	return review, nil
+}
+
+// failureNotes say why a test listed with the failures is there, when it
+// isn't a plain failure.
+var failureNotes = map[visualOutcome]string{
+	outcomeFlaky:       " (then passed on a retry)",
+	outcomeInterrupted: " (cut off by a timeout or dropped connection on every attempt)",
 }
 
 // comparison is one screenshot that didn't match, with the paths of its

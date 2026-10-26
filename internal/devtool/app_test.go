@@ -666,9 +666,9 @@ func TestVisualListsWhatDidNotPass(t *testing.T) {
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 	h.processes.visualErr = map[string]error{"branch": &VisualFailure{
-		Differ: []string{"[webkit-desktop] profile › own profile"},
-		Failed: []string{"[webkit-phone] tracker › search"},
-		Slow:   []string{"[webkit-desktop] tooltips › evolution notes"},
+		Differ:      []string{"[webkit-desktop] profile › own profile"},
+		Failed:      []string{"[webkit-phone] tracker › search"},
+		Interrupted: []string{"[webkit-desktop] tooltips › evolution notes"},
 	}}
 
 	err := h.app.Run(context.Background(), []string{"visual", "webkit"})
@@ -678,7 +678,7 @@ func TestVisualListsWhatDidNotPass(t *testing.T) {
 	assert.Contains(t, err.Error(), "show-report tmp/visual/report")
 	assert.Contains(t, h.stdout.String(), "Screenshots that differ from origin/master (abc1234):\n  [webkit-desktop] profile › own profile\n")
 	assert.Contains(t, h.stdout.String(), "failed before or apart from their screenshot:\n  [webkit-phone] tracker › search\n")
-	assert.Contains(t, h.stdout.String(), "Couldn't take a screenshot on any attempt, hitting only timeouts or dropped connections, so the machine was too busy rather than anything being wrong with the page; run the comparison again when it's quieter:\n  [webkit-desktop] tooltips › evolution notes\n")
+	assert.Contains(t, h.stdout.String(), "Tests cut off by a timeout or dropped connection on every attempt (the machine or Docker, not the page; run it again when the machine is quieter):\n  [webkit-desktop] tooltips › evolution notes\n")
 	assert.Equal(t, "remove reference", h.processes.calls[len(h.processes.calls)-1], "the reference worktree is removed either way")
 }
 

@@ -636,7 +636,7 @@ func (a *App) visualFailure(env Environment, ref, side string, failure *VisualFa
 		{"Screenshots that differ from " + ref, failure.Differ},
 		{"Tests that failed before or apart from their screenshot", failure.Failed},
 		{"Tests that passed only on a retry, after a difference or an unexpected error (noise, or a change that only happens sometimes; run it again to see whether it repeats)", failure.Flaky},
-		{"Couldn't take a screenshot on any attempt, hitting only timeouts or dropped connections, so the machine was too busy rather than anything being wrong with the page; run the comparison again when it's quieter", failure.Slow},
+		{"Tests cut off by a timeout or dropped connection on every attempt (the machine or Docker, not the page; run it again when the machine is quieter)", failure.Interrupted},
 	}
 	if side == visualReference {
 		groups[0].heading = "Reference screenshots that didn't come out the same twice"

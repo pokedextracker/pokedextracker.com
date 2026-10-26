@@ -66,13 +66,13 @@ func TestVisualReportSortsWhatDidNotPass(t *testing.T) {
 	require.ErrorAs(t, err, &failure)
 	assert.Empty(t, retried)
 	assert.Equal(t, []string{"[webkit-desktop] profile › own profile"}, failure.Differ)
-	assert.Equal(t, []string{"[webkit-desktop] profile › edit dex modal"}, failure.Slow, "an error quoting the spec's toHaveScreenshot isn't a screenshot that differs, and a dropped connection says nothing about the page")
+	assert.Equal(t, []string{"[webkit-desktop] profile › edit dex modal"}, failure.Interrupted, "an error quoting the spec's toHaveScreenshot isn't a screenshot that differs, and a dropped connection says nothing about the page")
 	assert.Empty(t, failure.Failed)
 	assert.Equal(t, []string{
 		"[webkit-phone] profile › create dex modal",
 		"[chromium-phone] profile › someone else's profile",
 	}, failure.Flaky, "a page that only sometimes renders right isn't a pass, though its error says how long it waited")
-	assert.Equal(t, "visual tests: 1 differ, 2 passed only on a retry, 1 couldn't be taken", failure.Error())
+	assert.Equal(t, "visual tests: 1 differ, 2 passed only on a retry, 1 cut off", failure.Error())
 }
 
 func TestVisualReportPutsErrorsOutsideTheSpecsFirst(t *testing.T) {
@@ -171,11 +171,17 @@ func TestVisualReportPassesRetriesThatOnlyRanOutOfTime(t *testing.T) {
 			"Error: expect(page).toHaveScreenshot(expected) failed\n\nTimeout: 10000ms\n  Timeout 10000ms exceeded.\n\nCall log:\n  - Expect \"toHaveScreenshot(dex-legends-arceus.png)\" with timeout 10000ms\n    - generating new stable screenshot expectation\n  - taking page screenshot\n    - disabled all CSS animations\n  - waiting for fonts to load...\n  - fonts loaded\n  - Timeout 10000ms exceeded.\n\n\n  211 |     await expect(page.getByTestId(\"progress-count\")).toContainText(\"3 caught\");\n> 213 |     await expect(page).toHaveScreenshot(\"dex-legends-arceus.png\");\n"),
 		flaky("info tab hovered",
 			"Error: expect(locator).toContainText(expected) failed\n\nLocator: getByTestId('progress-count')\nExpected substring: \"7 caught\"\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n  \x1b[2m- Expect \"toContainText\" getByTestId('progress-count') with timeout 10000ms\x1b[22m\n\x1b[2m  - waiting for getByTestId('progress-count')\x1b[22m\n"),
-		// These found the page and it was wrong, so they aren't slowness.
+		// These saw the page and it was wrong, so they aren't slowness: a
+		// wrong value, a screenshot that kept changing, an element that isn't
+		// visible, and a screenshot that couldn't be taken.
 		flaky("hide caught",
 			"Error: expect(locator).toContainText(expected) failed\n\nLocator: getByTestId('progress-count')\nExpected substring: \"7 caught\"\nReceived string: \"(6 caught, 231 to go)\"\nTimeout: 10000ms\n\nCall log:\n  - Expect \"toContainText\" getByTestId('progress-count') with timeout 10000ms\n  - waiting for getByTestId('progress-count')\n    14 × locator resolved to <p data-testid=\"progress-count\">(6 caught, 231 to go)</p>\n       - unexpected value \"(6 caught, 231 to go)\"\n"),
 		flaky("tile hovered",
 			"Error: expect(locator).toHaveScreenshot(expected) failed\n\nTimeout: 10000ms\n  Timeout 10000ms exceeded.\n\nCall log:\n  - Expect \"toHaveScreenshot(dex-tile-hovered.png)\" getByTestId('box').first() with timeout 10000ms\n    - generating new stable screenshot expectation\n  - waiting for getByTestId('box').first()\n    - locator resolved to <div data-testid=\"box\">…</div>\n  - taking element screenshot\n  - 12 pixels (ratio 0.01 of all image pixels) are different.\n  - waiting 100ms before taking screenshot\n  - Timeout 10000ms exceeded.\n"),
+		flaky("info link hovered (hidden)",
+			"Error: expect(locator).toHaveScreenshot(expected) failed\n\nTimeout: 10000ms\n  Timeout 10000ms exceeded.\n\nCall log:\n  - Expect \"toHaveScreenshot(dex-info-link-hovered.png)\" getByTestId('info-main') with timeout 10000ms\n    - generating new stable screenshot expectation\n  - waiting for getByTestId('info-main')\n    - locator resolved to <div data-testid=\"info-main\">…</div>\n  - taking element screenshot\n    - disabled all CSS animations\n  - waiting for element to be visible and stable\n    - element is not visible\n  - retrying scroll into view action\n    - waiting 100ms\n  - taking element screenshot\n  - Timeout 10000ms exceeded.\n"),
+		flaky("edit dex modal",
+			"Error: expect(locator).toHaveScreenshot(expected) failed\n\nTimeout: 10000ms\n  Timeout 10000ms exceeded.\n\nCall log:\n  - Expect \"toHaveScreenshot(dex-edit.png)\" getByRole('dialog') with timeout 10000ms\n    - generating new stable screenshot expectation\n  - taking element screenshot\n  - failed to take screenshot - Node has 0 height.\n  - waiting 100ms\n  - taking element screenshot\n  - Timeout 10000ms exceeded.\n"),
 	}, ", ")+`]
 	}]}]}`)
 
@@ -193,12 +199,16 @@ func TestVisualReportPassesRetriesThatOnlyRanOutOfTime(t *testing.T) {
 	assert.Equal(t, []string{
 		"[webkit-desktop] tracker › hide caught",
 		"[webkit-desktop] tracker › tile hovered",
-	}, failure.Flaky, "a wrong value or a changing screenshot is still a result")
+		"[webkit-desktop] tracker › info link hovered (hidden)",
+		"[webkit-desktop] tracker › edit dex modal",
+	}, failure.Flaky, "a page that came out wrong is still a result")
 }
 
-// A test that hit only hiccups on every attempt has no screenshot, so the run
-// fails, but it says the machine was busy rather than that the test broke.
-func TestVisualReportListsTestsThatHitOnlyHiccupsOnEveryAttempt(t *testing.T) {
+// A test cut off by a timeout or a dropped connection on every attempt has no
+// screenshot, so the run fails, but it says the machine or Docker had trouble
+// rather than that the test broke. Waiting alone doesn't: an element missing
+// every time could be the page.
+func TestVisualReportListsTestsCutOffOnEveryAttempt(t *testing.T) {
 	report := writeReport(t, `{"errors": [], "suites": [{"title": "pages.spec.ts", "specs": [], "suites": [{
 		"title": "tooltips",
 		"specs": [
@@ -209,6 +219,10 @@ func TestVisualReportListsTestsThatHitOnlyHiccupsOnEveryAttempt(t *testing.T) {
 			{"title": "register heading", "tests": [{"projectName": "webkit-desktop", "status": "unexpected", "results": [
 				{"errors": [{"message": "Test timeout of 60000ms exceeded."}]},
 				{"errors": [{"message": "Error: locator.click: Element is outside of the viewport"}]}
+			]}]},
+			{"title": "share panel", "tests": [{"projectName": "webkit-desktop", "status": "unexpected", "results": [
+				{"errors": [{"message": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByTestId('share')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found"}]},
+				{"errors": [{"message": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByTestId('share')\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found"}]}
 			]}]}
 		]
 	}]}]}`)
@@ -217,8 +231,12 @@ func TestVisualReportListsTestsThatHitOnlyHiccupsOnEveryAttempt(t *testing.T) {
 
 	var failure *VisualFailure
 	require.ErrorAs(t, err, &failure)
-	assert.Equal(t, []string{"[webkit-desktop] tooltips › evolution notes"}, failure.Slow)
-	assert.Equal(t, []string{"[webkit-desktop] tooltips › register heading"}, failure.Failed, "one real error makes it a failure")
+	assert.Equal(t, []string{"[webkit-desktop] tooltips › evolution notes"}, failure.Interrupted)
+	assert.Equal(t, []string{
+		"[webkit-desktop] tooltips › register heading",
+		"[webkit-desktop] tooltips › share panel",
+	}, failure.Failed, "one real error, or only waiting, makes it a failure")
+	assert.Equal(t, "visual tests: 2 failed, 1 cut off", failure.Error())
 }
 
 func TestVisualReportPassesARunWhoseOnlyRetriesWereHiccups(t *testing.T) {
