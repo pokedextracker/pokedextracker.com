@@ -154,15 +154,31 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}
 
-      # The cache only holds the browsers, so the system libraries they need
-      # are installed either way.
+      # The system libraries the browsers need, as the packages apt downloads.
+      # Getting them (about 120 MB) from Azure's Ubuntu mirror sometimes takes
+      # longer than the whole job may, so they're kept between runs, and only
+      # what's new since is downloaded.
+      - uses: actions/cache@v6
+        with:
+          path: ~/apt-archives
+          key: apt-${{ runner.os }}-ubuntu-24.04-playwright-${{ env.PLAYWRIGHT_VERSION }}
+
+      # The browser cache only holds the browsers, so the system libraries are
+      # installed either way, from the packages above when they're there. apt
+      # downloads as root into the cached folder, since its own user can't
+      # write to the home directory, so the folder is handed back for the
+      # cache to save.
       - name: Install browsers
         run: |
+          mkdir -p ~/apt-archives/partial
+          printf 'Dir::Cache::Archives "%s";\nAPT::Sandbox::User "root";\n' "$HOME/apt-archives" |
+            sudo tee /etc/apt/apt.conf.d/99-cached-archives
           if [ "${{ steps.browsers.outputs.cache-hit }}" = "true" ]; then
             pnpm exec playwright install-deps chromium firefox webkit
           else
             mise install:browsers -- --with-deps
           fi
+          sudo chown -R "$(id -u):$(id -g)" ~/apt-archives
 
       # The dev launcher starts PostgreSQL in Docker, the same as locally.
       - name: Test
