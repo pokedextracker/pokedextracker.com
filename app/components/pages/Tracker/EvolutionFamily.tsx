@@ -65,7 +65,7 @@ export function EvolutionFamily({ family, setSelectedPokemon }: Props) {
   }
 
   return (
-    <div className="flex shrink-0 justify-center bg-info p-20 text-center text-13">
+    <div className="flex shrink-0 justify-center bg-info p-20 text-center text-12">
       <div className={`${pokemonColumn} justify-around`}>
         <a
           className={pokemonLink}

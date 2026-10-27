@@ -228,7 +228,7 @@ export function Pokemon({
         data-testid="set-captured"
         onClick={handleSetCapturedClick}
       >
-        <h4 className="m-0 text-17 font-normal">
+        <h4 className="m-0 text-16 font-normal">
           <PokemonName name={capture.pokemon.name} />
         </h4>
         <div className="flex h-49 items-center">
