@@ -146,6 +146,8 @@ jobs:
           mise install:go
           mise install:web
           echo "PLAYWRIGHT_VERSION=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_ENV"
+          echo "UBUNTU=$(. /etc/os-release && echo "$VERSION_ID")" >> "$GITHUB_ENV"
+          echo "MONTH=$(date +%Y-%m)" >> "$GITHUB_ENV"
 
       # The browsers only change with the Playwright version.
       - uses: actions/cache@v6
@@ -156,18 +158,24 @@ jobs:
 
       # The system libraries the browsers need, as the packages apt downloads.
       # Getting them (about 120 MB) from Azure's Ubuntu mirror sometimes takes
-      # longer than the whole job may, so they're kept between runs, and only
-      # what's new since is downloaded.
+      # longer than the whole job may, so they're kept between runs. A cache
+      # can't be updated once saved, so a new one starts each month from the
+      # last, adding the packages Ubuntu has updated since. They're only for
+      # the runner's version of Ubuntu.
       - uses: actions/cache@v6
         with:
           path: ~/apt-archives
-          key: apt-${{ runner.os }}-ubuntu-24.04-playwright-${{ env.PLAYWRIGHT_VERSION }}
+          key: apt-ubuntu-${{ env.UBUNTU }}-playwright-${{ env.PLAYWRIGHT_VERSION }}-${{ env.MONTH }}
+          restore-keys: |
+            apt-ubuntu-${{ env.UBUNTU }}-playwright-${{ env.PLAYWRIGHT_VERSION }}-
+            apt-ubuntu-${{ env.UBUNTU }}-
 
       # The browser cache only holds the browsers, so the system libraries are
       # installed either way, from the packages above when they're there. apt
-      # downloads as root into the cached folder, since its own user can't
-      # write to the home directory, so the folder is handed back for the
-      # cache to save.
+      # downloads as root into the cached folder (its own user can't write to
+      # the home directory, and would only warn and fall back). Afterwards,
+      # versions Ubuntu has replaced are cleared out, and the folder is handed
+      # back for the cache to save.
       - name: Install browsers
         run: |
           mkdir -p ~/apt-archives/partial
@@ -178,6 +186,7 @@ jobs:
           else
             mise install:browsers -- --with-deps
           fi
+          sudo apt-get autoclean
           sudo chown -R "$(id -u):$(id -g)" ~/apt-archives
 
       # The dev launcher starts PostgreSQL in Docker, the same as locally.
