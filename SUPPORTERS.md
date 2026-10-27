@@ -98,3 +98,4 @@ This will be where we add the names for all of the users who've donated any amou
 - [Zero_One](https://pokedextracker.com/u/Zero_One)
 - [CB_Johnny](https://pokedextracker.com/u/CB_Johnny)
 - [Roschach96](https://pokedextracker.com/u/Roschach96)
+- [Kaxarus](https://pokedextracker.com/u/Kaxarus)
