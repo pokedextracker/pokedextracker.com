@@ -52,8 +52,8 @@ function infoClassName(showInfo: boolean): string {
   );
 }
 
-// The tab that opens and closes the panel. Below 1100px the panel lies over
-// the dex, so the open tab sits at its edge.
+// The tab that opens and closes the panel. Below the max-1100 breakpoint the
+// panel lies over the dex, so the open tab sits at its edge.
 function collapseClassName(showInfo: boolean): string {
   return classNames(
     "flex items-center bg-info-edge p-8 text-12 text-white hover:-ml-2 hover:cursor-pointer hover:pr-10 max-1100:relative max-400:right-0 max-400:hover:ml-0 max-400:hover:pr-8",

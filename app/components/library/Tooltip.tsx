@@ -34,7 +34,8 @@ export function TooltipText({
     <span
       className={classNames(
         "invisible absolute left-1/2 z-1 -ml-60 w-120 rounded-5 p-5 text-center text-13 font-normal group-hover:visible",
-        "after:absolute after:left-1/2 after:-ml-5 after:border-5 after:border-solid after:border-transparent",
+        // The arrow, a border in rem like the half-width it's centered by.
+        "after:absolute after:left-1/2 after:-ml-5 after:border-[0.3125rem] after:border-solid after:border-transparent",
         variants[variant],
         className,
       )}

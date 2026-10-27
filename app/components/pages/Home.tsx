@@ -26,7 +26,7 @@ export function Home() {
   }, []);
 
   return (
-    <div className="flex flex-[1_1_auto] flex-col bg-yellow-400 bg-[url(/pattern.png)] bg-[size:500px_250px] bg-center bg-repeat text-center dark:bg-night dark:bg-[url(/pattern-night.png)]">
+    <div className="flex flex-[1_1_auto] flex-col bg-yellow-400 bg-[url(/pattern.png)] bg-[size:31.25rem_15.625rem] bg-center bg-repeat text-center dark:bg-night dark:bg-[url(/pattern-night.png)]">
       <div className="flex grow flex-col justify-center overflow-y-auto pt-20">
         <div className="relative -top-100 animate-slide">
           <img

@@ -128,40 +128,41 @@
   --font-primary: "Alegreya Sans", "Helvetica", sans-serif;
   --font-secondary: "Montserrat", "Helvetica", sans-serif;
 
-  /* One unit is one pixel (mt-15 is 15px), so sizes read like the
-     stylesheets they replace and don't change with the browser's font
-     size, which the old px values didn't either. */
-  --spacing: 1px;
+  /* Sizes are in rem, so the whole layout grows with a reader's default font
+     size, as it does with zoom. One unit is a sixteenth of a rem, which is
+     1px at the browser's default of 16px, so a size reads as its pixels
+     there (mt-15 is 15px, text-14 is 14px). Borders, corners and shadows
+     stay in px, as fine details. */
+  --spacing: 0.0625rem;
 
-  /* The rest of the old stylesheets' values, named by value for now. Turning
-     them into scales (and merging near duplicates) is a design pass for after
-     the move, when any change it makes is deliberate. */
+  /* Named by their size in px at the default font size. */
   --text-*: initial;
-  --text-5: 5px;
-  --text-8: 8px;
-  --text-9: 9px;
-  --text-10: 10px;
-  --text-11: 11px;
-  --text-12: 12px;
-  --text-13: 13px;
-  --text-14: 14px;
-  --text-15: 15px;
-  --text-16: 16px;
-  --text-17: 17px;
-  --text-20: 20px;
-  --text-25: 25px;
-  --text-30: 30px;
-  --text-32: 32px;
-  --text-35: 35px;
-  --text-40: 40px;
-  --text-45: 45px;
-  --text-50: 50px;
-  --text-60: 60px;
+  --text-5: 0.3125rem;
+  --text-8: 0.5rem;
+  --text-9: 0.5625rem;
+  --text-10: 0.625rem;
+  --text-11: 0.6875rem;
+  --text-12: 0.75rem;
+  --text-13: 0.8125rem;
+  --text-14: 0.875rem;
+  --text-15: 0.9375rem;
+  --text-16: 1rem;
+  --text-17: 1.0625rem;
+  --text-20: 1.25rem;
+  --text-25: 1.5625rem;
+  --text-30: 1.875rem;
+  --text-32: 2rem;
+  --text-35: 2.1875rem;
+  --text-40: 2.5rem;
+  --text-45: 2.8125rem;
+  --text-50: 3.125rem;
+  --text-60: 3.75rem;
 
+  /* Like text, named by their size in px at the default font size. */
   --tracking-*: initial;
   --tracking-0: 0;
-  --tracking-1: 1px;
-  --tracking-2: 2px;
+  --tracking-1: 0.0625rem;
+  --tracking-2: 0.125rem;
 
   --radius-*: initial;
   --radius-3: 3px;
@@ -375,18 +376,23 @@
    come out in this order, so a narrower one wins where both apply, as the
    later rule did in the old stylesheets. They're for screens: a Letter or A4
    page is narrower than 751px after its margins, but a printout gets the
-   desktop layout (min-751 includes print) rather than the phone's. */
-@custom-variant max-1100 (@media screen and (max-width: 1100px));
-@custom-variant max-750 (@media screen and (max-width: 750px));
-@custom-variant max-700 (@media screen and (max-width: 700px));
-@custom-variant max-600 (@media screen and (max-width: 600px));
-@custom-variant max-550 (@media screen and (max-width: 550px));
-@custom-variant max-500 (@media screen and (max-width: 500px));
-@custom-variant max-400 (@media screen and (max-width: 400px));
+   desktop layout (min-751 includes print) rather than the phone's. Each is
+   named for its width in px at the default font size, and written in em, so
+   a reader with a bigger font gets a narrower layout, as with zoom (in a
+   media query, em is the browser's font size, 16px by default). The info
+   panel's default (use-local-storage-context) checks max-1100 in code too. */
+@custom-variant max-1100 (@media screen and (max-width: 68.75em));
+@custom-variant max-750 (@media screen and (max-width: 46.875em));
+@custom-variant max-700 (@media screen and (max-width: 43.75em));
+@custom-variant max-600 (@media screen and (max-width: 37.5em));
+@custom-variant max-550 (@media screen and (max-width: 34.375em));
+@custom-variant max-500 (@media screen and (max-width: 31.25em));
+@custom-variant max-400 (@media screen and (max-width: 25em));
 /* The block form, since the short form would split the query at its
-   comma. */
+   comma. Wider than max-750 rather than at least 751px, which at a bigger
+   font would leave a width in between with neither layout. */
 @custom-variant min-751 {
-  @media print, (min-width: 751px) {
+  @media print, (width > 46.875em) {
     @slot;
   }
 }
