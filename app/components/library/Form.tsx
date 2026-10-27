@@ -6,7 +6,7 @@ import { tw } from "../../utils/tw";
 export const formPage = tw`flex flex-[1_0_auto] flex-col items-center overflow-y-auto px-0 pt-50 pb-100`;
 
 // The form page's title.
-export const formTitle = tw`mb-17 text-heading`;
+export const formTitle = tw`mb-17 text-32 text-heading`;
 
 // A form slides up into place.
 export const form = tw`relative top-60 animate-slide-fast`;
