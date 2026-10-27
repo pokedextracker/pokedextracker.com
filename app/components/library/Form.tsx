@@ -6,7 +6,7 @@ import { tw } from "../../utils/tw";
 export const formPage = tw`flex flex-[1_0_auto] flex-col items-center overflow-y-auto px-0 pt-50 pb-100`;
 
 // The form page's title.
-export const formTitle = tw`mb-17 text-32 text-heading`;
+export const formTitle = tw`mb-15 text-32 text-heading`;
 
 // A form slides up into place.
 export const form = tw`relative top-60 animate-slide-fast`;
@@ -20,7 +20,7 @@ export const formText = tw`mx-0 mt-20 mb-0 text-center text-14`;
 
 // A field: its label, its input, and the icon in the input.
 export const formGroup = tw`relative mb-25`;
-export const formLabel = tw`mb-7 block font-secondary text-11 font-bold tracking-1 uppercase`;
+export const formLabel = tw`mb-8 block font-secondary text-11 font-bold tracking-1 uppercase`;
 
 // A text input or select's size in a field, which leaves room on the right
 // for an icon. Its text starts 10px in, unless something sits on its left.
@@ -66,7 +66,7 @@ function ChoiceInput({
   ...props
 }: ChoiceInputProps) {
   return (
-    <div className="mx-13 my-0 inline-block">
+    <div className="mx-15 my-0 inline-block">
       <label className="mb-0 block cursor-pointer font-primary text-15 font-normal tracking-0 normal-case">
         <input {...props} className="hidden" type={type} />
         <span

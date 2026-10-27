@@ -13,7 +13,7 @@ export function FormWarning({ message }: Props) {
   }
 
   return (
-    <div className="absolute bottom-0 -left-23 flex h-full items-center pt-21">
+    <div className="absolute bottom-0 -left-23 flex h-full items-center pt-20">
       <Tooltip
         className="ml-0"
         data-testid="form-warning"

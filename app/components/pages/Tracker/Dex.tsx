@@ -80,7 +80,7 @@ export function Dex({
         <Notification />
         <header>
           <Header />
-          <DexIndicator className="mt-4 mb-10" dex={dex} ownLine />
+          <DexIndicator className="mt-5 mb-10" dex={dex} ownLine />
           <h3 className="mx-0 mt-0 mb-8">
             <Link
               className="text-16 text-gray-600 hover:cursor-pointer hover:text-gray-800 dark:hover:text-gray-700"
@@ -89,7 +89,7 @@ export function Dex({
             >
               /u/{username}
             </Link>
-            <DonatedFlair className="ml-4 h-15 align-middle" user={user} />
+            <DonatedFlair className="ml-5 h-15 align-middle" user={user} />
           </h3>
           <FriendCode />
         </header>

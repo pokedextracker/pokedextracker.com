@@ -132,7 +132,9 @@
      size, as it does with zoom. One unit is a sixteenth of a rem, which is
      1px at the browser's default of 16px, so a size reads as its pixels
      there (mt-15 is 15px, text-14 is 14px). Borders, corners and shadows
-     stay in px, as fine details. */
+     stay in px, as fine details. Padding, margins and gaps keep to a scale:
+     2, 3, 5, 8, 10, 15, 20, 25, 30, 40, 50, 60 and 100. Other values are
+     measurements, like a field's room for its icon or the nav's height. */
   --spacing: 0.0625rem;
 
   /* The type scale, named by each size in px at the default font size. 5, 8

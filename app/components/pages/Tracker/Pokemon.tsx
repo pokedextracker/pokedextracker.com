@@ -242,7 +242,7 @@ export function Pokemon({
         className={mobileClassName(capture.captured)}
         onClick={handleSetCapturedClick}
       >
-        <div className="min-w-52 px-6 py-0 text-center">
+        <div className="min-w-52 px-5 py-0 text-center">
           <i className={iconClass(capture.pokemon, dex, circle)} />
         </div>
         <h4 className="m-0 grow text-20 font-normal">

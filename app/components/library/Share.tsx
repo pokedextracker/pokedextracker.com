@@ -25,7 +25,7 @@ export function Share({ profile }: Props) {
     >
       Share this {profile ? "Profile" : "Living Dex"}:
       <input
-        className={formControlClassName("mt-5 p-6 text-12")}
+        className={formControlClassName("mt-5 p-5 text-12")}
         onClick={handleClick}
         readOnly
         ref={inputRef}

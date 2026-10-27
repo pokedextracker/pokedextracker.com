@@ -109,7 +109,7 @@ export function MarkAllButton({ captures }: Props) {
     <button
       className={buttonClassName(
         "blue",
-        "ml-10 block w-auto self-center px-12 py-8 text-10 print:hidden",
+        "ml-10 block w-auto self-center px-10 py-8 text-10 print:hidden",
       )}
       disabled={isPending}
       onClick={handleButtonClick}

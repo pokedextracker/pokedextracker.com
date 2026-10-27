@@ -83,7 +83,7 @@ export function Profile() {
               <div
                 className={buttonClassName(
                   "blue",
-                  "inline-block w-200 p-12 text-11 max-500:w-full",
+                  "inline-block w-200 p-10 text-11 max-500:w-full",
                 )}
                 onClick={handleCreateNewDexClick}
               >

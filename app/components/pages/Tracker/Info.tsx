@@ -173,9 +173,9 @@ export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
       </div>
 
       <div className={mainClassName(showInfo)} data-testid="info-main">
-        <div className="flex shrink-0 items-center border-b-2 border-info-edge bg-info pt-17 pr-17 pb-17 pl-8">
+        <div className="flex shrink-0 items-center border-b-2 border-info-edge bg-info pt-15 pr-15 pb-15 pl-8">
           <i
-            className={`${iconClass(pokemon, dex, infoIconCircle)} mx-12 my-0`}
+            className={`${iconClass(pokemon, dex, infoIconCircle)} mx-10 my-0`}
           />
           <h1 className="m-0 grow text-32 font-medium" data-testid="info-name">
             <PokemonName name={pokemon.name} />
