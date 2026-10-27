@@ -403,7 +403,7 @@ export function Register() {
             <div className={rowColumn}>
               <h2 className={formHeading}>
                 First Dex Info
-                <Tooltip className="bottom-3 ml-7" icon={faQuestionCircle}>
+                <Tooltip className="bottom-3 ml-8" icon={faQuestionCircle}>
                   You can track multiple dexes on our app! This sets the
                   settings for the first dex on your account.
                 </Tooltip>

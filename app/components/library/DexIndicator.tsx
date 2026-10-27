@@ -15,7 +15,7 @@ interface Props {
   ownLine?: boolean;
 }
 
-const label = tw`rounded-3 bg-gray-100 px-6 py-4 font-secondary text-10 font-medium uppercase dark:bg-night-04dp`;
+const label = tw`rounded-3 bg-gray-100 px-5 py-5 font-secondary text-10 font-medium uppercase dark:bg-night-04dp`;
 
 export function DexIndicator({ className, dex, ownLine = false }: Props) {
   const star = dex.shiny && (
@@ -25,13 +25,13 @@ export function DexIndicator({ className, dex, ownLine = false }: Props) {
       title="Shiny"
     />
   );
-  const tagClassName = ownLine ? label : `${label} ml-7`;
+  const tagClassName = ownLine ? label : `${label} ml-8`;
 
   return (
     <div
       className={
         ownLine
-          ? `flex flex-wrap items-center gap-x-7 gap-y-4 ${className}`
+          ? `flex flex-wrap items-center gap-x-8 gap-y-5 ${className}`
           : className
       }
     >

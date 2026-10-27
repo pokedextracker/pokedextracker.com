@@ -12,8 +12,11 @@ export function FormWarning({ message }: Props) {
     return null;
   }
 
+  // Beside the field rather than its whole group: the padding skips the
+  // label's line and gap (formLabel's mb-8), so the warning centers on the
+  // input.
   return (
-    <div className="absolute bottom-0 -left-23 flex h-full items-center pt-21">
+    <div className="absolute bottom-0 -left-23 flex h-full items-center pt-22">
       <Tooltip
         className="ml-0"
         data-testid="form-warning"

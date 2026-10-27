@@ -23,7 +23,7 @@ export function Alert({ className, message, type }: Props) {
   return (
     <div
       className={classNames(
-        "relative mb-20 border-2 border-solid p-11 text-center text-14 dark:bg-night-02dp dark:text-white",
+        "relative mb-20 border-2 border-solid p-10 text-center text-14 dark:bg-night-02dp dark:text-white",
         types[type],
         className,
       )}
