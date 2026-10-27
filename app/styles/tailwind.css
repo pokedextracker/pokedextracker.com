@@ -135,7 +135,9 @@
      stay in px, as fine details. */
   --spacing: 0.0625rem;
 
-  /* Named by their size in px at the default font size. */
+  /* The type scale, named by each size in px at the default font size. 5, 8
+     and 9 are for icons: the footer's dots, the shiny star and the select's
+     chevron. */
   --text-*: initial;
   --text-5: 0.3125rem;
   --text-8: 0.5rem;
@@ -143,18 +145,13 @@
   --text-10: 0.625rem;
   --text-11: 0.6875rem;
   --text-12: 0.75rem;
-  --text-13: 0.8125rem;
   --text-14: 0.875rem;
   --text-15: 0.9375rem;
   --text-16: 1rem;
-  --text-17: 1.0625rem;
   --text-20: 1.25rem;
   --text-25: 1.5625rem;
-  --text-30: 1.875rem;
   --text-32: 2rem;
-  --text-35: 2.1875rem;
   --text-40: 2.5rem;
-  --text-45: 2.8125rem;
   --text-50: 3.125rem;
   --text-60: 3.75rem;
 

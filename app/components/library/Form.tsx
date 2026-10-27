@@ -6,7 +6,7 @@ import { tw } from "../../utils/tw";
 export const formPage = tw`flex flex-[1_0_auto] flex-col items-center overflow-y-auto px-0 pt-50 pb-100`;
 
 // The form page's title.
-export const formTitle = tw`mb-17 text-heading`;
+export const formTitle = tw`mb-17 text-32 text-heading`;
 
 // A form slides up into place.
 export const form = tw`relative top-60 animate-slide-fast`;
@@ -15,7 +15,7 @@ export const form = tw`relative top-60 animate-slide-fast`;
 export const formColumn = tw`mx-auto my-0 w-280`;
 
 // A heading between fields, and text under them.
-export const formHeading = tw`mx-0 mt-30 mb-15 text-center first:mt-0`;
+export const formHeading = tw`mx-0 mt-30 mb-15 text-center text-25 first:mt-0`;
 export const formText = tw`mx-0 mt-20 mb-0 text-center text-14`;
 
 // A field: its label, its input, and the icon in the input.
@@ -37,7 +37,7 @@ export const inputIcon = tw`absolute right-15 bottom-16 text-10 text-yellow-400`
 export const selectIcon = tw`absolute right-15 bottom-17 text-9 text-blue-600`;
 
 // A note across from a field's label, like the URL a title makes.
-export const formNote = tw`relative bottom-2 float-right w-240 truncate text-right text-13 text-gray-400`;
+export const formNote = tw`relative bottom-2 float-right w-240 truncate text-right text-12 text-gray-400`;
 
 // One option in a list of radios or checkboxes.
 export const formOption = tw`mb-5 flex`;

@@ -62,7 +62,7 @@ export function Header({ profile = false }: Props) {
 
   return (
     <div className="flex items-center">
-      <h1 className="relative m-0 inline-block text-40 text-strong max-750:text-30">
+      <h1 className="relative m-0 inline-block text-40 text-strong max-750:text-32">
         {title.slice(0, lastSpace + 1)}
         <span className="whitespace-nowrap">
           {title.slice(lastSpace + 1)}

@@ -180,7 +180,7 @@ export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
           <h1 className="m-0 grow text-32 font-medium" data-testid="info-name">
             <PokemonName name={pokemon.name} />
           </h1>
-          <h2 className="m-0 font-secondary text-17 font-normal">
+          <h2 className="m-0 font-secondary text-16 font-normal">
             #
             {padding(
               dex.dex_type.tags.includes("regional")
