@@ -370,10 +370,11 @@
   }
 }
 
-/* The old stylesheets' breakpoints, exactly. Tailwind's max-* variants use
-   width < N rather than max-width: N, a pixel off. Widest first: utilities
-   come out in this order, so a narrower one wins where both apply, as the
-   later rule did in the old stylesheets. They're for screens: a Letter or A4
+/* Three breakpoints: tablets (1100), phones (750) and small phones (400), at
+   the old stylesheets' widths. Tailwind's max-* variants use width < N rather
+   than max-width: N, a pixel off. Widest first: utilities come out in this
+   order, so a narrower one wins where both apply, as the later rule did in
+   the old stylesheets. They're for screens: a Letter or A4
    page is narrower than 751px after its margins, but a printout gets the
    desktop layout (min-751 includes print) rather than the phone's. Each is
    named for its width in px at the default font size, and written in em, so
@@ -382,10 +383,6 @@
    panel's default (use-local-storage-context) checks max-1100 in code too. */
 @custom-variant max-1100 (@media screen and (max-width: 68.75em));
 @custom-variant max-750 (@media screen and (max-width: 46.875em));
-@custom-variant max-700 (@media screen and (max-width: 43.75em));
-@custom-variant max-600 (@media screen and (max-width: 37.5em));
-@custom-variant max-550 (@media screen and (max-width: 34.375em));
-@custom-variant max-500 (@media screen and (max-width: 31.25em));
 @custom-variant max-400 (@media screen and (max-width: 25em));
 /* The block form, since the short form would split the query at its
    comma. Wider than max-750 rather than at least 751px, which at a bigger

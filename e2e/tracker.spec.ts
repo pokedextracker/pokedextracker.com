@@ -63,13 +63,14 @@ test("a dex prints as a grid of its boxes", async ({ page, request }) => {
 
   await page.emulateMedia({ media: "print" });
   // Six to a row: the sixth shares the first's row, and the seventh starts
-  // the next.
-  const first = await tile(page, "Chikorita").boundingBox();
-  const sixth = await tile(page, "Emboar").boundingBox();
-  const seventh = await tile(page, "Totodile").boundingBox();
-  expect(sixth?.y).toBe(first?.y);
-  expect(seventh?.y).toBeGreaterThan(first?.y ?? 0);
-  expect(seventh?.x).toBe(first?.x);
+  // the next. A row is about 77px tall at the printout's 70%, where WebKit
+  // can round one tile a pixel off from the next, so "the same" is under 2px.
+  const first = (await tile(page, "Chikorita").boundingBox())!;
+  const sixth = (await tile(page, "Emboar").boundingBox())!;
+  const seventh = (await tile(page, "Totodile").boundingBox())!;
+  expect(Math.abs(sixth.y - first.y)).toBeLessThan(2);
+  expect(seventh.y - first.y).toBeGreaterThan(first.height / 2);
+  expect(Math.abs(seventh.x - first.x)).toBeLessThan(2);
   await expect(tile(page, "Chikorita")).toHaveCSS(
     "print-color-adjust",
     "exact",

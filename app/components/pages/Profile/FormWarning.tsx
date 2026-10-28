@@ -22,7 +22,7 @@ export function FormWarning({ message }: Props) {
         data-testid="form-warning"
         icon={faExclamationTriangle}
         iconClassName="text-10 text-red-500"
-        textClassName="max-550:-ml-20 max-550:after:left-20"
+        textClassName="max-750:-ml-20 max-750:after:left-20"
         variant="error"
       >
         {message}
