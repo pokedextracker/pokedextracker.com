@@ -370,10 +370,11 @@
   }
 }
 
-/* The old stylesheets' breakpoints, exactly. Tailwind's max-* variants use
-   width < N rather than max-width: N, a pixel off. Widest first: utilities
-   come out in this order, so a narrower one wins where both apply, as the
-   later rule did in the old stylesheets. They're for screens: a Letter or A4
+/* Three breakpoints: tablets (1100), phones (750) and small phones (400), at
+   the old stylesheets' widths. Tailwind's max-* variants use width < N rather
+   than max-width: N, a pixel off. Widest first: utilities come out in this
+   order, so a narrower one wins where both apply, as the later rule did in
+   the old stylesheets. They're for screens: a Letter or A4
    page is narrower than 751px after its margins, but a printout gets the
    desktop layout (min-751 includes print) rather than the phone's. Each is
    named for its width in px at the default font size, and written in em, so
