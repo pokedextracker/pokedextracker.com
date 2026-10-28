@@ -18,8 +18,9 @@ import { TooltipText } from "./Tooltip";
 
 const nav = tw`relative flex flex-[0_0_2.625rem] bg-nav font-secondary`;
 
-// What every link in the nav has, the dropdown's included.
-const base = tw`p-14 text-11 font-bold tracking-1 text-strong uppercase no-underline transition-all duration-100 ease-out no-touch:hover:cursor-pointer no-touch:hover:text-nav-text-hover no-touch:focus-visible:cursor-pointer max-750:px-10 max-750:text-10`;
+// What every link in the nav has, the dropdown's included. They fill the
+// nav's height, so the focus ring sits just inside them.
+const base = tw`p-14 text-11 font-bold tracking-1 text-strong uppercase no-underline transition-all duration-100 ease-out focus-visible:-outline-offset-4 no-touch:hover:cursor-pointer no-touch:hover:text-nav-text-hover no-touch:focus-visible:cursor-pointer max-750:px-10 max-750:text-10`;
 
 // The links along the nav, which light up on hover or keyboard focus on devices
 // without touch.

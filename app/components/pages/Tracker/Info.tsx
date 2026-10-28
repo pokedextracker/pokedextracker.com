@@ -69,8 +69,9 @@ function mainClassName(showInfo: boolean): string {
   );
 }
 
-// The links to Bulbapedia and Serebii, side by side, and their arrows.
-const footerLink = tw`w-1/2 border-info-edge bg-info-link p-20 text-center font-secondary text-11 font-bold tracking-1 text-white uppercase no-underline transition-all duration-100 ease-out no-touch:hover:bg-info-link-hover no-touch:focus-visible:bg-info-link-hover`;
+// The links to Bulbapedia and Serebii, side by side, and their arrows. They
+// fill the panel's bottom edge, so the focus ring sits just inside them.
+const footerLink = tw`w-1/2 border-info-edge bg-info-link p-20 text-center font-secondary text-11 font-bold tracking-1 text-white uppercase no-underline transition-all duration-100 ease-out focus-visible:-outline-offset-4 no-touch:hover:bg-info-link-hover no-touch:focus-visible:bg-info-link-hover`;
 const footerIcon = tw`ml-3 text-10 transition-all duration-100 ease-out`;
 
 export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
