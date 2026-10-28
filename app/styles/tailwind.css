@@ -382,10 +382,6 @@
    panel's default (use-local-storage-context) checks max-1100 in code too. */
 @custom-variant max-1100 (@media screen and (max-width: 68.75em));
 @custom-variant max-750 (@media screen and (max-width: 46.875em));
-@custom-variant max-700 (@media screen and (max-width: 43.75em));
-@custom-variant max-600 (@media screen and (max-width: 37.5em));
-@custom-variant max-550 (@media screen and (max-width: 34.375em));
-@custom-variant max-500 (@media screen and (max-width: 31.25em));
 @custom-variant max-400 (@media screen and (max-width: 25em));
 /* The block form, since the short form would split the query at its
    comma. Wider than max-750 rather than at least 751px, which at a bigger

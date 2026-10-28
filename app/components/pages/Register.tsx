@@ -61,7 +61,7 @@ import { Tooltip } from "../library/Tooltip";
 // The account and dex columns, side by side unless the screen is narrow. The
 // last field in each has no space under it while they're side by side.
 const rowColumn = tw`mx-15 my-0 w-280`;
-const rowGroup = tw`${formGroup} last:mb-0 max-600:last:mb-25`;
+const rowGroup = tw`${formGroup} last:mb-0 max-750:last:mb-25`;
 
 export function Register() {
   const navigate = useNavigate();
@@ -315,7 +315,7 @@ export function Register() {
             />
           </div>
 
-          <div className="flex max-600:block">
+          <div className="flex max-750:block">
             <div className={rowColumn}>
               <h2 className={formHeading}>Account Info</h2>
               <div className={rowGroup}>

@@ -59,7 +59,7 @@ export function DexPreview({ dex }: Props) {
           </div>
         )}
         <DexIndicator
-          className="ml-auto shrink-0 pl-30 max-500:hidden"
+          className="ml-auto shrink-0 pl-30 max-400:hidden"
           dex={dex}
         />
       </div>
