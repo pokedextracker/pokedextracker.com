@@ -58,10 +58,16 @@ export function DexPreview({ dex }: Props) {
             )}
           </div>
         )}
+        {/* Beside the title where there's room, and on a line of their own
+            under it on a phone, as on the dex's own page, so a long tag
+            doesn't squeeze the title. */}
         <DexIndicator
-          className="ml-auto shrink-0 pl-30 max-400:hidden"
+          className="ml-auto shrink-0 pl-30 max-750:hidden"
           dex={dex}
         />
+      </div>
+      <div className="hidden max-750:block">
+        <DexIndicator className="mb-10" dex={dex} ownLine />
       </div>
       <div className="flex justify-between">
         <Progress caught={dex.caught} total={dex.total} />
