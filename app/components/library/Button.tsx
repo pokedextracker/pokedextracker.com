@@ -4,11 +4,11 @@ import classNames from "classnames";
 
 import { tw } from "../../utils/tw";
 
-// Each color darkens on hover or focus, on devices without touch.
+// Each color darkens on hover or keyboard focus, on devices without touch.
 const colors = {
-  blue: tw`bg-button-blue text-white no-touch:hover:bg-button-blue-hover no-touch:focus:bg-button-blue-hover`,
-  white: tw`bg-button-white text-button-white-text no-touch:hover:bg-button-white-hover no-touch:focus:bg-button-white-hover`,
-  yellow: tw`bg-button-yellow text-button-yellow-text no-touch:hover:bg-button-yellow-hover no-touch:focus:bg-button-yellow-hover`,
+  blue: tw`bg-button-blue text-white no-touch:hover:bg-button-blue-hover no-touch:focus-visible:bg-button-blue-hover`,
+  white: tw`bg-button-white text-button-white-text no-touch:hover:bg-button-white-hover no-touch:focus-visible:bg-button-white-hover`,
+  yellow: tw`bg-button-yellow text-button-yellow-text no-touch:hover:bg-button-yellow-hover no-touch:focus-visible:bg-button-yellow-hover`,
 };
 
 // A button's size and place: by default, as wide as what it's in.
@@ -21,7 +21,7 @@ export function buttonClassName(
   layout = buttonLayout,
 ): string {
   return classNames(
-    "relative rounded-none border-0 font-secondary font-bold tracking-1 uppercase no-underline transition-all duration-100 ease-out no-touch:hover:cursor-pointer no-touch:focus:cursor-pointer",
+    "relative rounded-none border-0 font-secondary font-bold tracking-1 uppercase no-underline transition-all duration-100 ease-out no-touch:hover:cursor-pointer no-touch:focus-visible:cursor-pointer",
     colors[color],
     layout,
   );

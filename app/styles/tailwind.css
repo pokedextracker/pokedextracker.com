@@ -26,8 +26,18 @@
     box-sizing: border-box;
   }
 
-  *:focus {
+  /* Keyboard focus shows a ring, in the focus role's color, just outside the
+     element. A mouse click doesn't: browsers only match :focus-visible when
+     focus should show (a text field always counts, since it takes typing).
+     It reads --focus itself rather than --color-focus, which resolves once at
+     the root, so a part of the page can set its own (the info panel does). */
+  :focus {
     outline: 0;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
   }
 
   body {
@@ -236,6 +246,8 @@
   --color-link-hover: var(--link-hover);
   --color-muted-link: var(--muted-link);
   --color-muted-link-hover: var(--muted-link-hover);
+  /* The ring around what has keyboard focus. */
+  --color-focus: var(--focus);
   /* Errors, and the link that deletes a dex. */
   --color-danger: var(--danger);
   --color-danger-hover: var(--danger-hover);
@@ -282,6 +294,7 @@
     --link-hover: var(--color-blue-700);
     --muted-link: var(--color-gray-800);
     --muted-link-hover: var(--color-black);
+    --focus: var(--color-blue-500);
     --danger: var(--color-red-500);
     --danger-hover: var(--color-red-600);
     --info: var(--color-blue-600);
@@ -325,6 +338,7 @@
       --link-hover: var(--color-blue-400);
       --muted-link: var(--color-gray-600);
       --muted-link-hover: var(--color-gray-700);
+      --focus: var(--color-blue-300);
       --danger: var(--color-red-800);
       --danger-hover: var(--color-red-900);
       --info: var(--color-blue-800);

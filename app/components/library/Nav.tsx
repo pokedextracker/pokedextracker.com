@@ -19,18 +19,18 @@ import { TooltipText } from "./Tooltip";
 const nav = tw`relative flex flex-[0_0_2.625rem] bg-nav font-secondary`;
 
 // What every link in the nav has, the dropdown's included.
-const base = tw`p-14 text-11 font-bold tracking-1 text-strong uppercase no-underline transition-all duration-100 ease-out no-touch:hover:cursor-pointer no-touch:hover:text-nav-text-hover no-touch:focus:cursor-pointer max-750:px-10 max-750:text-10`;
+const base = tw`p-14 text-11 font-bold tracking-1 text-strong uppercase no-underline transition-all duration-100 ease-out no-touch:hover:cursor-pointer no-touch:hover:text-nav-text-hover no-touch:focus-visible:cursor-pointer max-750:px-10 max-750:text-10`;
 
-// The links along the nav, which light up on hover or focus on devices
+// The links along the nav, which light up on hover or keyboard focus on devices
 // without touch.
-const navLink = tw`${base} flex items-center no-touch:hover:bg-nav-hover no-touch:focus:bg-nav-hover no-touch:focus:text-nav-text-hover`;
+const navLink = tw`${base} flex items-center no-touch:hover:bg-nav-hover no-touch:focus-visible:bg-nav-hover no-touch:focus-visible:text-nav-text-hover`;
 
 // The logo, which pushes the rest of the links to the right.
 const logo = tw`${navLink} mr-auto`;
 
 // The username, which opens the dropdown. It lights up while the dropdown is
 // hovered, on touch devices too.
-const toggle = tw`${base} flex items-center group-hover/dropdown:bg-nav-raised no-touch:focus:bg-nav-raised no-touch:focus:text-nav-text-hover`;
+const toggle = tw`${base} flex items-center group-hover/dropdown:bg-nav-raised no-touch:focus-visible:bg-nav-raised no-touch:focus-visible:text-nav-text-hover`;
 
 // The dropdown's links.
 const item = tw`${base} block truncate border-t-2 border-t-nav bg-nav-raised hover:bg-nav-raised-hover`;
