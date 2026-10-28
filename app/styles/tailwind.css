@@ -212,7 +212,7 @@
    The values are the palette colors above, a few of them see-through (written
    out, since Tailwind's opacity modifier mixes to slightly different colors);
    dark: is left for the few places whose night color is their own. A -hover role is what its base turns on
-   hover or focus. A new role takes a line in each of the three lists below,
+   hover or keyboard focus. A new role takes a line in each of the three lists below,
    in the same order. */
 @theme inline {
   /* Text, and the page behind it, along with what sits flat on the page: the

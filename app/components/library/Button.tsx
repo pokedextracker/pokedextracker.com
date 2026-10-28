@@ -21,7 +21,7 @@ export function buttonClassName(
   layout = buttonLayout,
 ): string {
   return classNames(
-    "relative rounded-none border-0 font-secondary font-bold tracking-1 uppercase no-underline transition-all duration-100 ease-out no-touch:hover:cursor-pointer no-touch:focus-visible:cursor-pointer",
+    "relative rounded-none border-0 font-secondary font-bold tracking-1 uppercase no-underline transition-all duration-100 ease-out no-touch:hover:cursor-pointer",
     colors[color],
     layout,
   );
