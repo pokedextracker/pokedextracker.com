@@ -1,11 +1,6 @@
 {
   "name": "pokedextracker.com",
-  "version": "2.9.0",
   "description": "A website to track your completion of a Living Pokedex",
-  "main": "app/index.tsx",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
     "build": "vite build; result=$?; touch internal/webapp/dist/.gitkeep; [ $result -eq 0 ] && pnpm build:version",
     "build:version": "date > internal/webapp/dist/version",
@@ -60,14 +55,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/robinjoseph08/pokedextracker.com.git"
+    "url": "git+https://github.com/pokedextracker/pokedextracker.com.git"
   },
   "author": "Robin Joseph <robin.joseph@me.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/robinjoseph08/pokedextracker.com/issues"
+    "url": "https://github.com/pokedextracker/pokedextracker.com/issues"
   },
-  "homepage": "https://github.com/robinjoseph08/pokedextracker.com#readme",
+  "homepage": "https://pokedextracker.com",
   "engines": {
     "node": ">=26"
   }
