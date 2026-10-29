@@ -192,6 +192,7 @@ function AccountForm({ sessionUser }: AccountFormProps) {
             <input
               className={formControlClassName()}
               id="friend_code_3ds"
+              inputMode="numeric"
               name="friend_code_3ds"
               onChange={handleFriendCode3dsChange}
               placeholder="XXXX-XXXX-XXXX"
@@ -206,6 +207,7 @@ function AccountForm({ sessionUser }: AccountFormProps) {
             <input
               className={formControlClassName()}
               id="friend_code_switch"
+              inputMode="numeric"
               name="friend_code_switch"
               onChange={handleFriendCodeSwitchChange}
               placeholder="SW-XXXX-XXXX-XXXX"
