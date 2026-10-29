@@ -92,6 +92,15 @@ test("the info panel shows the chosen Pokémon", async ({ page, request }) => {
   await expect(page.getByTestId("info-main")).toContainText("Level Up to 16");
 });
 
+test("the tab's title is the dex's", async ({ page, request }) => {
+  const user = await createUser(request, "Shiny Hunt");
+  await page.goto(`/u/${user.username}/${user.slug}`);
+
+  await expect(page).toHaveTitle(
+    `${user.username}'s Shiny Hunt | Pokédex Tracker`,
+  );
+});
+
 test("someone else's dex is read-only", async ({ page, request }) => {
   const owner = await createUser(request);
   const visitor = await createUser(request);
