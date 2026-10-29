@@ -110,6 +110,38 @@ test("a token for a user who doesn't exist here counts as signed out", async ({
     .toBeNull();
 });
 
+test("a token that can't be read counts as signed out", async ({
+  page,
+  request,
+}) => {
+  const user = await createUser(request);
+  await plantToken(page, "not-a-token");
+  await page.goto(`/u/${user.username}`);
+
+  await expect(
+    page.locator("nav").getByRole("link", { name: "Login", exact: true }),
+  ).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem("token")))
+    .toBeNull();
+});
+
+// A token's payload is base64url, whose - and _ plain base64 doesn't have.
+test("a token with base64url's own characters still signs in", async ({
+  page,
+  request,
+}) => {
+  const user = await createUser(request);
+  let token = user.token;
+  for (let i = 0; !/[-_]/.test(token.split(".")[1]); i++) {
+    token = withPayload(user.token, { note: "?".repeat(i) });
+  }
+  await plantToken(page, token);
+  await page.goto(`/u/${user.username}`);
+
+  await expect(page.getByTestId("nav-dropdown")).toBeVisible();
+});
+
 test("logging in again after the database changed sticks", async ({
   page,
   request,

@@ -72,13 +72,15 @@ export const SessionProvider = ({ children }: Props) => {
 
   // A token from another database, like staging's, can name a user who has a
   // different id here, or who doesn't exist here at all. It isn't a login for
-  // this site, so it counts as signed out and is cleared. A server error
-  // doesn't count, so an outage can't sign anyone out.
+  // this site, so it counts as signed out and is cleared, as does a token that
+  // can't be read at all. A server error doesn't count, so an outage can't
+  // sign anyone out.
   const stale = Boolean(
-    tokenSession &&
-    !tokenUserIsFetching &&
-    ((tokenUser && tokenUser.id !== tokenSession.id) ||
-      isNotFound(tokenUserError)),
+    (token && !tokenSession) ||
+    (tokenSession &&
+      !tokenUserIsFetching &&
+      ((tokenUser && tokenUser.id !== tokenSession.id) ||
+        isNotFound(tokenUserError))),
   );
   const clearToken = useEffectEvent(() => setToken(null));
   useEffect(() => {
