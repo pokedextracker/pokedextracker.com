@@ -197,10 +197,22 @@ func blogProxy(rawURL string) (echo.HandlerFunc, error) {
 		return nil, errors.Errorf("invalid blog URL %q", rawURL)
 	}
 	proxy := &httputil.ReverseProxy{
-		Director: func(r *http.Request) {
-			r.URL.Scheme = target.Scheme
-			r.URL.Host = target.Host
-			r.Host = target.Host
+		Rewrite: func(r *httputil.ProxyRequest) {
+			r.SetURL(target)
+			// Rewrite drops the forwarding headers the request came in with.
+			// They're passed on as they were, with the visitor's address added
+			// to X-Forwarded-For.
+			for _, name := range []string{"Forwarded", "X-Forwarded-Host", "X-Forwarded-Proto"} {
+				if values, ok := r.In.Header[name]; ok {
+					r.Out.Header[name] = values
+				}
+			}
+			if clientIP, _, err := net.SplitHostPort(r.In.RemoteAddr); err == nil {
+				if prior := r.In.Header["X-Forwarded-For"]; len(prior) > 0 {
+					clientIP = strings.Join(prior, ", ") + ", " + clientIP
+				}
+				r.Out.Header.Set("X-Forwarded-For", clientIP)
+			}
 		},
 		// An unreachable blog is the upstream's problem, not a server error,
 		// so it's logged rather than reported.

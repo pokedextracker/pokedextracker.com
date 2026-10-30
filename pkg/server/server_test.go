@@ -194,7 +194,7 @@ func blogServer(t *testing.T, upstream string) (*httptest.Server, func() []error
 	e.Use(recovery.Middleware())
 	var mutex sync.Mutex
 	var reported []error
-	e.HTTPErrorHandler = func(err error, c echo.Context) {
+	e.HTTPErrorHandler = func(err error, _ echo.Context) {
 		mutex.Lock()
 		defer mutex.Unlock()
 		reported = append(reported, err)
@@ -235,8 +235,34 @@ func TestBlogVisitorsLeavingMidResponseAreNotErrors(t *testing.T) {
 	assert.Empty(t, reported(), "a visitor leaving a blog page isn't reported as an error")
 }
 
-func TestBlogUpstreamBreakingMidResponseIsReported(t *testing.T) {
+func TestBlogSeesItsOwnHostAndTheForwardingHeaders(t *testing.T) {
+	var seen *http.Request
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		seen = r.Clone(r.Context())
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer upstream.Close()
+	srv, _ := blogServer(t, upstream.URL)
+
+	request, err := http.NewRequestWithContext(t.Context(), http.MethodGet, srv.URL+"/blog/post/?page=2", nil)
+	require.NoError(t, err)
+	request.Header.Set("X-Forwarded-For", "203.0.113.7")
+	request.Header.Set("X-Forwarded-Proto", "https")
+	request.Header.Set("X-Forwarded-Host", "pokedextracker.com")
+	response, err := http.DefaultClient.Do(request)
+	require.NoError(t, err)
+	_ = response.Body.Close()
+
+	require.NotNil(t, seen)
+	assert.Equal(t, strings.TrimPrefix(upstream.URL, "http://"), seen.Host)
+	assert.Equal(t, "/blog/post/?page=2", seen.URL.RequestURI())
+	assert.Equal(t, "203.0.113.7, 127.0.0.1", seen.Header.Get("X-Forwarded-For"))
+	assert.Equal(t, "https", seen.Header.Get("X-Forwarded-Proto"))
+	assert.Equal(t, "pokedextracker.com", seen.Header.Get("X-Forwarded-Host"))
+}
+
+func TestBlogUpstreamBreakingMidResponseIsReported(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Length", "100000")
 		w.WriteHeader(http.StatusOK)
 		_, _ = io.WriteString(w, "partial")
