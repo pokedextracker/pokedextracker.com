@@ -280,7 +280,8 @@ func captureReference(ctx context.Context, lastRun string, playwright func(conte
 		if err := take(ctx, playwright, "--last-failed", "--update-snapshots=all"); err != nil {
 			return err
 		}
-		if err := os.WriteFile(lastRun, failedTests, 0o600); err != nil {
+		// G703: lastRun is under this checkout's tmp/visual, not a path from input.
+		if err := os.WriteFile(lastRun, failedTests, 0o600); err != nil { //nolint:gosec
 			return fmt.Errorf("restore the failed reference screenshots: %w", err)
 		}
 		verify = []string{"--retries=0", "--last-failed"}
@@ -552,7 +553,9 @@ func runSingleProcess(ctx context.Context, root string, environment []string, na
 // newProcess starts the command in its own process group so stopping it also
 // stops anything it spawned, like the binary Air rebuilds.
 func newProcess(root string, environment []string, name string, args ...string) *exec.Cmd {
-	command := exec.Command(name, args...)
+	// Not CommandContext: stopping signals the whole process group so it can
+	// shut down cleanly, where a canceled context would kill only the command.
+	command := exec.Command(name, args...) //nolint:noctx
 	command.Dir = root
 	command.Env = environment
 	command.Stdin = os.Stdin

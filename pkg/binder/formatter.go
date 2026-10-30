@@ -17,8 +17,8 @@ const (
 	gte      = "gte"
 	gtfield  = "gtfield"
 	ltfield  = "ltfield"
-	max      = "max"
-	min      = "min"
+	maximum  = "max"
+	minimum  = "min"
 	ne       = "ne"
 	oneof    = "oneof"
 	required = "required"
@@ -69,7 +69,7 @@ func formatValidationError(err validator.FieldError) string {
 		// FIXME: err.Param() will return the struct field, not the JSON version
 		// e.g. EndTime, not end_time
 		return fmt.Sprintf("%q must be less than %s", field, err.Param())
-	case max:
+	case maximum:
 		resource := "character"
 		if err.Kind() == reflect.Slice {
 			resource = "element"
@@ -80,7 +80,7 @@ func formatValidationError(err validator.FieldError) string {
 		}
 
 		return fmt.Sprintf("%q length must be less than or equal to %s %s", field, err.Param(), resource)
-	case min:
+	case minimum:
 		resource := "character"
 		if err.Kind() == reflect.Slice {
 			resource = "element"

@@ -67,8 +67,8 @@ func (svc *Service) UpdateSession(ctx context.Context, session *Session, opts Up
 
 func (svc *Service) SignSession(_ context.Context, session *Session) (string, error) {
 	// We set values on the attached claims object.
-	session.RegisteredClaims.IssuedAt = jwt.NewNumericDate(time.Now())
-	session.RegisteredClaims.Issuer = "pokedextracker_api"
+	session.IssuedAt = jwt.NewNumericDate(time.Now())
+	session.Issuer = "pokedextracker_api"
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, session)
 	signed, err := token.SignedString(svc.config.JWTSecret)
@@ -80,7 +80,7 @@ func (svc *Service) SignSession(_ context.Context, session *Session) (string, er
 }
 
 func (svc *Service) ParseToken(_ context.Context, signed string) (*Session, error) {
-	token, err := jwt.ParseWithClaims(signed, &Session{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(signed, &Session{}, func(*jwt.Token) (any, error) {
 		return svc.config.JWTSecret, nil
 	})
 	if err != nil {

@@ -128,7 +128,7 @@ func (a *App) start(ctx context.Context, env Environment, args []string) error {
 		return errors.New("start accepts at most one mode")
 	}
 	if len(args) == 1 {
-		mode = args[0]
+		mode = args[0] //nolint:gosec // G602: there's exactly one argument.
 	}
 	switch mode {
 	case startAll, startAir, startAPI, startWeb, startWebStaging, startPreview:
@@ -501,7 +501,7 @@ func (a *App) visual(ctx context.Context, env Environment, args []string) error 
 	}
 	browser, ref := args[0], defaultVisualRef
 	if len(args) == 2 {
-		ref = args[1]
+		ref = args[1] //nolint:gosec // G602: there are exactly two arguments.
 	}
 	var playwrightArgs []string
 	if browser != e2eAll {

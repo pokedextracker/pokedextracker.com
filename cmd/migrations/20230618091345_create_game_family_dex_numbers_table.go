@@ -99,9 +99,10 @@ func init() {
 
 				number := int(v.Elem().Int())
 
-				if region == "CoastalKalos" {
+				switch region {
+				case "CoastalKalos":
 					number += maxCentralKalosID
-				} else if region == "MountainKalos" {
+				case "MountainKalos":
 					number += maxCentralKalosID + maxCoastalKalosID
 				}
 
