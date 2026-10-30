@@ -67,16 +67,20 @@ function TrackerPage() {
 
   return (
     <TrackerContextProvider initialCaptures={captures}>
-      <TrackerInner initialSelectedPokemon={captures[0].pokemon.id} />
+      <TrackerInner
+        dexTitle={dex.title}
+        initialSelectedPokemon={captures[0].pokemon.id}
+      />
     </TrackerContextProvider>
   );
 }
 
 interface TrackerInnerProps {
+  dexTitle: string;
   initialSelectedPokemon: number;
 }
 
-function TrackerInner({ initialSelectedPokemon }: TrackerInnerProps) {
+function TrackerInner({ dexTitle, initialSelectedPokemon }: TrackerInnerProps) {
   const { username } = useUserParams();
 
   const trackerRef = useRef<HTMLDivElement>(null);
@@ -84,8 +88,8 @@ function TrackerInner({ initialSelectedPokemon }: TrackerInnerProps) {
   // Set here rather than while loading, so a dex that turns out not to exist
   // keeps the not found page's title.
   useEffect(() => {
-    document.title = `${username}'s Living Dex | Pokédex Tracker`;
-  }, [username]);
+    document.title = `${username}'s ${dexTitle} | Pokédex Tracker`;
+  }, [username, dexTitle]);
 
   const [query, setQuery] = useState("");
   const [hideCaught, setHideCaught] = useState(false);

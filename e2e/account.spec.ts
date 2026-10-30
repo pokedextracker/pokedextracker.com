@@ -17,3 +17,25 @@ test("saving a friend code shows it on the profile", async ({
   await page.goto(`/u/${user.username}`);
   await expect(page.getByText("SW-1234-5678-9012")).toBeVisible();
 });
+
+// A friend code is only ever digits after its SW-, so anything else typed in
+// is dropped, along with digits past the 12th.
+test("friend codes keep only their digits", async ({ page, request }) => {
+  const user = await createUser(request);
+  await signIn(page, user);
+  await page.goto("/account");
+  // Phones show a number pad for them.
+  for (const id of ["#friend_code_3ds", "#friend_code_switch"]) {
+    await expect(page.locator(id)).toHaveAttribute("inputmode", "numeric");
+  }
+
+  await page.locator("#friend_code_3ds").pressSequentially("1a2b3-4567890123");
+  await expect(page.locator("#friend_code_3ds")).toHaveValue("1234-5678-9012");
+
+  await page
+    .locator("#friend_code_switch")
+    .pressSequentially("sw-1234x5678-90123");
+  await expect(page.locator("#friend_code_switch")).toHaveValue(
+    "SW-1234-5678-9012",
+  );
+});

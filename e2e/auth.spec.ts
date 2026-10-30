@@ -75,6 +75,17 @@ async function plantToken(page: Page, token: string) {
   await page.evaluate((value) => localStorage.setItem("token", value), token);
 }
 
+// expectSignedOut checks the page counts as signed out, and that the token it
+// was given is cleared.
+async function expectSignedOut(page: Page) {
+  await expect(
+    page.locator("nav").getByRole("link", { name: "Login", exact: true }),
+  ).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem("token")))
+    .toBeNull();
+}
+
 test("a token whose user has a different id here counts as signed out", async ({
   page,
   request,
@@ -83,15 +94,10 @@ test("a token whose user has a different id here counts as signed out", async ({
   await plantToken(page, withPayload(user.token, { id: 987654 }));
   await page.goto(`/u/${user.username}/${user.slug}`);
 
-  await expect(
-    page.locator("nav").getByRole("link", { name: "Login", exact: true }),
-  ).toBeVisible();
+  await expectSignedOut(page);
   await expect(
     page.getByTestId("pokemon").filter({ hasText: "Chikorita" }),
   ).toHaveAttribute("data-read-only", "true");
-  await expect
-    .poll(() => page.evaluate(() => localStorage.getItem("token")))
-    .toBeNull();
 });
 
 test("a token for a user who doesn't exist here counts as signed out", async ({
@@ -102,12 +108,37 @@ test("a token for a user who doesn't exist here counts as signed out", async ({
   await plantToken(page, withPayload(user.token, { username: "e2e_nobody" }));
   await page.goto(`/u/${user.username}`);
 
-  await expect(
-    page.locator("nav").getByRole("link", { name: "Login", exact: true }),
-  ).toBeVisible();
-  await expect
-    .poll(() => page.evaluate(() => localStorage.getItem("token")))
-    .toBeNull();
+  await expectSignedOut(page);
+});
+
+test("a token that can't be read counts as signed out", async ({
+  page,
+  request,
+}) => {
+  const user = await createUser(request);
+  await plantToken(page, "not-a-token");
+  await page.goto(`/u/${user.username}`);
+
+  await expectSignedOut(page);
+});
+
+// A token's payload is base64url, whose - and _ plain base64 doesn't have.
+test("a token with base64url's own characters still signs in", async ({
+  page,
+  request,
+}) => {
+  const user = await createUser(request);
+  // Padding the payload with ?s shifts where its bytes fall, and a ? in the
+  // right place encodes as _, so a few at most give a payload with one.
+  let token = user.token;
+  for (let i = 1; !/[-_]/.test(token.split(".")[1]); i++) {
+    expect(i, "a payload with - or _").toBeLessThan(10);
+    token = withPayload(user.token, { note: "?".repeat(i) });
+  }
+  await plantToken(page, token);
+  await page.goto(`/u/${user.username}`);
+
+  await expect(page.getByTestId("nav-dropdown")).toBeVisible();
 });
 
 test("logging in again after the database changed sticks", async ({

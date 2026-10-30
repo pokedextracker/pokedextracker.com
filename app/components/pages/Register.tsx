@@ -377,6 +377,7 @@ export function Register() {
                 <input
                   className={formControlClassName()}
                   id="friend_code_3ds"
+                  inputMode="numeric"
                   name="friend_code_3ds"
                   onChange={handleFriendCode3dsChange}
                   placeholder="XXXX-XXXX-XXXX"
@@ -391,6 +392,7 @@ export function Register() {
                 <input
                   className={formControlClassName()}
                   id="friend_code_switch"
+                  inputMode="numeric"
                   name="friend_code_switch"
                   onChange={handleFriendCodeSwitchChange}
                   placeholder="SW-XXXX-XXXX-XXXX"

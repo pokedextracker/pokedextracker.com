@@ -1,5 +1,5 @@
-const FRIEND_CODE_3DS_REGEX = /(\d{4})(?=\d)/g;
-const FRIEND_CODE_SWITCH_REGEX = /(^[a-zA-Z]{2}|\d{4})(?=\d)/g;
+// A dash after every 4 digits but the last.
+const FRIEND_CODE_GROUPS_REGEX = /(\d{4})(?=\d)/g;
 
 export function capitalize(input: string): string {
   return input.replace(
@@ -12,28 +12,22 @@ export function decimal(number: number, precision: number): string {
   return number.toFixed(precision);
 }
 
+// A friend code keeps only its 12 digits, as they're typed, in groups of 4.
 export function friendCode3dsFormatter(code: string): string {
-  return code.replace(FRIEND_CODE_3DS_REGEX, "$1-");
+  return code
+    .replace(/\D/g, "")
+    .slice(0, 12)
+    .replace(FRIEND_CODE_GROUPS_REGEX, "$1-");
 }
 
+// A Switch one has SW- in front. Typing SW- itself is left alone, and anything
+// else gets SW- put in front of its digits.
 export function friendCodeSwitchFormatter(code: string): string {
-  if (!code) {
-    return code;
+  const upperCode = code.toUpperCase();
+  if ("SW-".startsWith(upperCode)) {
+    return upperCode;
   }
-
-  let upperCode = code.toUpperCase();
-
-  // Allow the user to type in `SW-`, but if they start typing something else
-  // in, force `SW-` in front of whatever it was that they were typing. This
-  // will make it so that if they follow the formatting rules, nothing will
-  // self-correct, but if they don't, it will.
-  ["S", "W", "-"].forEach((letter, i) => {
-    if (upperCode[i] && upperCode[i] !== letter) {
-      upperCode = upperCode.slice(0, i) + letter + upperCode.slice(i);
-    }
-  });
-
-  return upperCode.replace(FRIEND_CODE_SWITCH_REGEX, "$1-");
+  return `SW-${friendCode3dsFormatter(code)}`;
 }
 
 export function padding(

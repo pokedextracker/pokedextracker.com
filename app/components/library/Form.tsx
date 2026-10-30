@@ -23,8 +23,10 @@ export const formGroup = tw`relative mb-25`;
 export const formLabel = tw`mb-8 block font-secondary text-11 font-bold tracking-1 uppercase`;
 
 // A text input or select's size in a field, which leaves room on the right
-// for an icon. Its text starts 10px in, unless something sits on its left.
-export const fieldSize = tw`h-43 py-0 pr-32 text-15`;
+// for an icon. Its text starts 10px in, unless something sits on its left. On
+// phones it's 16px, since a phone that can zoom zooms in on a field with any
+// smaller text when it's tapped.
+export const fieldSize = tw`h-43 py-0 pr-32 text-15 max-750:text-16`;
 
 // formControlClassName styles a text input or select, by default at its size
 // in a field.

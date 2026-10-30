@@ -7,7 +7,7 @@ import {
 
 import type { Session, User } from "../../types";
 import { API, type PokedexTrackerError } from "../../utils/api";
-import { tokenToUser } from "../../utils/state";
+import { sessionFromToken } from "../../utils/state";
 
 export enum QueryKey {
   RetrieveUser = "RetrieveUser",
@@ -52,7 +52,7 @@ export const useCreateUser = () => {
     {
       mutationFn: async ({ payload }) => {
         const { token } = await API.post<{ token: string }>("/users", payload);
-        return tokenToUser(token) as Session;
+        return sessionFromToken(token);
       },
     },
   );
@@ -79,7 +79,7 @@ export const useUpdateUser = () => {
           `/users/${username}`,
           payload,
         );
-        return tokenToUser(token) as Session;
+        return sessionFromToken(token);
       },
       onSuccess: (_data, { username }) => {
         queryClient.invalidateQueries({
