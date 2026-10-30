@@ -261,16 +261,25 @@ func TestBlogSeesItsOwnHostAndTheForwardingHeaders(t *testing.T) {
 	assert.Equal(t, "pokedextracker.com", seen.Header.Get("X-Forwarded-Host"))
 }
 
-func TestClientIPIsTheAddressFlyAdds(t *testing.T) {
+func TestClientIPIsTheOneFlySees(t *testing.T) {
 	extract := clientIP()
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	request.RemoteAddr = "172.16.45.18:51234"
+	// What Fly sends: the visitor's address, and X-Forwarded-For ending in the
+	// app's own address.
+	request.Header.Set("Fly-Client-IP", "107.131.100.242")
+	request.Header.Set("X-Forwarded-For", "107.131.100.242, 66.241.124.130")
 
-	request.Header.Set("X-Forwarded-For", "198.51.100.1, 203.0.113.7")
-	assert.Equal(t, "203.0.113.7", extract(request), "the visitor sent the first address, Fly added the last")
+	assert.Equal(t, "107.131.100.242", extract(request))
 
-	request.Header.Del("X-Forwarded-For")
-	assert.Equal(t, "172.16.45.18", extract(request), "without the header, it's the connection's")
+	request.Header.Set("Fly-Client-IP", "2001:db8::1")
+	assert.Equal(t, "2001:db8::1", extract(request), "an IPv6 visitor's address")
+
+	request.Header.Set("Fly-Client-IP", "not an address")
+	assert.Equal(t, "172.16.45.18", extract(request), "a header that isn't an address is ignored")
+
+	request.Header.Del("Fly-Client-IP")
+	assert.Equal(t, "172.16.45.18", extract(request), "without the header, like in development, it's the connection's")
 }
 
 func TestBlogURLPathIsNotJoinedOn(t *testing.T) {

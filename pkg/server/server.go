@@ -190,11 +190,18 @@ func redirectWWW(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 // clientIP reads a visitor's address for c.RealIP() (kept as a user's last IP)
-// from X-Forwarded-For: the last address in it that isn't a private one, which
-// is the one Fly's proxy adds. Earlier addresses come from the visitor and can
-// be anything. Without the header, like in development, it's the connection's.
+// from Fly-Client-IP, which Fly's proxy sets to the address it took the
+// connection from. X-Forwarded-For won't do: a visitor can put anything at its
+// start, and Fly puts the app's own address at its end. Without the header,
+// like in development, it's the connection's address.
 func clientIP() echo.IPExtractor {
-	return echo.ExtractIPFromXFFHeader()
+	direct := echo.ExtractIPDirect()
+	return func(r *http.Request) string {
+		if ip := r.Header.Get("Fly-Client-IP"); net.ParseIP(ip) != nil {
+			return ip
+		}
+		return direct(r)
+	}
 }
 
 // blogProxy forwards /blog to the hosted Ghost blog, which is set up to live
