@@ -272,6 +272,9 @@ func TestClientIPIsTheOneFlySees(t *testing.T) {
 
 	assert.Equal(t, "107.131.100.242", extract(request))
 
+	request.Header.Set("Fly-Client-IP", "2001:db8::1")
+	assert.Equal(t, "2001:db8::1", extract(request), "an IPv6 visitor's address")
+
 	request.Header.Set("Fly-Client-IP", "not an address")
 	assert.Equal(t, "172.16.45.18", extract(request), "a header that isn't an address is ignored")
 
