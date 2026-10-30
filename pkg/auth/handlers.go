@@ -7,7 +7,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"github.com/pokedextracker/pokedextracker.com/pkg/errcodes"
-	"github.com/robinjoseph08/golib/pointerutil"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -43,7 +42,7 @@ func (h *handler) create(c echo.Context) error {
 	options := UpdateSessionOptions{
 		Columns: []string{},
 	}
-	session.LastLogin = pointerutil.Time(time.Now())
+	session.LastLogin = new(time.Now())
 	options.Columns = append(options.Columns, "last_login")
 	ip := c.RealIP()
 	if ip != "" {

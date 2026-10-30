@@ -15,7 +15,7 @@ func (err *Error) Error() string {
 	return err.Message
 }
 
-func (err *Error) As(target interface{}) bool {
+func (err *Error) As(target any) bool {
 	te, ok := target.(*Error)
 	if !ok {
 		return false

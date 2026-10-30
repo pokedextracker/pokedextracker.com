@@ -61,7 +61,7 @@ func registerAnalytics(e *echo.Echo, rawURL string) error {
 		return errors.Errorf("invalid Umami URL %q", rawURL)
 	}
 
-	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport := http.DefaultTransport.(*http.Transport).Clone() //nolint:forcetypeassert // The standard library's default always is one.
 	// Umami runs on a home server. If it's slow or down, give up instead of
 	// holding the visitor's request open.
 	transport.ResponseHeaderTimeout = 10 * time.Second

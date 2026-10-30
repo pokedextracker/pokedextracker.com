@@ -8,10 +8,10 @@ import (
 	"strings"
 )
 
-// VisualFailure means the visual comparison specs ran and some didn't pass,
-// as opposed to the site, Docker, or Playwright's setup failing. Each list
-// names tests as "[project] describe › title".
-type VisualFailure struct {
+// VisualFailureError means the visual comparison specs ran and some didn't
+// pass, as opposed to the site, Docker, or Playwright's setup failing. Each
+// list names tests as "[project] describe › title".
+type VisualFailureError struct {
 	// Differ are screenshots that didn't match on any attempt.
 	Differ []string
 	// Failed are tests that failed before or apart from their screenshot,
@@ -29,11 +29,11 @@ type VisualFailure struct {
 
 // onlyInterrupted reports whether every test that didn't pass was cut off,
 // rather than failing or differing.
-func (f *VisualFailure) onlyInterrupted() bool {
+func (f *VisualFailureError) onlyInterrupted() bool {
 	return len(f.Interrupted) > 0 && len(f.Differ)+len(f.Failed)+len(f.Flaky) == 0
 }
 
-func (f *VisualFailure) Error() string {
+func (f *VisualFailureError) Error() string {
 	var parts []string
 	if n := len(f.Differ); n > 0 {
 		parts = append(parts, fmt.Sprintf("%d differ", n))
@@ -119,7 +119,7 @@ func (r *playwrightReport) failure(runErr error) (retried []string, err error) {
 	if len(r.Errors) > 0 {
 		return nil, fmt.Errorf("playwright: %s", firstLine(r.Errors[0].Message))
 	}
-	var failure VisualFailure
+	var failure VisualFailureError
 	for _, test := range r.tests() {
 		switch test.outcome() {
 		case outcomeDiffer:
@@ -343,7 +343,7 @@ func lastStep(message string) string {
 		return ""
 	}
 	last := ""
-	for _, line := range strings.Split(log, "\n") {
+	for line := range strings.SplitSeq(log, "\n") {
 		step, ok := strings.CutPrefix(strings.TrimSpace(line), "- ")
 		if ok && !strings.HasPrefix(step, "Timeout ") {
 			last = step

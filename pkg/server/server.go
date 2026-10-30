@@ -33,6 +33,14 @@ import (
 
 var healthResponse = []byte(`{"healthy":true}`)
 
+// Echo reads its not found handler from a package variable (in its router, its
+// groups, and each request's context), with no setting for one server, so it's
+// set once here rather than by every server, which would race when two are made
+// at once.
+func init() {
+	echo.NotFoundHandler = notFoundHandler
+}
+
 // New builds the server for the whole site: the API under /api, the /blog and
 // /stats proxies, and the embedded frontend for everything else.
 func New(cfg *config.Config, db *pg.DB) (*http.Server, error) {
@@ -105,7 +113,6 @@ func newServer(cfg *config.Config, db *pg.DB, frontend http.Handler) (*http.Serv
 		e.HEAD("/*", echo.WrapHandler(frontend))
 	}
 
-	echo.NotFoundHandler = notFoundHandler
 	e.HTTPErrorHandler = errcodes.NewHandler().Handle
 
 	srv := &http.Server{

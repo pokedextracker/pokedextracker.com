@@ -15,6 +15,8 @@ import (
 )
 
 func TestRunSingleProcessReportsInterruption(t *testing.T) {
+	t.Parallel()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		time.Sleep(200 * time.Millisecond)
@@ -24,11 +26,13 @@ func TestRunSingleProcessReportsInterruption(t *testing.T) {
 	started := time.Now()
 	err := runSingleProcess(ctx, t.TempDir(), os.Environ(), "sleep", "30")
 
-	assert.ErrorIs(t, err, context.Canceled, "an interrupted one-shot command didn't succeed")
+	require.ErrorIs(t, err, context.Canceled, "an interrupted one-shot command didn't succeed")
 	assert.Less(t, time.Since(started), 10*time.Second, "the child is stopped, not waited out")
 }
 
 func TestServerExitTreatsInterruptionAsANormalStop(t *testing.T) {
+	t.Parallel()
+
 	assert.NoError(t, serverExit(context.Canceled))
 	assert.NoError(t, serverExit(fmt.Errorf("air: %w", context.Canceled)))
 	assert.NoError(t, serverExit(nil))
@@ -42,6 +46,7 @@ func TestServerExitTreatsInterruptionAsANormalStop(t *testing.T) {
 // Playwright does, so --last-failed picks up what failed ("register"). It
 // lists each run's arguments, with what --last-failed picked up.
 func fakePlaywright(t *testing.T, lastRun string, results ...error) (func(context.Context, ...string) error, *[]string) {
+	t.Helper()
 	var runs []string
 	return func(_ context.Context, args ...string) error {
 		command := strings.Join(args, " ")
@@ -63,8 +68,10 @@ func fakePlaywright(t *testing.T, lastRun string, results ...error) (func(contex
 }
 
 func TestCaptureReferenceRetakesWhatDoesNotReproduce(t *testing.T) {
+	t.Parallel()
+
 	lastRun := filepath.Join(t.TempDir(), ".last-run.json")
-	playwright, runs := fakePlaywright(t, lastRun, nil, &VisualFailure{Differ: []string{"register"}}, nil, nil)
+	playwright, runs := fakePlaywright(t, lastRun, nil, &VisualFailureError{Differ: []string{"register"}}, nil, nil)
 
 	require.NoError(t, captureReference(context.Background(), lastRun, playwright))
 
@@ -77,6 +84,8 @@ func TestCaptureReferenceRetakesWhatDoesNotReproduce(t *testing.T) {
 }
 
 func TestCaptureReferenceGivesUpOnAReferenceThatNeverReproduces(t *testing.T) {
+	t.Parallel()
+
 	lastRun := filepath.Join(t.TempDir(), ".last-run.json")
 	require.NoError(t, os.WriteFile(lastRun, []byte("register"), 0o644))
 	runs := 0
@@ -85,20 +94,22 @@ func TestCaptureReferenceGivesUpOnAReferenceThatNeverReproduces(t *testing.T) {
 		if strings.Contains(strings.Join(args, " "), "update-snapshots") {
 			return nil
 		}
-		return &VisualFailure{Differ: []string{"register"}}
+		return &VisualFailureError{Differ: []string{"register"}}
 	}
 
 	err := captureReference(context.Background(), lastRun, playwright)
 
-	var failure *VisualFailure
-	assert.ErrorAs(t, err, &failure)
+	var failure *VisualFailureError
+	require.ErrorAs(t, err, &failure)
 	assert.Equal(t, 1+referenceAttempts+(referenceAttempts-1), runs, "a capture, then each check, with a retake between checks")
 }
 
 func TestCaptureReferenceRetakesWhatABusyMachineCutOff(t *testing.T) {
+	t.Parallel()
+
 	lastRun := filepath.Join(t.TempDir(), ".last-run.json")
-	cutOff := &VisualFailure{Interrupted: []string{"register"}}
-	playwright, runs := fakePlaywright(t, lastRun, cutOff, nil, &VisualFailure{Differ: []string{"register"}}, cutOff, nil, nil)
+	cutOff := &VisualFailureError{Interrupted: []string{"register"}}
+	playwright, runs := fakePlaywright(t, lastRun, cutOff, nil, &VisualFailureError{Differ: []string{"register"}}, cutOff, nil, nil)
 
 	require.NoError(t, captureReference(context.Background(), lastRun, playwright))
 
@@ -113,7 +124,9 @@ func TestCaptureReferenceRetakesWhatABusyMachineCutOff(t *testing.T) {
 }
 
 func TestCaptureReferenceDoesNotRetakeAFailure(t *testing.T) {
-	for _, failure := range []*VisualFailure{
+	t.Parallel()
+
+	for _, failure := range []*VisualFailureError{
 		{Failed: []string{"register"}},
 		{Failed: []string{"register"}, Interrupted: []string{"login"}},
 	} {
@@ -122,26 +135,30 @@ func TestCaptureReferenceDoesNotRetakeAFailure(t *testing.T) {
 
 		err := captureReference(context.Background(), lastRun, playwright)
 
-		assert.ErrorIs(t, err, failure)
+		require.ErrorIs(t, err, failure)
 		assert.Equal(t, []string{"--update-snapshots=all"}, *runs, "a test that fails would only fail again")
 	}
 }
 
 func TestCaptureReferenceGivesUpOnScreenshotsItNeverTakes(t *testing.T) {
+	t.Parallel()
+
 	runs := 0
 	playwright := func(context.Context, ...string) error {
 		runs++
-		return &VisualFailure{Interrupted: []string{"register"}}
+		return &VisualFailureError{Interrupted: []string{"register"}}
 	}
 
 	err := captureReference(context.Background(), filepath.Join(t.TempDir(), ".last-run.json"), playwright)
 
-	var failure *VisualFailure
-	assert.ErrorAs(t, err, &failure)
+	var failure *VisualFailureError
+	require.ErrorAs(t, err, &failure)
 	assert.Equal(t, referenceAttempts, runs, "a capture, then retakes until the attempts run out")
 }
 
 func TestCaptureReferenceStopsOnOtherErrors(t *testing.T) {
+	t.Parallel()
+
 	runs := 0
 	playwright := func(context.Context, ...string) error {
 		runs++
@@ -153,11 +170,13 @@ func TestCaptureReferenceStopsOnOtherErrors(t *testing.T) {
 
 	err := captureReference(context.Background(), filepath.Join(t.TempDir(), ".last-run.json"), playwright)
 
-	assert.EqualError(t, err, "docker exited: exit status 125")
+	require.EqualError(t, err, "docker exited: exit status 125")
 	assert.Equal(t, 2, runs)
 }
 
 func TestServerEnvironmentAlwaysSetsTheTokenNamespace(t *testing.T) {
+	t.Parallel()
+
 	assert.Contains(t, serverEnvironment(Servers{TokenNamespace: "feature_1a2b3c4d"}), "POKEDEXTRACKER_TOKEN_NAMESPACE=feature_1a2b3c4d")
 	assert.Contains(t, serverEnvironment(Servers{}), "POKEDEXTRACKER_TOKEN_NAMESPACE=", "an empty one still overrides the shell's")
 }

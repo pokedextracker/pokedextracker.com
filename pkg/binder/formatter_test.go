@@ -22,13 +22,15 @@ func (e *mockFieldError) Namespace() string                { return "" }
 func (e *mockFieldError) StructNamespace() string          { return "" }
 func (e *mockFieldError) Field() string                    { return e.field }
 func (e *mockFieldError) StructField() string              { return "" }
-func (e *mockFieldError) Value() interface{}               { return "" }
+func (e *mockFieldError) Value() any                       { return "" }
 func (e *mockFieldError) Param() string                    { return e.param }
-func (e *mockFieldError) Kind() reflect.Kind               { return reflect.TypeOf("").Kind() }
-func (e *mockFieldError) Type() reflect.Type               { return reflect.TypeOf("") }
+func (e *mockFieldError) Kind() reflect.Kind               { return reflect.TypeFor[string]().Kind() }
+func (e *mockFieldError) Type() reflect.Type               { return reflect.TypeFor[string]() }
 func (e *mockFieldError) Translate(_ ut.Translator) string { return "" }
 
 func TestFormatValidationError(t *testing.T) {
+	t.Parallel()
+
 	cases := []struct {
 		tag, param, msg string
 	}{

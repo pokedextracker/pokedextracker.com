@@ -80,6 +80,8 @@ func analyticsServer(t *testing.T, umamiURL string) http.Handler {
 }
 
 func TestAnalyticsForwardsTheScript(t *testing.T) {
+	t.Parallel()
+
 	upstream, seen := fakeUmami(t)
 	h := analyticsServer(t, upstream.URL)
 
@@ -100,6 +102,8 @@ func TestAnalyticsForwardsTheScript(t *testing.T) {
 }
 
 func TestAnalyticsForwardsEvents(t *testing.T) {
+	t.Parallel()
+
 	upstream, seen := fakeUmami(t)
 	h := analyticsServer(t, upstream.URL)
 	payload := `{"type":"event","payload":{"website":"site-1","url":"/u/ash"}}`
@@ -132,6 +136,8 @@ func TestAnalyticsForwardsEvents(t *testing.T) {
 }
 
 func TestAnalyticsScriptRevalidationKeepsItsCaching(t *testing.T) {
+	t.Parallel()
+
 	upstream, _ := fakeUmami(t)
 	h := analyticsServer(t, upstream.URL)
 
@@ -142,6 +148,8 @@ func TestAnalyticsScriptRevalidationKeepsItsCaching(t *testing.T) {
 }
 
 func TestAnalyticsOnlyForwardsTheTwoRoutes(t *testing.T) {
+	t.Parallel()
+
 	upstream, seen := fakeUmami(t)
 	h := analyticsServer(t, upstream.URL)
 
@@ -162,6 +170,8 @@ func TestAnalyticsOnlyForwardsTheTwoRoutes(t *testing.T) {
 }
 
 func TestAnalyticsRejectsLargeEvents(t *testing.T) {
+	t.Parallel()
+
 	upstream, seen := fakeUmami(t)
 	h := analyticsServer(t, upstream.URL)
 
@@ -174,6 +184,8 @@ func TestAnalyticsRejectsLargeEvents(t *testing.T) {
 }
 
 func TestUnreachableAnalyticsIsABadGateway(t *testing.T) {
+	t.Parallel()
+
 	upstream := httptest.NewServer(http.NotFoundHandler())
 	upstream.Close()
 	h := analyticsServer(t, upstream.URL)
@@ -185,6 +197,8 @@ func TestUnreachableAnalyticsIsABadGateway(t *testing.T) {
 }
 
 func TestAnalyticsAreOffWithoutBothSettings(t *testing.T) {
+	t.Parallel()
+
 	upstream, seen := fakeUmami(t)
 
 	for _, cfg := range []*config.Config{
@@ -201,6 +215,8 @@ func TestAnalyticsAreOffWithoutBothSettings(t *testing.T) {
 }
 
 func TestAnalyticsScript(t *testing.T) {
+	t.Parallel()
+
 	script := analyticsScript(&config.Config{UmamiURL: "https://umami.example.com", UmamiWebsiteID: `id"><script>alert(1)</script>`})
 
 	assert.True(t, strings.HasPrefix(script, `<script async src="/stats/script.js" data-website-id="`), "async, so a slow Umami can't hold up the app")
@@ -209,6 +225,8 @@ func TestAnalyticsScript(t *testing.T) {
 }
 
 func TestInvalidUmamiURL(t *testing.T) {
+	t.Parallel()
+
 	db := pg.Connect(&pg.Options{Addr: "127.0.0.1:1"})
 	t.Cleanup(func() { _ = db.Close() })
 	for _, raw := range []string{"umami.example.com", "://nope", "/relative"} {
@@ -218,6 +236,8 @@ func TestInvalidUmamiURL(t *testing.T) {
 }
 
 func TestAnalyticsAreTaggedWithTheVersion(t *testing.T) {
+	t.Parallel()
+
 	cfg := &config.Config{UmamiURL: "https://umami.example.com", UmamiWebsiteID: "site-1", Version: "08730e5"}
 	assert.Equal(t, `<script async src="/stats/script.js" data-website-id="site-1" data-tag="08730e5"></script>`, analyticsScript(cfg))
 

@@ -78,6 +78,8 @@ func reviewFixture(t *testing.T) (Environment, *playwrightReport) {
 }
 
 func TestVisualReviewSortsScreenshotsLikeTheTerminal(t *testing.T) {
+	t.Parallel()
+
 	env, report := reviewFixture(t)
 
 	review, err := buildVisualReview(env, "origin/master (abc1234)", report)
@@ -134,6 +136,8 @@ func TestVisualReviewSortsScreenshotsLikeTheTerminal(t *testing.T) {
 }
 
 func TestVisualReviewWritesThePage(t *testing.T) {
+	t.Parallel()
+
 	env, report := reviewFixture(t)
 
 	page, err := writeVisualReview(env, "origin/master (abc1234)", report)
@@ -155,6 +159,8 @@ func TestVisualReviewWritesThePage(t *testing.T) {
 }
 
 func TestVisualReviewSaysWhenThereAreNoScreenshots(t *testing.T) {
+	t.Parallel()
+
 	env := Environment{CurrentRoot: t.TempDir()}
 	report := writeReport(t, `{"errors": [], "suites": []}`)
 
@@ -168,6 +174,8 @@ func TestVisualReviewSaysWhenThereAreNoScreenshots(t *testing.T) {
 }
 
 func TestVisualReviewTrustsARetryThatMatched(t *testing.T) {
+	t.Parallel()
+
 	env := Environment{CurrentRoot: t.TempDir()}
 	report := writeReport(t, `{"errors": [], "suites": [{"title": "pages.spec.ts", "specs": [
 		{"title": "profile", "tests": [{"projectName": "chromium-desktop", "status": "flaky", "results": [

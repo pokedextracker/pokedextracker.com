@@ -29,7 +29,7 @@ func newMiddlewareFunction(authService *Service, shouldEnforce bool) echo.Middle
 		return func(c echo.Context) error {
 			ctx := c.Request().Context()
 
-			authHeader := c.Request().Header.Get("authorization")
+			authHeader := c.Request().Header.Get("Authorization")
 			if authHeader == "" {
 				if shouldEnforce {
 					return errcodes.MissingAuthentication()

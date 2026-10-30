@@ -6,35 +6,81 @@ run:
 linters:
   default: none
   enable:
+    - asasalint
+    - asciicheck
+    - bidichk
     - bodyclose
+    - containedctx
+    - contextcheck
     # Flags copies of loop variables, which each iteration has its own of.
     - copyloopvar
     - dogsled
-    - err113
+    - dupword
+    - durationcheck
     - errcheck
+    - errchkjson
+    - errname
+    - errorlint
     - exhaustive
+    - fatcontext
+    - forcetypeassert
+    - gocheckcompilerdirectives
     - gocritic
     - godot
-    - goheader
+    - gomoddirectives
     - gosec
+    - gosmopolitan
     - govet
+    - iface
+    - importas
     - ineffassign
+    - interfacebloat
+    - iotamixing
+    - makezero
+    - mirror
     - misspell
+    - modernize
+    - musttag
+    - nakedret
+    - nilerr
+    - nilnesserr
+    - nilnil
     - noctx
+    - nolintlint
+    - nosprintfhostport
+    - paralleltest
+    - predeclared
+    - reassign
     - revive
+    - rowserrcheck
+    - sqlclosecheck
     # Includes the simplification and style checks.
     - staticcheck
+    - testifylint
+    - thelper
+    - tparallel
     - unconvert
     - unparam
+    - unqueryvet
     - unused
+    - usestdlibvars
+    - usetesting
+    - wastedassign
     - whitespace
-
   settings:
+    exhaustive:
+      # A switch with a default case covers every value.
+      default-signifies-exhaustive: true
     gocritic:
       disabled-checks:
         - appendAssign
         - ifElseChain
         - singleCaseSwitch
+    paralleltest:
+      # Subtests can run in parallel, but don't have to.
+      ignore-missing-subtests: true
+      # Parallel tests clean up with t.Cleanup, which waits for their subtests.
+      check-cleanup: true
     gosec:
       excludes:
         - G108 # Profiling endpoint is automatically exposed
@@ -54,17 +100,11 @@ linters:
       # setting it to true intentionally if the host is localhost.
       - path: pkg/database/database.go
         text: G402 # checking for InsecureSkipVerify
-      # The dev launcher's errors are printed straight to a terminal rather than
-      # matched by callers, so sentinel errors would only add noise.
-      - path: (cmd/dev|internal/devtool)/
-        linters:
-          - err113
-        text: do not define dynamic errors
       # Ignore a bunch of linters for test files.
       - path: _test\.go
         linters:
-          - err113
           - errcheck
+          - forcetypeassert
           - gosec
           - noctx
       # The tableName struct field is used by go-pg, even if we don't use it

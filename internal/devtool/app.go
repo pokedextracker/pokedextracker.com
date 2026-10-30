@@ -11,6 +11,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -588,7 +589,7 @@ func (a *App) visual(ctx context.Context, env Environment, args []string) error 
 				return err
 			}
 		}
-		var failure *VisualFailure
+		var failure *VisualFailureError
 		if err != nil && !errors.As(err, &failure) {
 			return fmt.Errorf("%s: %w", side.name, err)
 		}
@@ -622,7 +623,7 @@ func (a *App) printVisualReview(env Environment, ref string) error {
 
 // visualFailure lists the specs that didn't pass on one side of a visual
 // comparison, and points at that side's report.
-func (a *App) visualFailure(env Environment, ref, side string, failure *VisualFailure) error {
+func (a *App) visualFailure(env Environment, ref, side string, failure *VisualFailureError) error {
 	report := "report"
 	if side == visualReference {
 		report = "report-reference"
@@ -665,12 +666,7 @@ func (a *App) lockBrowserTests(ctx context.Context, env Environment) (func(), er
 }
 
 func isE2EBrowser(name string) bool {
-	for _, browser := range e2eBrowsers {
-		if name == browser {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(e2eBrowsers, name)
 }
 
 // ensureDevelopmentDatabase creates this worktree's database if needed and

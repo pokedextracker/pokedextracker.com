@@ -1,7 +1,6 @@
 package config
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,40 +8,31 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
+
 	cfg, err := New()
 	require.NoError(t, err)
 	assert.NotNil(t, cfg, "returned config shouldn't be nil")
 }
 
+// Not parallel: it sets environment variables.
 func TestEnvironments(t *testing.T) {
-	originalEnv := os.Getenv(environmentENV)
-	defer func() {
-		err := os.Setenv(environmentENV, originalEnv)
-		require.NoError(t, err, "unexpected error restoring original environment")
-		err = os.Setenv("PORT", "")
-		require.NoError(t, err, "unexpected error clearing PORT env")
-	}()
-
-	envs := []string{"development", "staging", "production"}
-
-	for _, env := range envs {
-		err := os.Setenv(environmentENV, env)
-		require.NoError(t, err, "unexpected error overwriting environment")
+	for _, env := range []string{"development", "staging", "production"} {
+		t.Setenv(environmentENV, env)
 
 		cfg, err := New()
 		require.NoError(t, err)
-		assert.Equal(t, cfg.Environment, env, "incorrect environment")
+		assert.Equal(t, env, cfg.Environment, "incorrect environment")
 	}
 
-	err := os.Setenv(environmentENV, "development")
-	require.NoError(t, err, "unexpected error overwriting environment")
-	err = os.Setenv("PORT", "1234")
-	require.NoError(t, err, "unexpected error setting PORT env")
+	t.Setenv(environmentENV, "development")
+	t.Setenv("PORT", "1234")
 	cfg, err := New()
 	require.NoError(t, err)
 	assert.Equal(t, 1234, cfg.Port)
 }
 
+// Not parallel: it sets environment variables.
 func TestDatabaseOverrides(t *testing.T) {
 	for _, env := range []string{"development", "test"} {
 		t.Run(env, func(t *testing.T) {

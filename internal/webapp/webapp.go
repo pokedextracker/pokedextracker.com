@@ -181,12 +181,12 @@ func (f *file) gzip() []byte {
 // acceptsGzip reports whether the request's Accept-Encoding lists gzip with a
 // nonzero quality (gzip;q=0 means "not gzip").
 func acceptsGzip(r *http.Request) bool {
-	for _, part := range strings.Split(r.Header.Get("Accept-Encoding"), ",") {
+	for part := range strings.SplitSeq(r.Header.Get("Accept-Encoding"), ",") {
 		encoding, params, _ := strings.Cut(strings.TrimSpace(part), ";")
 		if !strings.EqualFold(strings.TrimSpace(encoding), "gzip") {
 			continue
 		}
-		for _, param := range strings.Split(params, ";") {
+		for param := range strings.SplitSeq(params, ";") {
 			key, value, _ := strings.Cut(strings.TrimSpace(param), "=")
 			if strings.EqualFold(strings.TrimSpace(key), "q") {
 				quality, err := strconv.ParseFloat(strings.TrimSpace(value), 64)

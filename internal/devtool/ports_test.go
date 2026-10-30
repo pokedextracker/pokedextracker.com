@@ -9,37 +9,39 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//nolint:paralleltest // It binds real ports, which tests running alongside could take.
 func TestFilePortAllocatorSkipsLeasedPorts(t *testing.T) {
 	allocator := &FilePortAllocator{LockRoot: t.TempDir()}
 	preferred := freePort(t)
 
 	first, err := allocator.Acquire(preferred)
 	require.NoError(t, err)
-	defer func() { _ = first.Close() }()
+	t.Cleanup(func() { _ = first.Close() })
 
 	second, err := allocator.Acquire(first.Port())
 	require.NoError(t, err)
-	defer func() { _ = second.Close() }()
+	t.Cleanup(func() { _ = second.Close() })
 
 	assert.Greater(t, second.Port(), first.Port(), "a leased port isn't handed out twice")
 
 	require.NoError(t, first.Close())
 	third, err := allocator.Acquire(first.Port())
 	require.NoError(t, err)
-	defer func() { _ = third.Close() }()
+	t.Cleanup(func() { _ = third.Close() })
 	assert.Equal(t, first.Port(), third.Port(), "a released port can be leased again")
 }
 
+//nolint:paralleltest // It binds real ports, which tests running alongside could take.
 func TestFilePortAllocatorSkipsPortsInUse(t *testing.T) {
 	listener, err := net.Listen("tcp4", "127.0.0.1:0")
 	require.NoError(t, err)
-	defer func() { _ = listener.Close() }()
+	t.Cleanup(func() { _ = listener.Close() })
 	busy := listener.Addr().(*net.TCPAddr).Port
 
 	allocator := &FilePortAllocator{LockRoot: t.TempDir()}
 	lease, err := allocator.Acquire(busy)
 	require.NoError(t, err)
-	defer func() { _ = lease.Close() }()
+	t.Cleanup(func() { _ = lease.Close() })
 
 	assert.NotEqual(t, busy, lease.Port())
 	assert.False(t, portAvailable(busy))

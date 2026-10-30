@@ -7,6 +7,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type params struct {
@@ -22,11 +23,15 @@ var (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
+
 	b, err := New()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, b)
 
 	t.Run("only allows application/json and application/x-www-form-urlencoded", func(tt *testing.T) {
+		tt.Parallel()
+
 		c := newContext(goodJSON, echo.MIMEApplicationXML)
 		p := params{}
 		err := b.Bind(&p, c)
@@ -34,14 +39,18 @@ func TestNew(t *testing.T) {
 	})
 
 	t.Run("allows charset to be passed in", func(tt *testing.T) {
+		tt.Parallel()
+
 		c := newContext(goodJSON, echo.MIMEApplicationJSON+"; charset=UTF-8")
 		p := params{}
 		err := b.Bind(&p, c)
-		assert.NoError(tt, err)
+		require.NoError(tt, err)
 		assert.Equal(tt, "world", p.Hello)
 	})
 
 	t.Run("disallows unknown fields", func(tt *testing.T) {
+		tt.Parallel()
+
 		c := newContext(unknownFieldsErrJSON, echo.MIMEApplicationJSON)
 		p := params{}
 		err := b.Bind(&p, c)
@@ -49,6 +58,8 @@ func TestNew(t *testing.T) {
 	})
 
 	t.Run("returns a good message for type errors", func(tt *testing.T) {
+		tt.Parallel()
+
 		c := newContext(typeErrJSON, echo.MIMEApplicationJSON)
 		p := params{}
 		err := b.Bind(&p, c)
@@ -56,6 +67,8 @@ func TestNew(t *testing.T) {
 	})
 
 	t.Run("names a list's field, not the item's index, in type errors", func(tt *testing.T) {
+		tt.Parallel()
+
 		c := newContext(`{"pokemon":[1,"x"]}`, echo.MIMEApplicationJSON)
 		p := struct {
 			Pokemon []int `json:"pokemon"`
@@ -65,14 +78,18 @@ func TestNew(t *testing.T) {
 	})
 
 	t.Run("use mod tag to modify params", func(tt *testing.T) {
+		tt.Parallel()
+
 		c := newContext(goodJSON, echo.MIMEApplicationJSON)
 		p := params{}
 		err := b.Bind(&p, c)
-		assert.NoError(tt, err)
+		require.NoError(tt, err)
 		assert.Equal(tt, "world", p.Hello)
 	})
 
 	t.Run("use validate tag to validate params", func(tt *testing.T) {
+		tt.Parallel()
+
 		c := newContext(validationErrJSON, echo.MIMEApplicationJSON)
 		p := params{}
 		err := b.Bind(&p, c)

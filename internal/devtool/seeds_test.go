@@ -11,12 +11,16 @@ import (
 )
 
 func TestSeedTablesNeverIncludeUserData(t *testing.T) {
+	t.Parallel()
+
 	for _, table := range seedTables {
 		assert.NotContains(t, []string{"users", "dexes", "captures", "migrations", "migration_lock", "game_family_dex_numbers"}, table)
 	}
 }
 
 func TestPullScriptIsReadOnlyAndOrdered(t *testing.T) {
+	t.Parallel()
+
 	script := pullScript("dex_types_pokemon", []string{"dex_type_id", "pokemon_id", "order"}, []string{"dex_type_id", "pokemon_id"})
 
 	assert.Contains(t, script, "TRANSACTION READ ONLY")
@@ -25,6 +29,8 @@ func TestPullScriptIsReadOnlyAndOrdered(t *testing.T) {
 }
 
 func TestSeedScript(t *testing.T) {
+	t.Parallel()
+
 	dir := t.TempDir()
 	for _, table := range seedTables {
 		contents := "id,name\n1,first\n"
@@ -48,6 +54,8 @@ func TestSeedScript(t *testing.T) {
 }
 
 func TestHasSeedsNeedsEveryTable(t *testing.T) {
+	t.Parallel()
+
 	dir := t.TempDir()
 	assert.False(t, hasSeeds(dir))
 	for _, table := range seedTables[:len(seedTables)-1] {
@@ -59,11 +67,13 @@ func TestHasSeedsNeedsEveryTable(t *testing.T) {
 }
 
 func TestProductionDatabaseURL(t *testing.T) {
+	t.Parallel()
+
 	env := Environment{MainRoot: t.TempDir()}
 	none := func(string) string { return "" }
 
 	_, err := productionDatabaseURL(env, none)
-	assert.ErrorContains(t, err, productionDatabaseURLEnv)
+	require.ErrorContains(t, err, productionDatabaseURLEnv)
 
 	require.NoError(t, os.WriteFile(filepath.Join(env.MainRoot, ".env"), []byte(
 		"# Deploy secrets\nROLLBAR_TOKEN=abc\nexport PRODUCTION_DATABASE_URL=\"postgres://u:p%40ss@db:5432/pdt?sslmode=require\"\n",
@@ -83,6 +93,8 @@ func TestProductionDatabaseURL(t *testing.T) {
 }
 
 func TestColumnDifferences(t *testing.T) {
+	t.Parallel()
+
 	missing, extra := columnDifferences([]string{"id", "name", "order"}, []string{"id", "order", "legacy"})
 	assert.Equal(t, []string{"name"}, missing)
 	assert.Equal(t, []string{"legacy"}, extra)
@@ -93,6 +105,8 @@ func TestColumnDifferences(t *testing.T) {
 }
 
 func TestPullOrderIsTotal(t *testing.T) {
+	t.Parallel()
+
 	assert.Equal(t,
 		[]string{"game_family_id", "pokemon_id", "regional", "value"},
 		pullOrder([]string{"game_family_id", "pokemon_id"}, []string{"game_family_id", "regional", "pokemon_id", "value"}),
@@ -100,6 +114,8 @@ func TestPullOrderIsTotal(t *testing.T) {
 }
 
 func TestReadEnvFileEdgeCases(t *testing.T) {
+	t.Parallel()
+
 	path := filepath.Join(t.TempDir(), ".env")
 	require.NoError(t, os.WriteFile(path, []byte(strings.Join([]string{
 		"# comment",
@@ -120,6 +136,8 @@ func TestReadEnvFileEdgeCases(t *testing.T) {
 }
 
 func TestConnectionEnvironment(t *testing.T) {
+	t.Parallel()
+
 	values, err := connectionEnvironment("postgres://reader:p%40ss%3Aw@db.example.com:5432/pokedex_tracker?sslmode=disable")
 	require.NoError(t, err)
 	assert.Equal(t, []string{
@@ -139,6 +157,8 @@ func TestConnectionEnvironment(t *testing.T) {
 }
 
 func TestPlural(t *testing.T) {
+	t.Parallel()
+
 	assert.Equal(t, "1 row", plural(1, "row", "rows"))
 	assert.Equal(t, "0 rows", plural(0, "row", "rows"))
 	assert.Equal(t, "2 rows", plural(2, "row", "rows"))

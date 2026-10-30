@@ -91,7 +91,7 @@ func (h *handler) create(c echo.Context) error {
 		FriendCodeSwitch: params.FriendCodeSwitch,
 		Password:         string(hash),
 		LastIP:           lastIP,
-		LastLogin:        pointerutil.Time(now),
+		LastLogin:        new(now),
 		Referrer:         params.Referrer,
 		DateCreated:      now,
 		DateModified:     now,
