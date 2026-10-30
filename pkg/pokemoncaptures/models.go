@@ -9,8 +9,8 @@ type Pokemon struct {
 	NationalID   int               `json:"national_id"`
 	Name         string            `json:"name"`
 	GameFamilyID string            `json:"-"`
-	GameFamily   *games.GameFamily `pg:"gf,rel:has-one" json:"game_family"`
-	Form         *string           `json:"form"`
-	Box          *string           `pg:"-" json:"box"`
+	GameFamily   *games.GameFamily `pg:"gf,rel:has-one" json:"game_family" tstype:",required"`
+	Form         *string           `json:"form" tstype:"string | null,required"`
+	Box          *string           `pg:"-" json:"box" tstype:"string | null,required"`
 	DexNumber    int               `pg:"-" json:"dex_number"`
 }

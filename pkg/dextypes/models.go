@@ -31,7 +31,7 @@ type DexTypePokemon struct {
 
 	DexTypeID int     `json:"dex_type_id"`
 	PokemonID int     `json:"pokemon_id"`
-	Box       *string `json:"box"`
+	Box       *string `json:"box" tstype:"string | null,required"`
 	Order     int     `json:"order"`
 	DexNumber int     `json:"dex_number"`
 }
