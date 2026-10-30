@@ -291,7 +291,7 @@ func TestClientIPIsTheOneFlySees(t *testing.T) {
 	request.RemoteAddr = "172.16.45.18:51234"
 	// What Fly sends: the visitor's address, and X-Forwarded-For ending in the
 	// app's own address.
-	request.Header.Set("Fly-Client-Ip", "107.131.100.242")
+	request.Header.Set("Fly-Client-IP", "107.131.100.242")
 	request.Header.Set("X-Forwarded-For", "107.131.100.242, 66.241.124.130")
 
 	assert.Equal(t, "107.131.100.242", extract(request))

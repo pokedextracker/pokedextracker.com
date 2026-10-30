@@ -264,11 +264,11 @@ func (d *DockerDatabase) Clone(ctx context.Context, env Environment, source, tar
 	// Ctrl+C in the terminal doesn't reach them either. Cleanup is registered
 	// before the staging database is created, since an interrupt can report
 	// failure for a createdb that actually succeeded.
-	background := context.WithoutCancel(ctx)
+	cleanup := context.WithoutCancel(ctx)
 	stagePresent := true
 	defer func() {
 		if stagePresent {
-			_ = d.drop(background, env, stage)
+			_ = d.drop(cleanup, env, stage)
 		}
 	}()
 	if err := d.Create(ctx, env, stage); err != nil {
@@ -288,13 +288,13 @@ func (d *DockerDatabase) Clone(ctx context.Context, env Environment, source, tar
 		if backup, err = stagingDatabaseName(); err != nil {
 			return err
 		}
-		if err := d.disconnectAndRename(background, env, target, backup); err != nil {
+		if err := d.disconnectAndRename(cleanup, env, target, backup); err != nil {
 			return fmt.Errorf("move database %s aside: %w", target, err)
 		}
 	}
-	if err := d.rename(background, env, stage, target); err != nil {
+	if err := d.rename(cleanup, env, stage, target); err != nil {
 		if backup != "" {
-			if restoreErr := d.rename(background, env, backup, target); restoreErr != nil {
+			if restoreErr := d.rename(cleanup, env, backup, target); restoreErr != nil {
 				return errors.Join(
 					fmt.Errorf("install cloned database: %w", err),
 					fmt.Errorf("restore original database %s from %s: %w", target, backup, restoreErr),
@@ -307,7 +307,7 @@ func (d *DockerDatabase) Clone(ctx context.Context, env Environment, source, tar
 	if backup != "" {
 		// The clone itself succeeded, so a leftover backup is only worth a
 		// warning.
-		if err := d.drop(background, env, backup); err != nil {
+		if err := d.drop(cleanup, env, backup); err != nil {
 			d.printf("Warning: couldn't remove the replaced database %s: %v\n", backup, err)
 		}
 	}

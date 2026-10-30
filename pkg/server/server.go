@@ -33,8 +33,10 @@ import (
 
 var healthResponse = []byte(`{"healthy":true}`)
 
-// Echo reads its not found handler from a package variable, so it's set once
-// rather than by every server, which would race when two are made at once.
+// Echo reads its not found handler from a package variable (in its router, its
+// groups, and each request's context), with no setting for one server, so it's
+// set once here rather than by every server, which would race when two are made
+// at once.
 func init() {
 	echo.NotFoundHandler = notFoundHandler
 }
@@ -202,7 +204,7 @@ func redirectWWW(next echo.HandlerFunc) echo.HandlerFunc {
 func clientIP() echo.IPExtractor {
 	direct := echo.ExtractIPDirect()
 	return func(r *http.Request) string {
-		if ip := r.Header.Get("Fly-Client-Ip"); net.ParseIP(ip) != nil {
+		if ip := r.Header.Get("Fly-Client-IP"); net.ParseIP(ip) != nil {
 			return ip
 		}
 		return direct(r)

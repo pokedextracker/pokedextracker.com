@@ -58,8 +58,8 @@ type ProcessManager interface {
 	// Visual serves the production build of site on port against target, and
 	// runs the visual comparison specs from tests against it with args, as
 	// side (visualReference or visualBranch). Specs that don't pass come back
-	// as a *VisualFailureError. Either way, it returns the tests that passed only
-	// after retrying a hiccup, like a dropped connection.
+	// as a *VisualFailureError. Either way, it returns the tests that passed
+	// only after retrying a hiccup, like a dropped connection.
 	Visual(ctx context.Context, site, tests Environment, target DatabaseTarget, port int, side string, args ...string) (retried []string, err error)
 }
 

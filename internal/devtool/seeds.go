@@ -113,8 +113,8 @@ func columnsQuery(table string) string {
 func seedScript(dir string) (string, error) {
 	var script strings.Builder
 	script.WriteString("SET session_replication_role = replica;\n")
-	for _, seedTable := range slices.Backward(seedTables) {
-		fmt.Fprintf(&script, "DELETE FROM %s;\n", quoteIdentifier(seedTable))
+	for _, table := range slices.Backward(seedTables) {
+		fmt.Fprintf(&script, "DELETE FROM %s;\n", quoteIdentifier(table))
 	}
 	for _, table := range seedTables {
 		contents, err := os.ReadFile(seedFile(dir, table))

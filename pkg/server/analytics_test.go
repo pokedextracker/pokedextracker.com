@@ -40,7 +40,7 @@ func fakeUmami(t *testing.T) (*httptest.Server, func() []upstreamRequest) {
 			method:       r.Method,
 			path:         r.URL.Path,
 			host:         r.Host,
-			flyClientIP:  r.Header.Get("Fly-Client-Ip"),
+			flyClientIP:  r.Header.Get("Fly-Client-IP"),
 			userAgent:    r.Header.Get("User-Agent"),
 			forwardedFor: r.Header.Get("X-Forwarded-For"),
 			contentType:  r.Header.Get("Content-Type"),
@@ -111,7 +111,7 @@ func TestAnalyticsForwardsEvents(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/stats/api/send", strings.NewReader(payload))
 	req.Host = "pokedextracker.com"
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Fly-Client-Ip", "198.51.100.4")
+	req.Header.Set("Fly-Client-IP", "198.51.100.4")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (test)")
 	req.Header.Set("Cookie", "ghost-members-ssr=secret")
 	req.Header.Set("Authorization", "Bearer secret")

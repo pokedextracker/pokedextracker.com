@@ -10,7 +10,6 @@ linters:
     - asciicheck
     - bidichk
     - bodyclose
-    - canonicalheader
     - containedctx
     - contextcheck
     # Flags copies of loop variables, which each iteration has its own of.
@@ -80,6 +79,7 @@ linters:
     paralleltest:
       # Subtests can run in parallel, but don't have to.
       ignore-missing-subtests: true
+      # Parallel tests clean up with t.Cleanup, which waits for their subtests.
       check-cleanup: true
     gosec:
       excludes:

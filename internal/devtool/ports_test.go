@@ -9,9 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//nolint:paralleltest // It binds real ports, which tests running alongside could take.
 func TestFilePortAllocatorSkipsLeasedPorts(t *testing.T) {
-	t.Parallel()
-
 	allocator := &FilePortAllocator{LockRoot: t.TempDir()}
 	preferred := freePort(t)
 
@@ -32,9 +31,8 @@ func TestFilePortAllocatorSkipsLeasedPorts(t *testing.T) {
 	assert.Equal(t, first.Port(), third.Port(), "a released port can be leased again")
 }
 
+//nolint:paralleltest // It binds real ports, which tests running alongside could take.
 func TestFilePortAllocatorSkipsPortsInUse(t *testing.T) {
-	t.Parallel()
-
 	listener, err := net.Listen("tcp4", "127.0.0.1:0")
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = listener.Close() })

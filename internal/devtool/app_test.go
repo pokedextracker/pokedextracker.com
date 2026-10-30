@@ -253,9 +253,8 @@ func TestStartWebRefusesToGuessAnAPI(t *testing.T) {
 	assert.Empty(t, h.processes.mode, "nothing is started")
 }
 
+//nolint:paralleltest // It binds real ports, which tests running alongside could take.
 func TestStartWebUsesTheRecordedAPIPort(t *testing.T) {
-	t.Parallel()
-
 	h := newHarness(t, false)
 	lease, err := (&FilePortAllocator{LockRoot: portLockRoot(h.env), Owner: h.env.CurrentRoot}).Acquire(freePort(t))
 	require.NoError(t, err)
@@ -269,9 +268,8 @@ func TestStartWebUsesTheRecordedAPIPort(t *testing.T) {
 	assert.Equal(t, apiURL(lease.Port()), h.processes.servers.APIURL)
 }
 
+//nolint:paralleltest // It binds real ports, which tests running alongside could take.
 func TestStartWebIgnoresAPortLeftByACrashedLauncher(t *testing.T) {
-	t.Parallel()
-
 	h := newHarness(t, false)
 	lease, err := (&FilePortAllocator{LockRoot: portLockRoot(h.env), Owner: h.env.CurrentRoot}).Acquire(freePort(t))
 	require.NoError(t, err)
@@ -287,9 +285,8 @@ func TestStartWebIgnoresAPortLeftByACrashedLauncher(t *testing.T) {
 	assert.Contains(t, err.Error(), "no API is running in this worktree")
 }
 
+//nolint:paralleltest // It binds real ports, which tests running alongside could take.
 func TestStartWebIgnoresAPortAnotherWorktreeLeased(t *testing.T) {
-	t.Parallel()
-
 	h := newHarness(t, false)
 	lease, err := (&FilePortAllocator{LockRoot: portLockRoot(h.env), Owner: "/some/other/worktree"}).Acquire(freePort(t))
 	require.NoError(t, err)

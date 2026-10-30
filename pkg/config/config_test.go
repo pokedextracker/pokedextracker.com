@@ -15,6 +15,7 @@ func TestNew(t *testing.T) {
 	assert.NotNil(t, cfg, "returned config shouldn't be nil")
 }
 
+// Not parallel: it sets environment variables.
 func TestEnvironments(t *testing.T) {
 	for _, env := range []string{"development", "staging", "production"} {
 		t.Setenv(environmentENV, env)
@@ -31,6 +32,7 @@ func TestEnvironments(t *testing.T) {
 	assert.Equal(t, 1234, cfg.Port)
 }
 
+// Not parallel: it sets environment variables.
 func TestDatabaseOverrides(t *testing.T) {
 	for _, env := range []string{"development", "test"} {
 		t.Run(env, func(t *testing.T) {
