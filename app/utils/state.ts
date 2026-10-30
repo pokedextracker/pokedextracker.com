@@ -10,12 +10,17 @@ export function tokenToUser(token: string | null): Session | null {
     payload: { user: user && { id: user.id, username: user.username } },
   });
 
-  if (!user || !token) {
-    return null;
-  }
-
-  user.token = token;
   return user;
+}
+
+// sessionFromToken reads a token the API just sent, which always holds a
+// session, so one that doesn't is an error rather than a signed out user.
+export function sessionFromToken(token: string): Session {
+  const session = tokenToUser(token);
+  if (!session) {
+    throw new Error("We couldn't read the login the server sent back.");
+  }
+  return session;
 }
 
 function decodeToken(token: string): Session | null {
@@ -27,7 +32,7 @@ function decodeToken(token: string): Session | null {
     if (typeof user?.id !== "number" || typeof user.username !== "string") {
       return null;
     }
-    return user;
+    return { ...user, token };
   } catch {
     return null;
   }

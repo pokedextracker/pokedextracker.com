@@ -21,6 +21,23 @@ test("the home page loads with the config the server added", async ({
   expect(config).toMatchObject({ environment: "development" });
 });
 
+// Phones can pinch to zoom, and link previews read the OpenGraph tags, which
+// they only find as properties.
+test("the page can be zoomed and has OpenGraph properties", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  await expect(page.locator('meta[name="viewport"]')).toHaveAttribute(
+    "content",
+    "width=device-width, initial-scale=1",
+  );
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+    "content",
+    "Pokédex Tracker",
+  );
+});
+
 // The Go tests cover the caching rules with a stand-in build. This checks the
 // real one: if the build's scripts and styles moved out of the folder the
 // server caches forever (Vite's assets/), they'd quietly lose that caching.

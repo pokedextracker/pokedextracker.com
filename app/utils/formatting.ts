@@ -21,15 +21,13 @@ export function friendCode3dsFormatter(code: string): string {
 }
 
 // A Switch one has SW- in front. Typing SW- itself is left alone, and anything
-// else gets SW- put in front of it.
+// else gets SW- put in front of its digits.
 export function friendCodeSwitchFormatter(code: string): string {
   const upperCode = code.toUpperCase();
   if ("SW-".startsWith(upperCode)) {
     return upperCode;
   }
-
-  const digits = upperCode.replace(/^S?W?-?/, "").replace(/\D/g, "");
-  return `SW-${digits.slice(0, 12).replace(FRIEND_CODE_GROUPS_REGEX, "$1-")}`;
+  return `SW-${friendCode3dsFormatter(code)}`;
 }
 
 export function padding(

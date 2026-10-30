@@ -24,6 +24,10 @@ test("friend codes keep only their digits", async ({ page, request }) => {
   const user = await createUser(request);
   await signIn(page, user);
   await page.goto("/account");
+  // Phones show a number pad for them.
+  for (const id of ["#friend_code_3ds", "#friend_code_switch"]) {
+    await expect(page.locator(id)).toHaveAttribute("inputmode", "numeric");
+  }
 
   await page.locator("#friend_code_3ds").pressSequentially("1a2b3-4567890123");
   await expect(page.locator("#friend_code_3ds")).toHaveValue("1234-5678-9012");

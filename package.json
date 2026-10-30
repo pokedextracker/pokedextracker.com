@@ -62,7 +62,7 @@
   "bugs": {
     "url": "https://github.com/pokedextracker/pokedextracker.com/issues"
   },
-  "homepage": "https://pokedextracker.com",
+  "homepage": "https://github.com/pokedextracker/pokedextracker.com#readme",
   "engines": {
     "node": ">=26"
   }
