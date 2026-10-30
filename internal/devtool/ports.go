@@ -131,7 +131,7 @@ func portAvailable(port int) bool {
 		{"tcp6", "::"},
 	}
 	for _, probe := range probes {
-		listener, err := net.Listen(probe.network, net.JoinHostPort(probe.host, strconv.Itoa(port)))
+		listener, err := net.Listen(probe.network, net.JoinHostPort(probe.host, strconv.Itoa(port))) //nolint:noctx // A quick bind probe, with nothing to cancel.
 		if err != nil {
 			// A machine without IPv6 can't refuse the port over it.
 			if probe.network == "tcp6" && isAddressUnavailable(err) {

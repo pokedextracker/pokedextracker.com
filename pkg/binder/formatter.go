@@ -3,6 +3,7 @@ package binder
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,8 +18,8 @@ const (
 	gte      = "gte"
 	gtfield  = "gtfield"
 	ltfield  = "ltfield"
-	max      = "max"
-	min      = "min"
+	maximum  = "max"
+	minimum  = "min"
 	ne       = "ne"
 	oneof    = "oneof"
 	required = "required"
@@ -36,7 +37,19 @@ func formatUnmarshalTypeError(err *json.UnmarshalTypeError) string {
 	// FIXME: this doesn't work well for incorrect map values, e.g. it will say
 	// `"metadata" should be a string instead of a object` if you pass in
 	// `{"metadata":{"foo":{"bar":"baz"}}}`.
-	return fmt.Sprintf("%q should be of type %s", strings.Trim(err.Field, "."), err.Type)
+	return fmt.Sprintf("%q should be of type %s", fieldPath(err.Field), err.Type)
+}
+
+// fieldPath is a JSON field's path without slice indexes, which Go 1.27's
+// encoding/json adds ("pokemon.1"), since the message names the field.
+func fieldPath(field string) string {
+	var kept []string
+	for _, part := range strings.Split(strings.Trim(field, "."), ".") {
+		if _, err := strconv.Atoi(part); err != nil {
+			kept = append(kept, part)
+		}
+	}
+	return strings.Join(kept, ".")
 }
 
 func formatSchemaConversionError(err schema.ConversionError) string {
@@ -69,7 +82,7 @@ func formatValidationError(err validator.FieldError) string {
 		// FIXME: err.Param() will return the struct field, not the JSON version
 		// e.g. EndTime, not end_time
 		return fmt.Sprintf("%q must be less than %s", field, err.Param())
-	case max:
+	case maximum:
 		resource := "character"
 		if err.Kind() == reflect.Slice {
 			resource = "element"
@@ -80,7 +93,7 @@ func formatValidationError(err validator.FieldError) string {
 		}
 
 		return fmt.Sprintf("%q length must be less than or equal to %s %s", field, err.Param(), resource)
-	case min:
+	case minimum:
 		resource := "character"
 		if err.Kind() == reflect.Slice {
 			resource = "element"
