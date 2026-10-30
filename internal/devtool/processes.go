@@ -58,7 +58,7 @@ type ProcessManager interface {
 	// Visual serves the production build of site on port against target, and
 	// runs the visual comparison specs from tests against it with args, as
 	// side (visualReference or visualBranch). Specs that don't pass come back
-	// as a *VisualFailure. Either way, it returns the tests that passed only
+	// as a *VisualFailureError. Either way, it returns the tests that passed only
 	// after retrying a hiccup, like a dropped connection.
 	Visual(ctx context.Context, site, tests Environment, target DatabaseTarget, port int, side string, args ...string) (retried []string, err error)
 }
@@ -207,8 +207,9 @@ func (p *OSProcesses) Visual(ctx context.Context, site, tests Environment, targe
 		if err == nil {
 			return nil
 		}
-		// Removing it doesn't use ctx, so it still happens after Ctrl+C.
-		_ = runDocker(context.Background(), "rm", "--force", container)
+		// Removing it ignores ctx's cancellation, so it still happens after
+		// Ctrl+C.
+		_ = runDocker(context.WithoutCancel(ctx), "rm", "--force", container)
 		if ctx.Err() != nil {
 			return err
 		}
@@ -237,7 +238,7 @@ func (p *OSProcesses) Visual(ctx context.Context, site, tests Environment, targe
 func take(ctx context.Context, playwright func(context.Context, ...string) error, args ...string) error {
 	err := playwright(ctx, args...)
 	for attempt := 1; attempt < referenceAttempts; attempt++ {
-		var failure *VisualFailure
+		var failure *VisualFailureError
 		if err == nil || !errors.As(err, &failure) || !failure.onlyInterrupted() {
 			return err
 		}
@@ -265,7 +266,7 @@ func captureReference(ctx context.Context, lastRun string, playwright func(conte
 	verify := []string{"--retries=0"}
 	for attempt := 1; ; attempt++ {
 		err := playwright(ctx, verify...)
-		var failure *VisualFailure
+		var failure *VisualFailureError
 		if err == nil || !errors.As(err, &failure) || attempt == referenceAttempts {
 			return err
 		}
@@ -324,10 +325,11 @@ func (p *OSProcesses) CheckoutReference(ctx context.Context, env Environment, re
 		return nil, fmt.Errorf("find %s: %w", ref, err)
 	}
 	reference.Commit = commit
-	// Removing it doesn't use ctx, so it still happens after Ctrl+C.
+	// Removing it ignores ctx's cancellation, so it still happens after Ctrl+C.
+	cleanup := context.WithoutCancel(ctx)
 	reference.Remove = func() {
-		_, _ = gitOutput(context.Background(), "-C", env.CurrentRoot, "worktree", "remove", "--force", reference.Root)
-		_, _ = gitOutput(context.Background(), "-C", env.CurrentRoot, "worktree", "prune")
+		_, _ = gitOutput(cleanup, "-C", env.CurrentRoot, "worktree", "remove", "--force", reference.Root)
+		_, _ = gitOutput(cleanup, "-C", env.CurrentRoot, "worktree", "prune")
 	}
 	// A run that was interrupted can leave the last reference behind.
 	reference.Remove()

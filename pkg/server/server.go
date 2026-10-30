@@ -33,6 +33,12 @@ import (
 
 var healthResponse = []byte(`{"healthy":true}`)
 
+// Echo reads its not found handler from a package variable, so it's set once
+// rather than by every server, which would race when two are made at once.
+func init() {
+	echo.NotFoundHandler = notFoundHandler
+}
+
 // New builds the server for the whole site: the API under /api, the /blog and
 // /stats proxies, and the embedded frontend for everything else.
 func New(cfg *config.Config, db *pg.DB) (*http.Server, error) {
@@ -105,7 +111,6 @@ func newServer(cfg *config.Config, db *pg.DB, frontend http.Handler) (*http.Serv
 		e.HEAD("/*", echo.WrapHandler(frontend))
 	}
 
-	echo.NotFoundHandler = notFoundHandler
 	e.HTTPErrorHandler = errcodes.NewHandler().Handle
 
 	srv := &http.Server{
@@ -197,7 +202,7 @@ func redirectWWW(next echo.HandlerFunc) echo.HandlerFunc {
 func clientIP() echo.IPExtractor {
 	direct := echo.ExtractIPDirect()
 	return func(r *http.Request) string {
-		if ip := r.Header.Get("Fly-Client-IP"); net.ParseIP(ip) != nil {
+		if ip := r.Header.Get("Fly-Client-Ip"); net.ParseIP(ip) != nil {
 			return ip
 		}
 		return direct(r)

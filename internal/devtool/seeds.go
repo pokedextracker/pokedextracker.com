@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -112,8 +113,8 @@ func columnsQuery(table string) string {
 func seedScript(dir string) (string, error) {
 	var script strings.Builder
 	script.WriteString("SET session_replication_role = replica;\n")
-	for i := len(seedTables) - 1; i >= 0; i-- {
-		fmt.Fprintf(&script, "DELETE FROM %s;\n", quoteIdentifier(seedTables[i]))
+	for _, seedTable := range slices.Backward(seedTables) {
+		fmt.Fprintf(&script, "DELETE FROM %s;\n", quoteIdentifier(seedTable))
 	}
 	for _, table := range seedTables {
 		contents, err := os.ReadFile(seedFile(dir, table))

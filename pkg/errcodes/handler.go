@@ -2,6 +2,7 @@ package errcodes
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/iancoleman/strcase"
@@ -42,7 +43,7 @@ func (h *Handler) Handle(err error, c echo.Context) {
 
 	// Internal server errors
 	if httpCode == http.StatusInternalServerError {
-		extra := map[string]interface{}{
+		extra := map[string]any{
 			"request_id": logger.IDFromEchoContext(c),
 		}
 		// We can't import the auth package since it would create an import cycle.
@@ -58,7 +59,7 @@ func (h *Handler) Handle(err error, c echo.Context) {
 	}
 }
 
-func (h *Handler) generatePayload(_ echo.Context, err error) (int, map[string]interface{}) {
+func (h *Handler) generatePayload(_ echo.Context, err error) (int, map[string]any) {
 	code := ""
 	msg := ""
 	httpCode := http.StatusInternalServerError
@@ -67,7 +68,7 @@ func (h *Handler) generatePayload(_ echo.Context, err error) (int, map[string]in
 	var he *echo.HTTPError
 	if ok := errors.As(err, &he); ok {
 		httpCode = he.Code
-		msg = he.Message.(string)
+		msg = fmt.Sprint(he.Message)
 		code = strcase.ToSnake(msg)
 	}
 
@@ -85,8 +86,8 @@ func (h *Handler) generatePayload(_ echo.Context, err error) (int, map[string]in
 		msg = "Internal Server Error"
 	}
 
-	return httpCode, map[string]interface{}{
-		"error": map[string]interface{}{
+	return httpCode, map[string]any{
+		"error": map[string]any{
 			"code":        code,
 			"message":     msg,
 			"status_code": httpCode,

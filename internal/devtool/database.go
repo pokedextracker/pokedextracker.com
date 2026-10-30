@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"syscall"
@@ -263,7 +264,7 @@ func (d *DockerDatabase) Clone(ctx context.Context, env Environment, source, tar
 	// Ctrl+C in the terminal doesn't reach them either. Cleanup is registered
 	// before the staging database is created, since an interrupt can report
 	// failure for a createdb that actually succeeded.
-	background := context.Background()
+	background := context.WithoutCancel(ctx)
 	stagePresent := true
 	defer func() {
 		if stagePresent {
@@ -318,7 +319,7 @@ func (d *DockerDatabase) Clone(ctx context.Context, env Environment, source, tar
 // it's retried a few times.
 func (d *DockerDatabase) disconnectAndRename(ctx context.Context, env Environment, source, target string) error {
 	var err error
-	for attempt := 0; attempt < 5; attempt++ {
+	for attempt := range 5 {
 		if attempt > 0 {
 			time.Sleep(200 * time.Millisecond)
 		}
@@ -503,10 +504,7 @@ func (d *DockerDatabase) Pull(ctx context.Context, env Environment, url, localDa
 			return nil, fmt.Errorf("write %s: %w", table, err)
 		}
 		// Counts lines, which matches rows while no value spans lines.
-		rows := strings.Count(output, "\n") - 1
-		if rows < 0 {
-			rows = 0
-		}
+		rows := max(strings.Count(output, "\n")-1, 0)
 		pulled = append(pulled, PulledTable{Name: table, Rows: rows})
 	}
 
@@ -591,10 +589,8 @@ func (d *DockerDatabase) boxesKeyOutdated(ctx context.Context, env Environment, 
 	if err != nil {
 		return false, fmt.Errorf("read primary key of boxes: %w", err)
 	}
-	for _, column := range primaryKey {
-		if column == "regional" {
-			return false, nil
-		}
+	if slices.Contains(primaryKey, "regional") {
+		return false, nil
 	}
 	return len(primaryKey) > 0, nil
 }
@@ -665,7 +661,7 @@ func (d *DockerDatabase) capture(ctx context.Context, command *exec.Cmd, stdin i
 
 func lines(output string) []string {
 	var result []string
-	for _, line := range strings.Split(output, "\n") {
+	for line := range strings.SplitSeq(output, "\n") {
 		if line = strings.TrimSpace(line); line != "" {
 			result = append(result, line)
 		}

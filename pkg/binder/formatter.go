@@ -30,7 +30,7 @@ const (
 )
 
 var (
-	timeType = reflect.TypeOf(time.Time{})
+	timeType = reflect.TypeFor[time.Time]()
 )
 
 func formatUnmarshalTypeError(err *json.UnmarshalTypeError) string {
@@ -44,7 +44,7 @@ func formatUnmarshalTypeError(err *json.UnmarshalTypeError) string {
 // encoding/json adds ("pokemon.1"), since the message names the field.
 func fieldPath(field string) string {
 	var kept []string
-	for _, part := range strings.Split(strings.Trim(field, "."), ".") {
+	for part := range strings.SplitSeq(strings.Trim(field, "."), ".") {
 		if _, err := strconv.Atoi(part); err != nil {
 			kept = append(kept, part)
 		}
@@ -108,7 +108,7 @@ func formatValidationError(err validator.FieldError) string {
 		return fmt.Sprintf("%q can't be %q", field, err.Param())
 	case oneof:
 		valids := []string{}
-		for _, p := range strings.Fields(err.Param()) {
+		for p := range strings.FieldsSeq(err.Param()) {
 			valids = append(valids, fmt.Sprintf("%q", p))
 		}
 		return fmt.Sprintf("%q must be one of the following: %s", field, strings.Join(valids, ", "))

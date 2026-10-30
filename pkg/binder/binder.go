@@ -41,7 +41,7 @@ func New() (*Binder, error) {
 	conform := modifiers.New()
 	validate := validator.New()
 	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
-		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+		name, _, _ := strings.Cut(fld.Tag.Get("json"), ",")
 		if name == "-" {
 			return ""
 		}
@@ -55,7 +55,7 @@ func New() (*Binder, error) {
 }
 
 // Bind binds, modifies, and validates payloads against the given struct.
-func (b *Binder) Bind(i interface{}, c echo.Context) error {
+func (b *Binder) Bind(i any, c echo.Context) error {
 	req := c.Request()
 	log := logger.FromEchoContext(c)
 
@@ -92,8 +92,9 @@ func (b *Binder) Bind(i interface{}, c echo.Context) error {
 				}
 
 				// return better error message on type errors
-				if err, ok := err.(*json.UnmarshalTypeError); ok {
-					msg := formatUnmarshalTypeError(err)
+				var typeErr *json.UnmarshalTypeError
+				if errors.As(err, &typeErr) {
+					msg := formatUnmarshalTypeError(typeErr)
 					return errcodes.ValidationTypeError(msg)
 				}
 
@@ -152,27 +153,33 @@ func (b *Binder) Bind(i interface{}, c echo.Context) error {
 	}
 
 	if err := b.validate.Struct(i); err != nil {
-		errs := err.(validator.ValidationErrors)
+		var errs validator.ValidationErrors
+		if !errors.As(err, &errs) || len(errs) == 0 {
+			return errors.WithStack(err)
+		}
 		msg := formatValidationError(errs[0])
 		return errcodes.ValidationError(msg)
 	}
 	return nil
 }
 
-func (b *Binder) decodeQuery(i interface{}, params url.Values, decoder *schema.Decoder) error {
+func (b *Binder) decodeQuery(i any, params url.Values, decoder *schema.Decoder) error {
 	if err := decoder.Decode(i, params); err != nil {
-		if errs, ok := err.(schema.MultiError); ok {
+		var errs schema.MultiError
+		if errors.As(err, &errs) {
 			var err error
 			for _, err = range errs {
 				break
 			}
 
-			if err, ok := err.(schema.ConversionError); ok {
-				msg := formatSchemaConversionError(err)
+			var conversionErr schema.ConversionError
+			if errors.As(err, &conversionErr) {
+				msg := formatSchemaConversionError(conversionErr)
 				return errcodes.ValidationTypeError(msg)
 			}
-			if err, ok := err.(schema.UnknownKeyError); ok {
-				return errcodes.UnknownParameter(err.Key)
+			var unknownKeyErr schema.UnknownKeyError
+			if errors.As(err, &unknownKeyErr) {
+				return errcodes.UnknownParameter(unknownKeyErr.Key)
 			}
 
 			return errors.WithStack(err)
