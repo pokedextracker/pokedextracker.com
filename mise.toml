@@ -4,6 +4,7 @@ node = "26.12.0"
 pnpm = "12.14.0"
 "github:air-verse/air" = "1.67.4"
 "github:golangci/golangci-lint" = "2.13.2"
+"github:gzuidhof/tygo" = "0.2.21"
 
 [env]
 # Local secrets (deploy tokens, credentials for pulling data) live in .env,
@@ -37,7 +38,7 @@ run = "go build -o ./build/api/api-air ./cmd/api"
 
 [tasks."build:web"]
 description = "Build the frontend into internal/webapp/dist"
-depends = ["install:web"]
+depends = ["install:web", "tygo"]
 run = "pnpm build"
 
 [tasks.clean]
@@ -69,6 +70,9 @@ run = "pnpm install --frozen-lockfile"
 
 [tasks.start]
 description = "Start the API with hot reload and the frontend dev server pointed at it"
+# The generated types are only for type checking (the dev server ignores them),
+# but an editor needs them.
+depends = ["tygo"]
 run = "go run ./cmd/dev start"
 
 [tasks."start:air"]
@@ -107,7 +111,16 @@ run = "golangci-lint run"
 
 [tasks."lint:web"]
 description = "Run ESLint, Prettier, and TypeScript checks"
+depends = ["tygo"]
 run = "pnpm lint:all"
+
+# === Generated Types ===
+
+[tasks.tygo]
+description = "Generate the frontend's API types in app/types/generated from the Go models"
+run = "tygo generate"
+sources = ["tygo.yaml", "pkg/*/models.go"]
+outputs = ["app/types/generated/*.ts"]
 
 [tasks.format]
 description = "Format the code with Prettier"
@@ -228,6 +241,7 @@ run = [
   "mise install",
   "mise install:go",
   "mise install:web",
+  "mise tygo",
   "mise install:browsers",
   "go run ./cmd/dev setup",
 ]

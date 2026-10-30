@@ -10,3 +10,5 @@ seeds/
 app/styles/pokesprite.css
 # History that's no longer updated.
 CHANGELOG.md
+# Generated from the Go models by mise tygo.
+app/types/generated/

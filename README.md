@@ -8,7 +8,7 @@ the React frontend (`app/`) and the Go API (`cmd/` and `pkg/`).
 ## Setup
 
 This repo uses [mise](https://mise.jdx.dev/) to manage tools (Go, Node.js,
-pnpm, Air, golangci-lint) and tasks, and Docker to run PostgreSQL.
+pnpm, Air, golangci-lint, tygo) and tasks, and Docker to run PostgreSQL.
 
 ```sh
 mise setup
@@ -26,6 +26,7 @@ mise start:web:staging  # Just the frontend, using the staging API
 mise start:preview      # The production build: one binary serving the API and frontend
 mise lint               # golangci-lint, ESLint, Prettier, and TypeScript checks
 mise format             # Format the code, config, and docs with Prettier
+mise tygo               # Generate the frontend's API types from the Go models
 mise test:go            # Go tests
 mise test:e2e           # End-to-end tests in Chromium (test:e2e:all for every browser)
 mise test:visual        # Compare how the site looks with master (needs Docker)
@@ -37,6 +38,11 @@ mise db:stop            # Stop the shared PostgreSQL container (its data is kept
 ```
 
 Run `mise tasks` to see everything else.
+
+The frontend's API types in `app/types/generated` come from the Go models
+(`pkg/*/models.go`) through `tygo.yaml`, so they aren't checked in. `mise
+setup`, `mise start`, `mise lint`, and `mise build` generate them first; after
+changing a model, run `mise tygo` to update them for your editor.
 
 The tasks go through a small dev launcher (`cmd/dev`), so several worktrees
 can run at once without stepping on each other:
