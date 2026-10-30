@@ -3,6 +3,7 @@ package binder
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -36,7 +37,19 @@ func formatUnmarshalTypeError(err *json.UnmarshalTypeError) string {
 	// FIXME: this doesn't work well for incorrect map values, e.g. it will say
 	// `"metadata" should be a string instead of a object` if you pass in
 	// `{"metadata":{"foo":{"bar":"baz"}}}`.
-	return fmt.Sprintf("%q should be of type %s", strings.Trim(err.Field, "."), err.Type)
+	return fmt.Sprintf("%q should be of type %s", fieldPath(err.Field), err.Type)
+}
+
+// fieldPath is a JSON field's path without slice indexes, which Go 1.27's
+// encoding/json adds ("pokemon.1"), since the message names the field.
+func fieldPath(field string) string {
+	var kept []string
+	for _, part := range strings.Split(strings.Trim(field, "."), ".") {
+		if _, err := strconv.Atoi(part); err != nil {
+			kept = append(kept, part)
+		}
+	}
+	return strings.Join(kept, ".")
 }
 
 func formatSchemaConversionError(err schema.ConversionError) string {

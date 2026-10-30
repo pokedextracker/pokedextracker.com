@@ -7,8 +7,7 @@ linters:
   default: none
   enable:
     - bodyclose
-    # Replaces exportloopref: since Go 1.22, each loop iteration gets its own
-    # variable, so the copies it asked for are now unnecessary.
+    # Flags copies of loop variables, which each iteration has its own of.
     - copyloopvar
     - dogsled
     - err113
@@ -23,7 +22,7 @@ linters:
     - misspell
     - noctx
     - revive
-    # Also runs what gosimple and stylecheck used to.
+    # Includes the simplification and style checks.
     - staticcheck
     - unconvert
     - unparam
@@ -44,7 +43,7 @@ linters:
         - G501 # Blocklisted import crypto/md5
 
   exclusions:
-    # The exclusions v1 applied by default.
+    # Commonly ignored findings, like unchecked errors from closing things.
     presets:
       - comments
       - common-false-positives
@@ -73,6 +72,14 @@ linters:
       - linters:
           - unused
         text: tableName
+      # Migrations that have run stay as they were written.
+      - path: cmd/migrations/
+        linters:
+          - staticcheck
+        text: "QF"
+    # Throwaway code that isn't checked in.
+    paths:
+      - cmd/scratch
 
 issues:
   max-issues-per-linter: 0
@@ -81,3 +88,6 @@ issues:
 formatters:
   enable:
     - goimports
+  exclusions:
+    paths:
+      - cmd/scratch

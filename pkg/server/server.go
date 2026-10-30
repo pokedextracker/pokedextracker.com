@@ -54,6 +54,7 @@ func newServer(cfg *config.Config, db *pg.DB, frontend http.Handler) (*http.Serv
 	e := echo.New()
 
 	e.Logger.SetLevel(log.OFF)
+	e.IPExtractor = clientIP()
 
 	b, err := binder.New()
 	if err != nil {
@@ -188,6 +189,14 @@ func redirectWWW(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
+// clientIP reads a visitor's address for c.RealIP() (kept as a user's last IP)
+// from X-Forwarded-For: the last address in it that isn't a private one, which
+// is the one Fly's proxy adds. Earlier addresses come from the visitor and can
+// be anything. Without the header, like in development, it's the connection's.
+func clientIP() echo.IPExtractor {
+	return echo.ExtractIPFromXFFHeader()
+}
+
 // blogProxy forwards /blog to the hosted Ghost blog, which is set up to live
 // at pokedextracker.com/blog, so the path is passed through unchanged. The
 // upstream sees its own host name, which it needs for TLS and routing.
@@ -198,21 +207,10 @@ func blogProxy(rawURL string) (echo.HandlerFunc, error) {
 	}
 	proxy := &httputil.ReverseProxy{
 		Rewrite: func(r *httputil.ProxyRequest) {
-			r.SetURL(target)
-			// Rewrite drops the forwarding headers the request came in with.
-			// They're passed on as they were, with the visitor's address added
-			// to X-Forwarded-For.
-			for _, name := range []string{"Forwarded", "X-Forwarded-Host", "X-Forwarded-Proto"} {
-				if values, ok := r.In.Header[name]; ok {
-					r.Out.Header[name] = values
-				}
-			}
-			if clientIP, _, err := net.SplitHostPort(r.In.RemoteAddr); err == nil {
-				if prior := r.In.Header["X-Forwarded-For"]; len(prior) > 0 {
-					clientIP = strings.Join(prior, ", ") + ", " + clientIP
-				}
-				r.Out.Header.Set("X-Forwarded-For", clientIP)
-			}
+			r.Out.URL.Scheme = target.Scheme
+			r.Out.URL.Host = target.Host
+			r.Out.Host = target.Host
+			forwardHeaders(r)
 		},
 		// An unreachable blog is the upstream's problem, not a server error,
 		// so it's logged rather than reported.
@@ -222,6 +220,22 @@ func blogProxy(rawURL string) (echo.HandlerFunc, error) {
 		},
 	}
 	return serveProxy(proxy), nil
+}
+
+// forwardHeaders passes on the forwarding headers a proxied request came in
+// with, which Rewrite drops, adding the visitor's address to X-Forwarded-For.
+func forwardHeaders(r *httputil.ProxyRequest) {
+	for _, name := range []string{"Forwarded", "X-Forwarded-Host", "X-Forwarded-Proto"} {
+		if values, ok := r.In.Header[name]; ok {
+			r.Out.Header[name] = values
+		}
+	}
+	if clientIP, _, err := net.SplitHostPort(r.In.RemoteAddr); err == nil {
+		if prior := r.In.Header["X-Forwarded-For"]; len(prior) > 0 {
+			clientIP = strings.Join(prior, ", ") + ", " + clientIP
+		}
+		r.Out.Header.Set("X-Forwarded-For", clientIP)
+	}
 }
 
 // serveProxy runs a reverse proxy as an Echo handler.

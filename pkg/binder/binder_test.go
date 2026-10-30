@@ -55,6 +55,15 @@ func TestNew(t *testing.T) {
 		assert.Contains(tt, err.Error(), `"hello" should be of type string`)
 	})
 
+	t.Run("names a list's field, not the item's index, in type errors", func(tt *testing.T) {
+		c := newContext(`{"pokemon":[1,"x"]}`, echo.MIMEApplicationJSON)
+		p := struct {
+			Pokemon []int `json:"pokemon"`
+		}{}
+		err := b.Bind(&p, c)
+		assert.Contains(tt, err.Error(), `"pokemon" should be of type int`)
+	})
+
 	t.Run("use mod tag to modify params", func(tt *testing.T) {
 		c := newContext(goodJSON, echo.MIMEApplicationJSON)
 		p := params{}

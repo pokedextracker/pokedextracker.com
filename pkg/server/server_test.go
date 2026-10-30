@@ -261,6 +261,34 @@ func TestBlogSeesItsOwnHostAndTheForwardingHeaders(t *testing.T) {
 	assert.Equal(t, "pokedextracker.com", seen.Header.Get("X-Forwarded-Host"))
 }
 
+func TestClientIPIsTheAddressFlyAdds(t *testing.T) {
+	extract := clientIP()
+	request := httptest.NewRequest(http.MethodGet, "/", nil)
+	request.RemoteAddr = "172.16.45.18:51234"
+
+	request.Header.Set("X-Forwarded-For", "198.51.100.1, 203.0.113.7")
+	assert.Equal(t, "203.0.113.7", extract(request), "the visitor sent the first address, Fly added the last")
+
+	request.Header.Del("X-Forwarded-For")
+	assert.Equal(t, "172.16.45.18", extract(request), "without the header, it's the connection's")
+}
+
+func TestBlogURLPathIsNotJoinedOn(t *testing.T) {
+	var seen string
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		seen = r.URL.RequestURI()
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer upstream.Close()
+	srv, _ := blogServer(t, upstream.URL+"/ghost")
+
+	response, err := http.Get(srv.URL + "/blog/post/")
+	require.NoError(t, err)
+	_ = response.Body.Close()
+
+	assert.Equal(t, "/blog/post/", seen)
+}
+
 func TestBlogUpstreamBreakingMidResponseIsReported(t *testing.T) {
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Length", "100000")
