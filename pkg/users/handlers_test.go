@@ -14,6 +14,8 @@ import (
 )
 
 func TestCreateRequiresASlug(t *testing.T) {
+	t.Parallel()
+
 	b, err := binder.New()
 	require.NoError(t, err)
 	e := echo.New()
@@ -26,6 +28,8 @@ func TestCreateRequiresASlug(t *testing.T) {
 	}
 	for name, slug := range cases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			body := `{` + slug + `"username": "ash", "password": "pikachu-pw", "title": "!!!", "shiny": false, "game": "legends_za", "dex_type": 23}`
 			req := httptest.NewRequest(http.MethodPost, "/users", strings.NewReader(body))
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)

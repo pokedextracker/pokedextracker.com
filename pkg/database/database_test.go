@@ -10,13 +10,15 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	t.Parallel()
+
 	cfg, err := config.New()
 	require.NoError(t, err)
 	cfg.DatabaseDebug = true
 
 	db, err := New("database test", cfg)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, db)
 
 	cfg.DatabaseConnectRetryCount = 1

@@ -48,6 +48,8 @@ func testServer(t *testing.T, cfg *config.Config) http.Handler {
 }
 
 func TestNew(t *testing.T) {
+	t.Parallel()
+
 	cfg, err := config.New()
 	require.NoError(t, err)
 	db, err := database.New("server test", cfg)
@@ -66,6 +68,8 @@ func TestNew(t *testing.T) {
 }
 
 func TestAPIHealthAndNotFound(t *testing.T) {
+	t.Parallel()
+
 	h := testServer(t, &config.Config{})
 
 	assert.Equal(t, `{"healthy":true}`, serve(t, h, http.MethodGet, "/api/health", nil).Body.String())
@@ -78,6 +82,8 @@ func TestAPIHealthAndNotFound(t *testing.T) {
 }
 
 func TestFrontendServesEverythingElse(t *testing.T) {
+	t.Parallel()
+
 	h := testServer(t, &config.Config{})
 
 	// The API only answers under /api, so its paths at the root are frontend
@@ -91,8 +97,10 @@ func TestFrontendServesEverythingElse(t *testing.T) {
 }
 
 func TestWithoutAFrontendUnknownPathsAreNotFound(t *testing.T) {
+	t.Parallel()
+
 	db := pg.Connect(&pg.Options{Addr: "127.0.0.1:1"})
-	defer func() { _ = db.Close() }()
+	t.Cleanup(func() { _ = db.Close() })
 	srv, err := newServer(&config.Config{}, db, nil)
 	require.NoError(t, err)
 
@@ -103,6 +111,8 @@ func TestWithoutAFrontendUnknownPathsAreNotFound(t *testing.T) {
 }
 
 func TestGzipIsOnlyForTheAPI(t *testing.T) {
+	t.Parallel()
+
 	h := testServer(t, &config.Config{})
 
 	w := serve(t, h, http.MethodGet, "/api/health", map[string]string{"Accept-Encoding": "gzip"})
@@ -113,6 +123,8 @@ func TestGzipIsOnlyForTheAPI(t *testing.T) {
 }
 
 func TestHeadHealth(t *testing.T) {
+	t.Parallel()
+
 	h := testServer(t, &config.Config{})
 
 	for _, target := range []string{"/health", "/api/health"} {
@@ -123,6 +135,8 @@ func TestHeadHealth(t *testing.T) {
 }
 
 func TestWWWRedirect(t *testing.T) {
+	t.Parallel()
+
 	h := testServer(t, &config.Config{})
 
 	for host, want := range map[string]string{
@@ -153,13 +167,15 @@ func TestWWWRedirect(t *testing.T) {
 }
 
 func TestBlogProxy(t *testing.T) {
+	t.Parallel()
+
 	var seenHost, seenPath string
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		seenHost, seenPath = r.Host, r.URL.RequestURI()
 		w.Header().Set("Cache-Control", "public, max-age=0")
 		_, _ = io.WriteString(w, "ghost")
 	}))
-	defer upstream.Close()
+	t.Cleanup(upstream.Close)
 
 	h := testServer(t, &config.Config{BlogURL: upstream.URL})
 
@@ -175,6 +191,8 @@ func TestBlogProxy(t *testing.T) {
 }
 
 func TestUnreachableBlogIsABadGateway(t *testing.T) {
+	t.Parallel()
+
 	upstream := httptest.NewServer(http.NotFoundHandler())
 	address := upstream.URL
 	upstream.Close()
@@ -210,6 +228,8 @@ func blogServer(t *testing.T, upstream string) (*httptest.Server, func() []error
 }
 
 func TestBlogVisitorsLeavingMidResponseAreNotErrors(t *testing.T) {
+	t.Parallel()
+
 	// The upstream streams slowly until the visitor goes away.
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -219,7 +239,7 @@ func TestBlogVisitorsLeavingMidResponseAreNotErrors(t *testing.T) {
 			time.Sleep(10 * time.Millisecond)
 		}
 	}))
-	defer upstream.Close()
+	t.Cleanup(upstream.Close)
 	srv, reported := blogServer(t, upstream.URL)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -236,12 +256,14 @@ func TestBlogVisitorsLeavingMidResponseAreNotErrors(t *testing.T) {
 }
 
 func TestBlogSeesItsOwnHostAndTheForwardingHeaders(t *testing.T) {
+	t.Parallel()
+
 	var seen *http.Request
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		seen = r.Clone(r.Context())
 		w.WriteHeader(http.StatusOK)
 	}))
-	defer upstream.Close()
+	t.Cleanup(upstream.Close)
 	srv, _ := blogServer(t, upstream.URL)
 
 	request, err := http.NewRequestWithContext(t.Context(), http.MethodGet, srv.URL+"/blog/post/?page=2", nil)
@@ -262,12 +284,14 @@ func TestBlogSeesItsOwnHostAndTheForwardingHeaders(t *testing.T) {
 }
 
 func TestClientIPIsTheOneFlySees(t *testing.T) {
+	t.Parallel()
+
 	extract := clientIP()
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	request.RemoteAddr = "172.16.45.18:51234"
 	// What Fly sends: the visitor's address, and X-Forwarded-For ending in the
 	// app's own address.
-	request.Header.Set("Fly-Client-IP", "107.131.100.242")
+	request.Header.Set("Fly-Client-Ip", "107.131.100.242")
 	request.Header.Set("X-Forwarded-For", "107.131.100.242, 66.241.124.130")
 
 	assert.Equal(t, "107.131.100.242", extract(request))
@@ -283,12 +307,14 @@ func TestClientIPIsTheOneFlySees(t *testing.T) {
 }
 
 func TestBlogURLPathIsNotJoinedOn(t *testing.T) {
+	t.Parallel()
+
 	var seen string
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		seen = r.URL.RequestURI()
 		w.WriteHeader(http.StatusOK)
 	}))
-	defer upstream.Close()
+	t.Cleanup(upstream.Close)
 	srv, _ := blogServer(t, upstream.URL+"/ghost")
 
 	response, err := http.Get(srv.URL + "/blog/post/")
@@ -299,6 +325,8 @@ func TestBlogURLPathIsNotJoinedOn(t *testing.T) {
 }
 
 func TestBlogUpstreamBreakingMidResponseIsReported(t *testing.T) {
+	t.Parallel()
+
 	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Length", "100000")
 		w.WriteHeader(http.StatusOK)
@@ -306,7 +334,7 @@ func TestBlogUpstreamBreakingMidResponseIsReported(t *testing.T) {
 		w.(http.Flusher).Flush()
 		panic(http.ErrAbortHandler)
 	}))
-	defer upstream.Close()
+	t.Cleanup(upstream.Close)
 	srv, reported := blogServer(t, upstream.URL)
 
 	response, err := http.Get(srv.URL + "/blog/post/")
@@ -320,6 +348,8 @@ func TestBlogUpstreamBreakingMidResponseIsReported(t *testing.T) {
 }
 
 func TestNoBlogFallsThroughToTheFrontend(t *testing.T) {
+	t.Parallel()
+
 	h := testServer(t, &config.Config{})
 
 	w := serve(t, h, http.MethodGet, "/blog/", nil)
@@ -328,6 +358,8 @@ func TestNoBlogFallsThroughToTheFrontend(t *testing.T) {
 }
 
 func TestFrontendConfigScript(t *testing.T) {
+	t.Parallel()
+
 	script, err := frontendConfigScript(&config.Config{
 		Environment:        "production",
 		RollbarClientToken: "token</script><script>alert(1)",
@@ -345,6 +377,7 @@ func TestFrontendConfigScript(t *testing.T) {
 	assert.Contains(t, script, `"version":"unknown"`)
 }
 
+//nolint:paralleltest // It sets environment variables, which t.Parallel() doesn't allow.
 func TestEnvironmentsGetTheirOwnFrontendConfig(t *testing.T) {
 	for _, env := range []string{"development", "staging", "production"} {
 		t.Setenv("ENVIRONMENT", env)

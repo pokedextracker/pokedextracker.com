@@ -15,6 +15,7 @@ import (
 )
 
 func testHandler(t *testing.T) http.Handler {
+	t.Helper()
 	return testHandlerWithScript(t, "")
 }
 
@@ -45,6 +46,8 @@ func get(h http.Handler, method, target string, headers map[string]string) *http
 }
 
 func TestCacheHeaders(t *testing.T) {
+	t.Parallel()
+
 	h := testHandler(t)
 	for target, want := range map[string]string{
 		"/":                             "no-cache",
@@ -64,6 +67,8 @@ func TestCacheHeaders(t *testing.T) {
 }
 
 func TestFrontendRoutesGetIndex(t *testing.T) {
+	t.Parallel()
+
 	h := testHandler(t)
 
 	w := get(h, http.MethodGet, "/u/ash/living-dex", nil)
@@ -73,6 +78,8 @@ func TestFrontendRoutesGetIndex(t *testing.T) {
 }
 
 func TestMissingFilesAreNotFound(t *testing.T) {
+	t.Parallel()
+
 	h := testHandler(t)
 
 	w := get(h, http.MethodGet, "/does-not-exist.png", nil)
@@ -81,6 +88,8 @@ func TestMissingFilesAreNotFound(t *testing.T) {
 }
 
 func TestETagRevalidation(t *testing.T) {
+	t.Parallel()
+
 	h := testHandler(t)
 	etag := get(h, http.MethodGet, "/pokesprite-v12.png", nil).Header().Get("ETag")
 
@@ -91,6 +100,8 @@ func TestETagRevalidation(t *testing.T) {
 }
 
 func TestHeadAndOtherMethods(t *testing.T) {
+	t.Parallel()
+
 	h := testHandler(t)
 
 	assert.Equal(t, http.StatusOK, get(h, http.MethodHead, "/", nil).Code)
@@ -98,6 +109,8 @@ func TestHeadAndOtherMethods(t *testing.T) {
 }
 
 func TestPathsCantEscapeTheBuild(t *testing.T) {
+	t.Parallel()
+
 	h := testHandler(t)
 
 	for _, target := range []string{"/../../go.mod", "/%2e%2e/%2e%2e/go.sum", "/..%2f..%2fwebapp.go"} {
@@ -110,6 +123,8 @@ func TestPathsCantEscapeTheBuild(t *testing.T) {
 }
 
 func TestNoBuildMeansNoHandler(t *testing.T) {
+	t.Parallel()
+
 	_, ok, err := newHandler(fstest.MapFS{".gitkeep": {}}, "")
 
 	require.NoError(t, err)
@@ -117,6 +132,8 @@ func TestNoBuildMeansNoHandler(t *testing.T) {
 }
 
 func TestDottedFrontendRoutesGetIndex(t *testing.T) {
+	t.Parallel()
+
 	h := testHandler(t)
 
 	w := get(h, http.MethodGet, "/u/ash/v1.2", nil)
@@ -126,6 +143,8 @@ func TestDottedFrontendRoutesGetIndex(t *testing.T) {
 }
 
 func TestGzip(t *testing.T) {
+	t.Parallel()
+
 	h := testHandler(t)
 	plain := get(h, http.MethodGet, "/assets/index-B80ZTyZ2.js", nil)
 
@@ -161,6 +180,8 @@ func TestGzip(t *testing.T) {
 }
 
 func TestHeadScriptIsAddedToIndexOnly(t *testing.T) {
+	t.Parallel()
+
 	plain := testHandler(t)
 	h := testHandlerWithScript(t, "<script>window.X = 1;</script>")
 
@@ -173,6 +194,8 @@ func TestHeadScriptIsAddedToIndexOnly(t *testing.T) {
 }
 
 func TestHeadScriptNeedsAHead(t *testing.T) {
+	t.Parallel()
+
 	_, _, err := newHandler(fstest.MapFS{"index.html": {Data: []byte("<html>no head</html>")}}, "<script></script>")
 
 	assert.Error(t, err)

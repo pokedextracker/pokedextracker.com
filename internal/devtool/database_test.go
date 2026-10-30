@@ -11,6 +11,8 @@ import (
 )
 
 func TestParsePublishedPort(t *testing.T) {
+	t.Parallel()
+
 	for output, want := range map[string]int{
 		"127.0.0.1:9876\n":            9876,
 		"0.0.0.0:9877":                9877,
@@ -29,15 +31,17 @@ func TestParsePublishedPort(t *testing.T) {
 }
 
 func TestLockFileWaitsAndCanBeCancelled(t *testing.T) {
+	t.Parallel()
+
 	path := filepath.Join(t.TempDir(), "database.lock")
 	unlock, err := lockFile(context.Background(), path, func() {})
 	require.NoError(t, err)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 300*time.Millisecond)
-	defer cancel()
+	t.Cleanup(cancel)
 	waited := false
 	_, err = lockFile(ctx, path, func() { waited = true })
-	assert.ErrorIs(t, err, context.DeadlineExceeded)
+	require.ErrorIs(t, err, context.DeadlineExceeded)
 	assert.True(t, waited, "the caller is told it's waiting")
 
 	unlock()

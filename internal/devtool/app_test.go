@@ -202,6 +202,8 @@ func newHarness(t *testing.T, main bool) *harness {
 }
 
 func TestStartAllRunsBothServersAgainstTheWorktreeDatabase(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	h.database.databases["pdt_worktree"] = true
 
@@ -216,6 +218,8 @@ func TestStartAllRunsBothServersAgainstTheWorktreeDatabase(t *testing.T) {
 }
 
 func TestStartCopiesTheMainDatabaseIntoANewWorktree(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	h.database.databases["pdt"] = true
 
@@ -226,6 +230,8 @@ func TestStartCopiesTheMainDatabaseIntoANewWorktree(t *testing.T) {
 }
 
 func TestStartCreatesAnEmptyDatabaseWithoutAMainDatabase(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 
 	require.NoError(t, h.app.Run(context.Background(), []string{"start", "api"}))
@@ -235,6 +241,8 @@ func TestStartCreatesAnEmptyDatabaseWithoutAMainDatabase(t *testing.T) {
 }
 
 func TestStartWebRefusesToGuessAnAPI(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 
 	err := h.app.Run(context.Background(), []string{"start", "web"})
@@ -246,13 +254,15 @@ func TestStartWebRefusesToGuessAnAPI(t *testing.T) {
 }
 
 func TestStartWebUsesTheRecordedAPIPort(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	lease, err := (&FilePortAllocator{LockRoot: portLockRoot(h.env), Owner: h.env.CurrentRoot}).Acquire(freePort(t))
 	require.NoError(t, err)
-	defer func() { _ = lease.Close() }()
+	t.Cleanup(func() { _ = lease.Close() })
 	forget, err := recordAPIPort(h.env, lease.Port())
 	require.NoError(t, err)
-	defer forget()
+	t.Cleanup(forget)
 
 	require.NoError(t, h.app.Run(context.Background(), []string{"start", "web"}))
 
@@ -260,12 +270,14 @@ func TestStartWebUsesTheRecordedAPIPort(t *testing.T) {
 }
 
 func TestStartWebIgnoresAPortLeftByACrashedLauncher(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	lease, err := (&FilePortAllocator{LockRoot: portLockRoot(h.env), Owner: h.env.CurrentRoot}).Acquire(freePort(t))
 	require.NoError(t, err)
 	forget, err := recordAPIPort(h.env, lease.Port())
 	require.NoError(t, err)
-	defer forget()
+	t.Cleanup(forget)
 	// The launcher died without cleaning up: the file remains, the lease doesn't.
 	require.NoError(t, lease.Close())
 
@@ -276,13 +288,15 @@ func TestStartWebIgnoresAPortLeftByACrashedLauncher(t *testing.T) {
 }
 
 func TestStartWebIgnoresAPortAnotherWorktreeLeased(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	lease, err := (&FilePortAllocator{LockRoot: portLockRoot(h.env), Owner: "/some/other/worktree"}).Acquire(freePort(t))
 	require.NoError(t, err)
-	defer func() { _ = lease.Close() }()
+	t.Cleanup(func() { _ = lease.Close() })
 	forget, err := recordAPIPort(h.env, lease.Port())
 	require.NoError(t, err)
-	defer forget()
+	t.Cleanup(forget)
 
 	err = h.app.Run(context.Background(), []string{"start", "web"})
 
@@ -291,10 +305,12 @@ func TestStartWebIgnoresAPortAnotherWorktreeLeased(t *testing.T) {
 }
 
 func TestConfirmStopsWaitingWhenInterrupted(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	reader, writer, err := os.Pipe()
 	require.NoError(t, err)
-	defer func() { _ = writer.Close() }()
+	t.Cleanup(func() { _ = writer.Close() })
 	h.app.Stdin = reader
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
@@ -308,6 +324,8 @@ func TestConfirmStopsWaitingWhenInterrupted(t *testing.T) {
 }
 
 func TestDatabaseStop(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 
 	require.NoError(t, h.app.Run(context.Background(), []string{"db", "stop"}))
@@ -316,6 +334,8 @@ func TestDatabaseStop(t *testing.T) {
 }
 
 func TestDatabaseCreateDoesNotApplyMigrations(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	h.database.databases["pdt_worktree"] = true
 
@@ -325,6 +345,8 @@ func TestDatabaseCreateDoesNotApplyMigrations(t *testing.T) {
 }
 
 func TestStartWebStagingUsesTheStagingAPI(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 
 	require.NoError(t, h.app.Run(context.Background(), []string{"start", "web-staging"}))
@@ -334,6 +356,8 @@ func TestStartWebStagingUsesTheStagingAPI(t *testing.T) {
 }
 
 func TestStartGivesEachWorktreeItsOwnLoginToken(t *testing.T) {
+	t.Parallel()
+
 	main := newHarness(t, true)
 	main.database.databases["pdt"] = true
 	require.NoError(t, main.app.Run(context.Background(), []string{"start"}))
@@ -347,6 +371,8 @@ func TestStartGivesEachWorktreeItsOwnLoginToken(t *testing.T) {
 }
 
 func TestStartWebStagingKeepsItsLoginApart(t *testing.T) {
+	t.Parallel()
+
 	main := newHarness(t, true)
 	require.NoError(t, main.app.Run(context.Background(), []string{"start", "web-staging"}))
 	assert.Equal(t, "staging", main.processes.servers.TokenNamespace)
@@ -357,6 +383,8 @@ func TestStartWebStagingKeepsItsLoginApart(t *testing.T) {
 }
 
 func TestStartPreviewRunsOnlyTheBinary(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	h.database.databases["pdt_worktree"] = true
 
@@ -370,11 +398,15 @@ func TestStartPreviewRunsOnlyTheBinary(t *testing.T) {
 }
 
 func TestStartRejectsUnknownModes(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	assert.Error(t, h.app.Run(context.Background(), []string{"start", "everything"}))
 }
 
 func TestTestRunsAgainstTheWorktreeTestDatabase(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 
 	require.NoError(t, h.app.Run(context.Background(), []string{"test"}))
@@ -387,6 +419,8 @@ func TestTestRunsAgainstTheWorktreeTestDatabase(t *testing.T) {
 }
 
 func TestTestUsesAnExistingServerWhenTold(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	h.getenv[testDatabasePortEnv] = "5433"
 
@@ -400,6 +434,8 @@ func TestTestUsesAnExistingServerWhenTold(t *testing.T) {
 }
 
 func TestResetAsksBeforeDeletingData(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	h.database.databases["pdt_worktree"] = true
 
@@ -413,11 +449,15 @@ func TestResetAsksBeforeDeletingData(t *testing.T) {
 }
 
 func TestCloneRequiresALinkedWorktree(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, true)
 	assert.Error(t, h.app.Run(context.Background(), []string{"clone"}))
 }
 
 func TestCloneToMainSwapsDirection(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	h.database.databases["pdt_worktree"] = true
 	h.app.Stdin = strings.NewReader("y\n")
@@ -429,6 +469,8 @@ func TestCloneToMainSwapsDirection(t *testing.T) {
 }
 
 func TestPsqlCreatesAndMigratesAMissingDatabase(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 
 	require.NoError(t, h.app.Run(context.Background(), []string{"psql", "--test"}))
@@ -439,6 +481,8 @@ func TestPsqlCreatesAndMigratesAMissingDatabase(t *testing.T) {
 }
 
 func TestPsqlLeavesAnExistingDatabaseAlone(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	h.database.databases["pdt_worktree"] = true
 
@@ -459,6 +503,8 @@ func writeSeeds(t *testing.T, h *harness) {
 }
 
 func TestANewEmptyDatabaseIsSeeded(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 
@@ -469,6 +515,8 @@ func TestANewEmptyDatabaseIsSeeded(t *testing.T) {
 }
 
 func TestADatabaseCopiedFromMainIsNotSeededAgain(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 	h.database.databases["pdt"] = true
@@ -480,6 +528,8 @@ func TestADatabaseCopiedFromMainIsNotSeededAgain(t *testing.T) {
 }
 
 func TestStartLeavesAnExistingDatabaseAloneButSaysItIsEmpty(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 	h.database.databases["pdt_worktree"] = true
@@ -491,6 +541,8 @@ func TestStartLeavesAnExistingDatabaseAloneButSaysItIsEmpty(t *testing.T) {
 }
 
 func TestStartIsQuietWhenTheDatabaseIsSeeded(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 	h.database.databases["pdt_worktree"] = true
@@ -502,6 +554,8 @@ func TestStartIsQuietWhenTheDatabaseIsSeeded(t *testing.T) {
 }
 
 func TestBranchesWithoutSeedsSkipSeeding(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 
 	require.NoError(t, h.app.Run(context.Background(), []string{"start", "air"}))
@@ -512,6 +566,8 @@ func TestBranchesWithoutSeedsSkipSeeding(t *testing.T) {
 }
 
 func TestResetSeedsTheRecreatedDatabase(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 	h.database.databases["pdt_worktree"] = true
@@ -523,6 +579,8 @@ func TestResetSeedsTheRecreatedDatabase(t *testing.T) {
 }
 
 func TestSeedReloadsAnExistingDatabase(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 	h.database.databases["pdt_worktree"] = true
@@ -533,6 +591,8 @@ func TestSeedReloadsAnExistingDatabase(t *testing.T) {
 }
 
 func TestSeedingAMissingDatabaseSeedsOnce(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 
@@ -543,6 +603,8 @@ func TestSeedingAMissingDatabaseSeedsOnce(t *testing.T) {
 }
 
 func TestStartPointsAnOutdatedDatabaseAtReset(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 	h.database.databases["pdt_worktree"] = true
@@ -555,6 +617,8 @@ func TestStartPointsAnOutdatedDatabaseAtReset(t *testing.T) {
 }
 
 func TestSeedNeedsSeedFiles(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 
 	err := h.app.Run(context.Background(), []string{"db", "seed"})
@@ -564,6 +628,8 @@ func TestSeedNeedsSeedFiles(t *testing.T) {
 }
 
 func TestPullNeedsTheProductionURL(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 
 	err := h.app.Run(context.Background(), []string{"db", "pull"})
@@ -574,6 +640,8 @@ func TestPullNeedsTheProductionURL(t *testing.T) {
 }
 
 func TestPullWritesSeedsForThisWorktree(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	h.database.databases["pdt_worktree"] = true
 	h.getenv[productionDatabaseURLEnv] = "postgres://prod"
@@ -587,6 +655,8 @@ func TestPullWritesSeedsForThisWorktree(t *testing.T) {
 }
 
 func TestE2ERebuildsItsDatabaseAndRunsOneBrowser(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 
@@ -600,6 +670,8 @@ func TestE2ERebuildsItsDatabaseAndRunsOneBrowser(t *testing.T) {
 }
 
 func TestE2EAllRunsEveryBrowser(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 
@@ -610,15 +682,19 @@ func TestE2EAllRunsEveryBrowser(t *testing.T) {
 }
 
 func TestE2ERejectsUnknownBrowsers(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 
-	assert.Error(t, h.app.Run(context.Background(), []string{"e2e"}))
-	assert.Error(t, h.app.Run(context.Background(), []string{"e2e", "safari"}))
+	require.Error(t, h.app.Run(context.Background(), []string{"e2e"}))
+	require.Error(t, h.app.Run(context.Background(), []string{"e2e", "safari"}))
 	assert.Empty(t, h.database.calls)
 }
 
 func TestE2ENeedsSeedFiles(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 
 	err := h.app.Run(context.Background(), []string{"e2e", "chromium"})
@@ -628,6 +704,8 @@ func TestE2ENeedsSeedFiles(t *testing.T) {
 }
 
 func TestVisualComparesTheBranchWithTheReference(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 
@@ -653,6 +731,8 @@ func TestVisualComparesTheBranchWithTheReference(t *testing.T) {
 }
 
 func TestVisualTakesARefAndEveryBrowser(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 
@@ -663,9 +743,11 @@ func TestVisualTakesARefAndEveryBrowser(t *testing.T) {
 }
 
 func TestVisualListsWhatDidNotPass(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
-	h.processes.visualErr = map[string]error{"branch": &VisualFailure{
+	h.processes.visualErr = map[string]error{"branch": &VisualFailureError{
 		Differ:      []string{"[webkit-desktop] profile › own profile"},
 		Failed:      []string{"[webkit-phone] tracker › search"},
 		Interrupted: []string{"[webkit-desktop] tooltips › evolution notes"},
@@ -683,9 +765,11 @@ func TestVisualListsWhatDidNotPass(t *testing.T) {
 }
 
 func TestVisualDoesNotPassScreenshotsThatMatchedOnlyOnARetry(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
-	h.processes.visualErr = map[string]error{"branch": &VisualFailure{
+	h.processes.visualErr = map[string]error{"branch": &VisualFailureError{
 		Flaky: []string{"[chromium-phone] signed out › register"},
 	}}
 
@@ -698,6 +782,8 @@ func TestVisualDoesNotPassScreenshotsThatMatchedOnlyOnARetry(t *testing.T) {
 }
 
 func TestVisualListsTestsRetriedForAHiccup(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 	h.processes.visualRetried = map[string][]string{"branch": {"[webkit-desktop] tracker › search (Test timeout of 60000ms exceeded.)"}}
@@ -709,6 +795,8 @@ func TestVisualListsTestsRetriedForAHiccup(t *testing.T) {
 }
 
 func TestVisualWarnsWhenItCannotFetchTheRef(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 	h.processes.fetchErr = fmt.Errorf("could not resolve host")
@@ -719,28 +807,34 @@ func TestVisualWarnsWhenItCannotFetchTheRef(t *testing.T) {
 }
 
 func TestVisualStopsWhenDockerIsNotReady(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 	h.processes.prepareErr = fmt.Errorf("docker isn't running")
 
 	err := h.app.Run(context.Background(), []string{"visual", "chromium"})
 
-	assert.EqualError(t, err, "docker isn't running")
+	require.EqualError(t, err, "docker isn't running")
 	assert.Equal(t, []string{"prepare visual"}, h.processes.calls, "nothing is checked out or built")
 	assert.Empty(t, h.database.calls)
 }
 
 func TestVisualRejectsBadArguments(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 
-	assert.Error(t, h.app.Run(context.Background(), []string{"visual"}))
-	assert.Error(t, h.app.Run(context.Background(), []string{"visual", "safari"}))
-	assert.Error(t, h.app.Run(context.Background(), []string{"visual", "chromium", "master", "extra"}))
+	require.Error(t, h.app.Run(context.Background(), []string{"visual"}))
+	require.Error(t, h.app.Run(context.Background(), []string{"visual", "safari"}))
+	require.Error(t, h.app.Run(context.Background(), []string{"visual", "chromium", "master", "extra"}))
 	assert.Empty(t, h.processes.calls)
 }
 
 func TestVisualReportsBuildFailuresAsThemselves(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 	h.processes.visualErr = map[string]error{"reference": fmt.Errorf("pnpm exited: exit status 1")}
@@ -752,9 +846,11 @@ func TestVisualReportsBuildFailuresAsThemselves(t *testing.T) {
 }
 
 func TestVisualPointsAtTheReferenceReportWhenItCantBeTaken(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
-	h.processes.visualErr = map[string]error{"reference": &VisualFailure{
+	h.processes.visualErr = map[string]error{"reference": &VisualFailureError{
 		Differ: []string{"[chromium-desktop] signed out › home"},
 	}}
 
@@ -767,6 +863,8 @@ func TestVisualPointsAtTheReferenceReportWhenItCantBeTaken(t *testing.T) {
 }
 
 func TestVisualRemovesTheLastReviewPageWhenItStopsEarly(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 	page := filepath.Join(reviewDir(h.env), "index.html")
@@ -779,10 +877,12 @@ func TestVisualRemovesTheLastReviewPageWhenItStopsEarly(t *testing.T) {
 }
 
 func TestVisualWritesTheReviewPage(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 	h.processes.visualReports = map[string]string{"branch": `{"errors": [], "suites": []}`}
-	h.processes.visualErr = map[string]error{"branch": &VisualFailure{
+	h.processes.visualErr = map[string]error{"branch": &VisualFailureError{
 		Differ: []string{"[chromium-desktop] signed out › login"},
 	}}
 
@@ -795,6 +895,8 @@ func TestVisualWritesTheReviewPage(t *testing.T) {
 }
 
 func TestVisualOnlyWarnsWhenItCantWriteTheReviewPage(t *testing.T) {
+	t.Parallel()
+
 	h := newHarness(t, false)
 	writeSeeds(t, h)
 	h.processes.visualReports = map[string]string{"branch": "not json"}

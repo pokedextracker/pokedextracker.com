@@ -23,6 +23,8 @@ func writeReport(t *testing.T, contents string) *playwrightReport {
 }
 
 func TestVisualReportSortsWhatDidNotPass(t *testing.T) {
+	t.Parallel()
+
 	// Trimmed from a real report: one suite per file, then describe blocks.
 	report := writeReport(t, `{
 		"errors": [],
@@ -62,7 +64,7 @@ func TestVisualReportSortsWhatDidNotPass(t *testing.T) {
 
 	retried, err := report.failure(errors.New("exit status 1"))
 
-	var failure *VisualFailure
+	var failure *VisualFailureError
 	require.ErrorAs(t, err, &failure)
 	assert.Empty(t, retried)
 	assert.Equal(t, []string{"[webkit-desktop] profile › own profile"}, failure.Differ)
@@ -76,6 +78,8 @@ func TestVisualReportSortsWhatDidNotPass(t *testing.T) {
 }
 
 func TestVisualReportPutsErrorsOutsideTheSpecsFirst(t *testing.T) {
+	t.Parallel()
+
 	report := writeReport(t, `{
 		"errors": [{"message": "Error: The server didn't answer within 30 seconds\n    at waitForServer"}],
 		"suites": []
@@ -83,12 +87,14 @@ func TestVisualReportPutsErrorsOutsideTheSpecsFirst(t *testing.T) {
 
 	_, err := report.failure(errors.New("exit status 1"))
 
-	var failure *VisualFailure
-	assert.False(t, errors.As(err, &failure), "not mistaken for screenshots that differ")
+	var failure *VisualFailureError
+	assert.NotErrorAs(t, err, &failure, "not mistaken for screenshots that differ")
 	assert.EqualError(t, err, "playwright: Error: The server didn't answer within 30 seconds")
 }
 
 func TestVisualReportPassesTestsRetriedForHiccups(t *testing.T) {
+	t.Parallel()
+
 	report := writeReport(t, `{
 		"errors": [],
 		"suites": [{"title": "pages.spec.ts", "specs": [], "suites": [{
@@ -127,7 +133,7 @@ func TestVisualReportPassesTestsRetriedForHiccups(t *testing.T) {
 
 	retried, err := report.failure(errors.New("exit status 1"))
 
-	var failure *VisualFailure
+	var failure *VisualFailureError
 	require.ErrorAs(t, err, &failure)
 	assert.Equal(t, []string{"[firefox-desktop] tracker › own dex"}, failure.Flaky, "a screenshot that never settled isn't a hiccup")
 	assert.Equal(t, []string{
@@ -141,10 +147,13 @@ func TestVisualReportPassesTestsRetriedForHiccups(t *testing.T) {
 // was slow rather than different. These are the messages WebKit's busy
 // attempts leave.
 func TestVisualReportPassesRetriesThatOnlyRanOutOfTime(t *testing.T) {
+	t.Parallel()
+
 	flaky := func(title string, messages ...string) string {
 		var errs []string
 		for _, m := range messages {
-			quoted, _ := json.Marshal(m)
+			quoted, err := json.Marshal(m)
+			require.NoError(t, err)
 			errs = append(errs, `{"message": `+string(quoted)+`}`)
 		}
 		return `{"title": "` + title + `", "tests": [{"projectName": "webkit-desktop", "status": "flaky", "results": [
@@ -187,7 +196,7 @@ func TestVisualReportPassesRetriesThatOnlyRanOutOfTime(t *testing.T) {
 
 	retried, err := report.failure(errors.New("exit status 1"))
 
-	var failure *VisualFailure
+	var failure *VisualFailureError
 	require.ErrorAs(t, err, &failure)
 	assert.Equal(t, []string{
 		"[webkit-desktop] tracker › search (Test timeout of 60000ms exceeded.)",
@@ -209,6 +218,8 @@ func TestVisualReportPassesRetriesThatOnlyRanOutOfTime(t *testing.T) {
 // rather than that the test broke. Waiting alone doesn't: an element missing
 // every time could be the page.
 func TestVisualReportListsTestsCutOffOnEveryAttempt(t *testing.T) {
+	t.Parallel()
+
 	report := writeReport(t, `{"errors": [], "suites": [{"title": "pages.spec.ts", "specs": [], "suites": [{
 		"title": "tooltips",
 		"specs": [
@@ -237,7 +248,7 @@ func TestVisualReportListsTestsCutOffOnEveryAttempt(t *testing.T) {
 
 	_, err := report.failure(errors.New("exit status 1"))
 
-	var failure *VisualFailure
+	var failure *VisualFailureError
 	require.ErrorAs(t, err, &failure)
 	assert.Equal(t, []string{
 		"[webkit-desktop] tooltips › evolution notes",
@@ -252,6 +263,8 @@ func TestVisualReportListsTestsCutOffOnEveryAttempt(t *testing.T) {
 }
 
 func TestVisualReportPassesARunWhoseOnlyRetriesWereHiccups(t *testing.T) {
+	t.Parallel()
+
 	report := writeReport(t, `{
 		"errors": [],
 		"suites": [{"title": "pages.spec.ts", "specs": [], "suites": [{
@@ -267,11 +280,13 @@ func TestVisualReportPassesARunWhoseOnlyRetriesWereHiccups(t *testing.T) {
 
 	retried, err := report.failure(errors.New("exit status 1"))
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []string{"[webkit-desktop] signed out › login (Error: page.goto: Connection terminated unexpectedly)"}, retried)
 }
 
 func TestVisualReportFallsBackToTheExitError(t *testing.T) {
+	t.Parallel()
+
 	report := writeReport(t, `{"errors": [], "suites": []}`)
 
 	_, err := report.failure(errors.New("exit status 1"))
@@ -280,6 +295,8 @@ func TestVisualReportFallsBackToTheExitError(t *testing.T) {
 }
 
 func TestVisualReportIsMissingWhenPlaywrightNeverRan(t *testing.T) {
+	t.Parallel()
+
 	_, err := readVisualReport(filepath.Join(t.TempDir(), "results-branch.json"))
 
 	assert.ErrorIs(t, err, os.ErrNotExist)

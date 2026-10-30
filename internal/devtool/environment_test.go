@@ -11,6 +11,8 @@ import (
 )
 
 func TestWorktreeDatabaseName(t *testing.T) {
+	t.Parallel()
+
 	main := "/Users/robin/code/pokedextracker.com"
 
 	assert.Equal(t, "pokedextracker_com", worktreeDatabaseName(main, main), "the main checkout uses the repository name")
@@ -23,6 +25,8 @@ func TestWorktreeDatabaseName(t *testing.T) {
 }
 
 func TestWorktreeDatabaseNameLeavesRoomForTestSuffix(t *testing.T) {
+	t.Parallel()
+
 	main := "/code/" + strings.Repeat("a", 60)
 	name := worktreeDatabaseName(main, "/worktrees/"+strings.Repeat("b", 80))
 
@@ -33,6 +37,8 @@ func TestWorktreeDatabaseNameLeavesRoomForTestSuffix(t *testing.T) {
 }
 
 func TestSanitizeIdentifier(t *testing.T) {
+	t.Parallel()
+
 	assert.Equal(t, "pokedextracker_com", sanitizeIdentifier("PokedexTracker.com"))
 	assert.Equal(t, "a_b", sanitizeIdentifier("--a  b--"))
 	assert.Equal(t, "worktree", sanitizeIdentifier("---"))
@@ -40,6 +46,8 @@ func TestSanitizeIdentifier(t *testing.T) {
 }
 
 func TestPostgresPortRoundTrip(t *testing.T) {
+	t.Parallel()
+
 	root := t.TempDir()
 
 	port, err := readPostgresPort(root)
@@ -53,6 +61,8 @@ func TestPostgresPortRoundTrip(t *testing.T) {
 }
 
 func TestReadPostgresPortRejectsGarbage(t *testing.T) {
+	t.Parallel()
+
 	root := t.TempDir()
 	require.NoError(t, os.MkdirAll(filepath.Join(root, "tmp"), 0o755))
 	require.NoError(t, os.WriteFile(postgresEnvironmentPath(root), []byte("POSTGRES_PORT=nope\n"), 0o600))

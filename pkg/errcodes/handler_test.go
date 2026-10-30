@@ -11,6 +11,8 @@ import (
 )
 
 func TestHandler(t *testing.T) {
+	t.Parallel()
+
 	h := NewHandler()
 
 	c, rr := test.NewContext(t, nil)
