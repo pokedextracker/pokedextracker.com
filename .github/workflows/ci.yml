@@ -30,13 +30,13 @@ jobs:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('mise.toml', 'pnpm-lock.yaml', 'pnpm-workspace.yaml') }}
 
-      - name: Install dependencies
-        run: mise install:web
-
       - uses: actions/cache@v6
         with:
           path: ~/go/pkg/mod
           key: go-mod-${{ runner.os }}-${{ hashFiles('go.sum') }}
+
+      - name: Install dependencies
+        run: mise install:web
 
       - name: Generate API types
         run: mise tygo

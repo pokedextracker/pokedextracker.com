@@ -31,8 +31,9 @@ type Location struct {
 	GameID    string      `json:"-"`
 	Game      *games.Game `pg:"g,rel:has-one" json:"game" tstype:",required"`
 	PokemonID int         `json:"-"`
-	Value     string      `json:"value" tstype:"string[]"`
-	Values    []string    `pg:",array" json:"values"`
+	// MarshalJSON sends Values as value, so it's a list in the API.
+	Value  string   `json:"value" tstype:"string[]"`
+	Values []string `pg:",array" json:"values"`
 }
 
 type Evolution struct {

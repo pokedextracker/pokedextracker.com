@@ -41,8 +41,8 @@ Run `mise tasks` to see everything else.
 
 The frontend's API types in `app/types/generated` come from the Go models
 (`pkg/*/models.go`) through `tygo.yaml`, so they aren't checked in. `mise
-setup`, `mise start`, `mise lint`, and `mise build` generate them first; after
-changing a model, run `mise tygo` to update them for your editor.
+setup`, `mise start`, and `mise lint` generate them first; after changing a
+model, run `mise tygo` to update them for your editor.
 
 The tasks go through a small dev launcher (`cmd/dev`), so several worktrees
 can run at once without stepping on each other:

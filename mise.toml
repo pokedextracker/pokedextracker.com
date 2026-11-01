@@ -38,7 +38,7 @@ run = "go build -o ./build/api/api-air ./cmd/api"
 
 [tasks."build:web"]
 description = "Build the frontend into internal/webapp/dist"
-depends = ["install:web", "tygo"]
+depends = ["install:web"]
 run = "pnpm build"
 
 [tasks.clean]
@@ -71,9 +71,11 @@ run = "pnpm install --frozen-lockfile"
 [tasks.start]
 description = "Start the API with hot reload and the frontend dev server pointed at it"
 # The generated types are only for type checking (the dev server ignores them),
-# but an editor needs them.
-depends = ["tygo"]
-run = "go run ./cmd/dev start"
+# so failing to generate them, like on a half-edited model, doesn't stop it.
+run = [
+  "tygo generate || echo 'Could not generate the API types, so an editor may show old ones.'",
+  "go run ./cmd/dev start",
+]
 
 [tasks."start:air"]
 description = "Start just the API with hot reload"
@@ -114,17 +116,17 @@ description = "Run ESLint, Prettier, and TypeScript checks"
 depends = ["tygo"]
 run = "pnpm lint:all"
 
+[tasks.format]
+description = "Format the code with Prettier"
+run = "pnpm format"
+
 # === Generated Types ===
 
 [tasks.tygo]
 description = "Generate the frontend's API types in app/types/generated from the Go models"
-run = "tygo generate"
-sources = ["tygo.yaml", "pkg/*/models.go"]
-outputs = ["app/types/generated/*.ts"]
-
-[tasks.format]
-description = "Format the code with Prettier"
-run = "pnpm format"
+# From scratch every time, so a file can't go stale or outlive its package. It
+# takes a fraction of a second.
+run = ["rm -rf app/types/generated", "tygo generate"]
 
 # === Testing ===
 
