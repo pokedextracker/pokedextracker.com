@@ -1,0 +1,73 @@
+# Generates the frontend's API types in app/types/generated from the Go models,
+# so the two can't drift apart. mise tygo runs it, as do mise setup, start, and
+# lint. It only reads models.go, which keeps the types declared inside the
+# JSON methods in json.go out of the output.
+#
+# Where a model's JSON differs from its Go type, its field has a tstype tag: a
+# pointer the API always fills in is ",required", one it sends as null is
+# "T | null,required", a list of pointers is "T[]", and "-" leaves a field out.
+# Other pointers are omitempty, which tygo makes optional. A test
+# (internal/devtool/tygo_test.go) fails on a pointer that has neither.
+#
+# Anything from another package that isn't mapped here comes out as unknown, so
+# using it fails the type check instead of quietly going unchecked.
+type_mappings:
+  time.Time: "string /* RFC3339 */"
+  # Models from other packages, imported in each file's frontmatter.
+  dextypes.DexType: "DexType"
+  games.Game: "Game"
+  games.GameFamily: "GameFamily"
+  pokemoncaptures.Pokemon: "CapturePokemon"
+
+packages:
+  - path: "github.com/pokedextracker/pokedextracker.com/pkg/auth"
+    output_path: "app/types/generated/auth.ts"
+    include_files:
+      - models.go
+    fallback_type: unknown
+  - path: "github.com/pokedextracker/pokedextracker.com/pkg/dextypes"
+    output_path: "app/types/generated/dextypes.ts"
+    include_files:
+      - models.go
+    fallback_type: unknown
+  - path: "github.com/pokedextracker/pokedextracker.com/pkg/games"
+    output_path: "app/types/generated/games.ts"
+    include_files:
+      - models.go
+    fallback_type: unknown
+  - path: "github.com/pokedextracker/pokedextracker.com/pkg/captures"
+    output_path: "app/types/generated/captures.ts"
+    include_files:
+      - models.go
+    fallback_type: unknown
+    frontmatter: |
+      import type { Pokemon as CapturePokemon } from "./pokemoncaptures";
+  - path: "github.com/pokedextracker/pokedextracker.com/pkg/dexes"
+    output_path: "app/types/generated/dexes.ts"
+    include_files:
+      - models.go
+    fallback_type: unknown
+    frontmatter: |
+      import type { DexType } from "./dextypes";
+      import type { Game } from "./games";
+  - path: "github.com/pokedextracker/pokedextracker.com/pkg/pokemon"
+    output_path: "app/types/generated/pokemon.ts"
+    include_files:
+      - models.go
+    fallback_type: unknown
+    frontmatter: |
+      import type { Game, GameFamily } from "./games";
+  - path: "github.com/pokedextracker/pokedextracker.com/pkg/pokemoncaptures"
+    output_path: "app/types/generated/pokemoncaptures.ts"
+    include_files:
+      - models.go
+    fallback_type: unknown
+    frontmatter: |
+      import type { GameFamily } from "./games";
+  - path: "github.com/pokedextracker/pokedextracker.com/pkg/users"
+    output_path: "app/types/generated/users.ts"
+    include_files:
+      - models.go
+    fallback_type: unknown
+    frontmatter: |
+      import type { Dex } from "./dexes";

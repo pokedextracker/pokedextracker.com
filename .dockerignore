@@ -366,3 +366,5 @@ tmp
 internal/webapp/dist
 playwright-report
 test-results
+# Generated from the Go models, and only used for type checking.
+app/types/generated/

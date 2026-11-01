@@ -11,7 +11,7 @@ type Capture struct {
 
 	DexID        int                      `json:"dex_id"`
 	PokemonID    int                      `json:"-"`
-	Pokemon      *pokemoncaptures.Pokemon `pg:"p,rel:has-one" json:"pokemon"`
+	Pokemon      *pokemoncaptures.Pokemon `pg:"p,rel:has-one" json:"pokemon" tstype:",required"`
 	Captured     bool                     `pg:",use_zero" json:"captured"`
 	DateCreated  time.Time                `json:"-"`
 	DateModified time.Time                `json:"-"`

@@ -11,6 +11,7 @@ import tseslint from "typescript-eslint";
 export default defineConfig(
   {
     ignores: [
+      "app/types/generated",
       "build",
       "internal/webapp/dist",
       "playwright-report",

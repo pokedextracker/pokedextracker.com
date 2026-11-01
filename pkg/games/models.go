@@ -19,6 +19,6 @@ type Game struct {
 	ID           string      `json:"id"`
 	Name         string      `json:"name"`
 	GameFamilyID string      `json:"-"`
-	GameFamily   *GameFamily `pg:"gf,rel:has-one" json:"game_family"`
+	GameFamily   *GameFamily `pg:"gf,rel:has-one" json:"game_family" tstype:",required"`
 	Order        int         `json:"order"`
 }

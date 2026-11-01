@@ -4,6 +4,7 @@ node = "26.12.0"
 pnpm = "12.14.0"
 "github:air-verse/air" = "1.67.4"
 "github:golangci/golangci-lint" = "2.13.2"
+"github:gzuidhof/tygo" = "0.2.21"
 
 [env]
 # Local secrets (deploy tokens, credentials for pulling data) live in .env,
@@ -69,7 +70,12 @@ run = "pnpm install --frozen-lockfile"
 
 [tasks.start]
 description = "Start the API with hot reload and the frontend dev server pointed at it"
-run = "go run ./cmd/dev start"
+# The generated types are only for type checking (the dev server ignores them),
+# so failing to generate them, like on a half-edited model, doesn't stop it.
+run = [
+  "tygo generate || echo 'Could not generate the API types, so an editor may show old ones.'",
+  "go run ./cmd/dev start",
+]
 
 [tasks."start:air"]
 description = "Start just the API with hot reload"
@@ -107,11 +113,20 @@ run = "golangci-lint run"
 
 [tasks."lint:web"]
 description = "Run ESLint, Prettier, and TypeScript checks"
+depends = ["tygo"]
 run = "pnpm lint:all"
 
 [tasks.format]
 description = "Format the code with Prettier"
 run = "pnpm format"
+
+# === Generated Types ===
+
+[tasks.tygo]
+description = "Generate the frontend's API types in app/types/generated from the Go models"
+# From scratch every time, so a file can't go stale or outlive its package. It
+# takes a fraction of a second.
+run = ["rm -rf app/types/generated", "tygo generate"]
 
 # === Testing ===
 
@@ -228,6 +243,7 @@ run = [
   "mise install",
   "mise install:go",
   "mise install:web",
+  "mise tygo",
   "mise install:browsers",
   "go run ./cmd/dev setup",
 ]

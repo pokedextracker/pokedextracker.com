@@ -19,18 +19,27 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # Installs the Node.js and pnpm versions pinned in mise.toml.
+      # Installs the Node.js, pnpm, Go, and tygo versions pinned in mise.toml.
+      # Go and tygo generate the API types from the Go models.
       - uses: jdx/mise-action@v5
         with:
-          install_args: node pnpm
+          install_args: node pnpm go github:gzuidhof/tygo
 
       - uses: actions/cache@v6
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('mise.toml', 'pnpm-lock.yaml', 'pnpm-workspace.yaml') }}
 
+      - uses: actions/cache@v6
+        with:
+          path: ~/go/pkg/mod
+          key: go-mod-${{ runner.os }}-${{ hashFiles('go.sum') }}
+
       - name: Install dependencies
         run: mise install:web
+
+      - name: Generate API types
+        run: mise tygo
 
       - name: Lint
         run: pnpm lint

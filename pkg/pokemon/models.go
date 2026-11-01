@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/pokedextracker/pokedextracker.com/pkg/games"
-	"github.com/segmentio/encoding/json"
 )
 
 type Pokemon struct {
@@ -14,14 +13,14 @@ type Pokemon struct {
 	NationalID        int               `json:"national_id"`
 	Name              string            `json:"name"`
 	GameFamilyID      string            `json:"-"`
-	GameFamily        *games.GameFamily `pg:"gf,rel:has-one" json:"game_family"`
-	Form              *string           `json:"form"`
-	Box               *string           `pg:"-" json:"box"`
+	GameFamily        *games.GameFamily `pg:"gf,rel:has-one" json:"game_family" tstype:",required"`
+	Form              *string           `json:"form" tstype:"string | null,required"`
+	Box               *string           `pg:"-" json:"box" tstype:"string | null,required"`
 	DexNumber         int               `pg:"-" json:"dex_number"`
-	Locations         []*Location       `pg:"l,rel:has-many" json:"locations"`
+	Locations         []*Location       `pg:"l,rel:has-many" json:"locations" tstype:"Location[]"`
 	NationalOrder     int               `json:"-"`
 	EvolutionFamilyID int               `json:"-"`
-	EvolutionFamily   *EvolutionFamily  `pg:"-" json:"evolution_family"`
+	EvolutionFamily   *EvolutionFamily  `pg:"-" json:"evolution_family" tstype:",required"`
 	DateCreated       time.Time         `json:"-"`
 	DateModified      time.Time         `json:"-"`
 }
@@ -30,22 +29,11 @@ type Location struct {
 	tableName struct{} `pg:"locations,alias:l"`
 
 	GameID    string      `json:"-"`
-	Game      *games.Game `pg:"g,rel:has-one" json:"game"`
+	Game      *games.Game `pg:"g,rel:has-one" json:"game" tstype:",required"`
 	PokemonID int         `json:"-"`
-	Value     string      `json:"value"`
-	Values    []string    `pg:",array" json:"values"`
-}
-
-// MarshalJSON is just needed for parity testing. Once we're actually using this in production, we can remove it.
-func (l *Location) MarshalJSON() ([]byte, error) {
-	type Alias Location
-	return json.Marshal(&struct {
-		*Alias
-		Value []string `json:"value"`
-	}{
-		Alias: (*Alias)(l),
-		Value: l.Values,
-	})
+	// MarshalJSON sends Values as value, so it's a list in the API.
+	Value  string   `json:"value" tstype:"string[]"`
+	Values []string `pg:",array" json:"values"`
 }
 
 type Evolution struct {
@@ -68,8 +56,8 @@ type Evolution struct {
 }
 
 type EvolutionFamily struct {
-	Pokemon    [][]*EvolutionPokemon `json:"pokemon"`
-	Evolutions [][]*Evolution        `json:"evolutions"`
+	Pokemon    [][]*EvolutionPokemon `json:"pokemon" tstype:"EvolutionPokemon[][]"`
+	Evolutions [][]*Evolution        `json:"evolutions" tstype:"Evolution[][]"`
 }
 
 type EvolutionPokemon struct {
@@ -80,5 +68,5 @@ type EvolutionPokemon struct {
 	Name         string            `json:"name"`
 	GameFamilyID string            `json:"-"`
 	GameFamily   *games.GameFamily `pg:"gf,rel:has-one" json:"-"`
-	Form         *string           `json:"form"`
+	Form         *string           `json:"form" tstype:"string | null,required"`
 }

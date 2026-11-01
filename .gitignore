@@ -372,3 +372,5 @@ internal/webapp/dist/*
 # Playwright results
 playwright-report/
 test-results/
+# Generated from the Go models by mise tygo.
+app/types/generated/
