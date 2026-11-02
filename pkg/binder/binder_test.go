@@ -1,11 +1,12 @@
 package binder
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -34,7 +35,7 @@ func TestNew(t *testing.T) {
 
 		c := newContext(goodJSON, echo.MIMEApplicationXML)
 		p := params{}
-		err := b.Bind(&p, c)
+		err := b.Bind(c, &p)
 		assert.Contains(tt, err.Error(), "unsupported media type")
 	})
 
@@ -43,7 +44,7 @@ func TestNew(t *testing.T) {
 
 		c := newContext(goodJSON, echo.MIMEApplicationJSON+"; charset=UTF-8")
 		p := params{}
-		err := b.Bind(&p, c)
+		err := b.Bind(c, &p)
 		require.NoError(tt, err)
 		assert.Equal(tt, "world", p.Hello)
 	})
@@ -53,7 +54,7 @@ func TestNew(t *testing.T) {
 
 		c := newContext(unknownFieldsErrJSON, echo.MIMEApplicationJSON)
 		p := params{}
-		err := b.Bind(&p, c)
+		err := b.Bind(c, &p)
 		assert.Contains(tt, err.Error(), `unknown parameter "foo"`)
 	})
 
@@ -62,7 +63,7 @@ func TestNew(t *testing.T) {
 
 		c := newContext(typeErrJSON, echo.MIMEApplicationJSON)
 		p := params{}
-		err := b.Bind(&p, c)
+		err := b.Bind(c, &p)
 		assert.Contains(tt, err.Error(), `"hello" should be of type string`)
 	})
 
@@ -73,7 +74,7 @@ func TestNew(t *testing.T) {
 		p := struct {
 			Pokemon []int `json:"pokemon"`
 		}{}
-		err := b.Bind(&p, c)
+		err := b.Bind(c, &p)
 		assert.Contains(tt, err.Error(), `"pokemon" should be of type int`)
 	})
 
@@ -82,7 +83,7 @@ func TestNew(t *testing.T) {
 
 		c := newContext(goodJSON, echo.MIMEApplicationJSON)
 		p := params{}
-		err := b.Bind(&p, c)
+		err := b.Bind(c, &p)
 		require.NoError(tt, err)
 		assert.Equal(tt, "world", p.Hello)
 	})
@@ -92,14 +93,14 @@ func TestNew(t *testing.T) {
 
 		c := newContext(validationErrJSON, echo.MIMEApplicationJSON)
 		p := params{}
-		err := b.Bind(&p, c)
+		err := b.Bind(c, &p)
 		assert.Contains(tt, err.Error(), "length must be less than or equal to 9 characters")
 	})
 }
 
-func newContext(payload, mime string) echo.Context {
+func newContext(payload, mime string) *echo.Context {
 	e := echo.New()
-	req := httptest.NewRequest(echo.POST, "/", strings.NewReader(payload))
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(payload))
 	req.Header.Set(echo.HeaderContentType, mime)
 	rr := httptest.NewRecorder()
 	return e.NewContext(req, rr)

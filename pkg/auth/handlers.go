@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/pkg/errors"
 	"github.com/pokedextracker/pokedextracker.com/pkg/errcodes"
 	"golang.org/x/crypto/bcrypt"
@@ -14,7 +14,7 @@ type handler struct {
 	authService *Service
 }
 
-func (h *handler) create(c echo.Context) error {
+func (h *handler) create(c *echo.Context) error {
 	ctx := c.Request().Context()
 
 	params := createParams{}

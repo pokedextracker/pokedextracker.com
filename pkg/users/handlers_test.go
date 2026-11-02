@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/pokedextracker/pokedextracker.com/pkg/binder"
 	"github.com/pokedextracker/pokedextracker.com/pkg/errcodes"
 	"github.com/stretchr/testify/assert"

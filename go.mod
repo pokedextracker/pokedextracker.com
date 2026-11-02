@@ -11,8 +11,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/gorilla/schema v1.4.1
 	github.com/iancoleman/strcase v0.3.0
-	github.com/labstack/echo/v4 v4.16.3
-	github.com/labstack/gommon v0.5.0
+	github.com/labstack/echo/v5 v5.4.4
 	github.com/pkg/errors v0.9.1
 	github.com/robinjoseph08/go-pg-migrations/v3 v3.1.0
 	github.com/robinjoseph08/golib v0.6.0
@@ -66,8 +65,6 @@ require (
 	github.com/trivago/tgo v1.0.7 // indirect
 	github.com/tsuyoshiwada/go-gitcmd v0.0.0-20180205145712-5f1f5f9475df // indirect
 	github.com/urfave/cli/v2 v2.27.7 // indirect
-	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/vmihailenco/bufpool v0.1.11 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser v0.1.2 // indirect

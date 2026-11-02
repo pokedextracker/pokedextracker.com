@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/pkg/errors"
 	"github.com/pokedextracker/pokedextracker.com/pkg/config"
 	glogger "github.com/robinjoseph08/golib/logger"
@@ -101,7 +101,7 @@ func registerAnalytics(e *echo.Echo, rawURL string) error {
 
 	e.GET(analyticsPrefix+analyticsScriptPath, forward)
 	e.HEAD(analyticsPrefix+analyticsScriptPath, forward)
-	e.POST(analyticsPrefix+analyticsSendPath, func(c echo.Context) error {
+	e.POST(analyticsPrefix+analyticsSendPath, func(c *echo.Context) error {
 		if c.Request().ContentLength > analyticsMaxBody {
 			c.Response().Header().Set("Cache-Control", "no-store")
 			return errors.WithStack(c.NoContent(http.StatusRequestEntityTooLarge))

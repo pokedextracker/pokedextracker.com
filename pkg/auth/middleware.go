@@ -4,7 +4,7 @@ import (
 	"regexp"
 
 	"github.com/go-pg/pg/v10"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/pkg/errors"
 	"github.com/pokedextracker/pokedextracker.com/pkg/config"
 	"github.com/pokedextracker/pokedextracker.com/pkg/errcodes"
@@ -26,7 +26,7 @@ func Middleware(cfg *config.Config, db *pg.DB) (echo.MiddlewareFunc, echo.Middle
 
 func newMiddlewareFunction(authService *Service, shouldEnforce bool) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			ctx := c.Request().Context()
 
 			authHeader := c.Request().Header.Get("Authorization")
@@ -70,7 +70,7 @@ func newMiddlewareFunction(authService *Service, shouldEnforce bool) echo.Middle
 	}
 }
 
-func FromContext(c echo.Context) *Session {
+func FromContext(c *echo.Context) *Session {
 	sess, ok := c.Get(sessionKey).(*Session)
 	if !ok {
 		return nil

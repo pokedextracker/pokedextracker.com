@@ -2,13 +2,12 @@ package errcodes
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/iancoleman/strcase"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/pkg/errors"
-	"github.com/robinjoseph08/golib/echo/v4/middleware/logger"
+	"github.com/robinjoseph08/golib/echo/v5/middleware/logger"
 	"github.com/robinjoseph08/golib/errutils"
 	"github.com/rollbar/rollbar-go"
 )
@@ -21,7 +20,7 @@ func NewHandler() *Handler {
 
 // Handle is an Echo error handler that uses HTTP errors accordingly, and any
 // generic error will be interpreted as an internal server error.
-func (h *Handler) Handle(err error, c echo.Context) {
+func (h *Handler) Handle(c *echo.Context, err error) {
 	if errutils.IsIgnorableErr(err) {
 		logger.FromEchoContext(c).Warn("broken pipe")
 		return
@@ -54,21 +53,32 @@ func (h *Handler) Handle(err error, c echo.Context) {
 		logger.FromEchoContext(c).Err(err).Error("server error")
 	}
 
+	// A response that's already started, like a proxied one cut short, can't
+	// take the error too.
+	if response, err := echo.UnwrapResponse(c.Response()); err == nil && response.Committed {
+		return
+	}
+
 	if err := c.JSON(httpCode, payload); err != nil {
 		logger.FromEchoContext(c).Err(errors.WithStack(err)).Error("error handler json error")
 	}
 }
 
-func (h *Handler) generatePayload(_ echo.Context, err error) (int, map[string]any) {
+func (h *Handler) generatePayload(_ *echo.Context, err error) (int, map[string]any) {
 	code := ""
 	msg := ""
 	httpCode := http.StatusInternalServerError
 
-	// Echo errors
-	var he *echo.HTTPError
-	if ok := errors.As(err, &he); ok {
-		httpCode = he.Code
-		msg = fmt.Sprint(he.Message)
+	// Echo errors. Its own, like ErrMethodNotAllowed, only have a status code,
+	// which their message comes from.
+	var coded echo.HTTPStatusCoder
+	if ok := errors.As(err, &coded); ok {
+		httpCode = coded.StatusCode()
+		msg = http.StatusText(httpCode)
+		var he *echo.HTTPError
+		if ok := errors.As(err, &he); ok && he.Message != "" {
+			msg = he.Message
+		}
 		code = strcase.ToSnake(msg)
 	}
 

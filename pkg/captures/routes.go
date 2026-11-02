@@ -2,7 +2,7 @@ package captures
 
 import (
 	"github.com/go-pg/pg/v10"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/pokedextracker/pokedextracker.com/pkg/dexes"
 	"github.com/pokedextracker/pokedextracker.com/pkg/pokemon"
 )

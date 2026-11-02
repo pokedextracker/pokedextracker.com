@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/pkg/errors"
 	"github.com/pokedextracker/pokedextracker.com/pkg/auth"
 	"github.com/pokedextracker/pokedextracker.com/pkg/config"
@@ -24,7 +24,7 @@ type handler struct {
 	userService    *Service
 }
 
-func (h *handler) create(c echo.Context) error {
+func (h *handler) create(c *echo.Context) error {
 	ctx := c.Request().Context()
 
 	params := createParams{}
@@ -132,7 +132,7 @@ func (h *handler) create(c echo.Context) error {
 	return errors.WithStack(c.JSON(http.StatusOK, resp))
 }
 
-func (h *handler) retrieve(c echo.Context) error {
+func (h *handler) retrieve(c *echo.Context) error {
 	ctx := c.Request().Context()
 
 	username := c.Param("username")
@@ -147,7 +147,7 @@ func (h *handler) retrieve(c echo.Context) error {
 	return errors.WithStack(c.JSON(http.StatusOK, user))
 }
 
-func (h *handler) list(c echo.Context) error {
+func (h *handler) list(c *echo.Context) error {
 	ctx := c.Request().Context()
 
 	params := listParams{}
@@ -166,7 +166,7 @@ func (h *handler) list(c echo.Context) error {
 	return errors.WithStack(c.JSON(http.StatusOK, users))
 }
 
-func (h *handler) update(c echo.Context) error {
+func (h *handler) update(c *echo.Context) error {
 	ctx := c.Request().Context()
 	session := auth.FromContext(c)
 

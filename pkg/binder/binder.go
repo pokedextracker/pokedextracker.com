@@ -13,10 +13,10 @@ import (
 	"github.com/go-playground/mold/v4/modifiers"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/schema"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/pkg/errors"
 	"github.com/pokedextracker/pokedextracker.com/pkg/errcodes"
-	"github.com/robinjoseph08/golib/echo/v4/middleware/logger"
+	"github.com/robinjoseph08/golib/echo/v5/middleware/logger"
 )
 
 var unknownFieldsRE = regexp.MustCompile(`^json: unknown field "(.*)"$`)
@@ -55,7 +55,7 @@ func New() (*Binder, error) {
 }
 
 // Bind binds, modifies, and validates payloads against the given struct.
-func (b *Binder) Bind(i any, c echo.Context) error {
+func (b *Binder) Bind(c *echo.Context, i any) error {
 	req := c.Request()
 	log := logger.FromEchoContext(c)
 
@@ -103,7 +103,7 @@ func (b *Binder) Bind(i any, c echo.Context) error {
 				return errcodes.MalformedPayload()
 			}
 		case strings.HasPrefix(ctype, echo.MIMEApplicationForm), strings.HasPrefix(ctype, echo.MIMEMultipartForm):
-			params, err := c.FormParams()
+			params, err := c.FormValues()
 			if err != nil {
 				return errcodes.MalformedPayload()
 			}

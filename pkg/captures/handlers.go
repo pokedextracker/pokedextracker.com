@@ -3,7 +3,7 @@ package captures
 import (
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/pkg/errors"
 	"github.com/pokedextracker/pokedextracker.com/pkg/auth"
 	"github.com/pokedextracker/pokedextracker.com/pkg/dexes"
@@ -17,7 +17,7 @@ type handler struct {
 	pokemonService *pokemon.Service
 }
 
-func (h *handler) create(c echo.Context) error {
+func (h *handler) create(c *echo.Context) error {
 	ctx := c.Request().Context()
 	session := auth.FromContext(c)
 
@@ -77,7 +77,7 @@ func (h *handler) create(c echo.Context) error {
 	return errors.WithStack(c.JSON(http.StatusOK, captures))
 }
 
-func (h *handler) list(c echo.Context) error {
+func (h *handler) list(c *echo.Context) error {
 	ctx := c.Request().Context()
 
 	username := c.Param("username")
@@ -124,7 +124,7 @@ func (h *handler) list(c echo.Context) error {
 	return errors.WithStack(c.JSON(http.StatusOK, captures))
 }
 
-func (h *handler) delete(c echo.Context) error {
+func (h *handler) delete(c *echo.Context) error {
 	ctx := c.Request().Context()
 	session := auth.FromContext(c)
 

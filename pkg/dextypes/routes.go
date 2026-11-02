@@ -2,7 +2,7 @@ package dextypes
 
 import (
 	"github.com/go-pg/pg/v10"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 // RegisterRoutes registers routes onto an Echo route group.

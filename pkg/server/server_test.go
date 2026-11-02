@@ -11,10 +11,10 @@ import (
 	"time"
 
 	"github.com/go-pg/pg/v10"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/pokedextracker/pokedextracker.com/pkg/config"
 	"github.com/pokedextracker/pokedextracker.com/pkg/database"
-	"github.com/robinjoseph08/golib/echo/v4/middleware/recovery"
+	"github.com/robinjoseph08/golib/echo/v5/middleware/recovery"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -212,7 +212,7 @@ func blogServer(t *testing.T, upstream string) (*httptest.Server, func() []error
 	e.Use(recovery.Middleware())
 	var mutex sync.Mutex
 	var reported []error
-	e.HTTPErrorHandler = func(err error, _ echo.Context) {
+	e.HTTPErrorHandler = func(_ *echo.Context, err error) {
 		mutex.Lock()
 		defer mutex.Unlock()
 		reported = append(reported, err)
