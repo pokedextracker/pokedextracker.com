@@ -357,6 +357,21 @@ func TestNoBlogFallsThroughToTheFrontend(t *testing.T) {
 	assert.Contains(t, w.Body.String(), "frontend /blog/", "staging has no blog, like today")
 }
 
+func TestAPanicIsAnInternalServerError(t *testing.T) {
+	t.Parallel()
+
+	srv, err := newServer(&config.Config{}, nil, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		panic("something went wrong")
+	}))
+	require.NoError(t, err)
+
+	w := serve(t, srv.Handler, http.MethodGet, "/login", nil)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	assert.Contains(t, w.Body.String(), `"code":"internal_server_error"`)
+	assert.NotContains(t, w.Body.String(), "something went wrong", "a panic's message stays private")
+}
+
 func TestFrontendConfigScript(t *testing.T) {
 	t.Parallel()
 
