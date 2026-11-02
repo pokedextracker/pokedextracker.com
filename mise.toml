@@ -106,9 +106,6 @@ depends = ["lint:go", "lint:web"]
 
 [tasks."lint:go"]
 description = "Run Go linting"
-# Per-worktree cache so concurrent worktrees don't trip golangci-lint's
-# "parallel golangci-lint is running" lock against each other.
-env = { GOLANGCI_LINT_CACHE = "{{config_root}}/tmp/golangci-lint-cache" }
 run = "golangci-lint run"
 
 [tasks."lint:web"]

@@ -2,6 +2,10 @@ version: "2"
 
 run:
   timeout: 5m
+  # By default, a run takes one lock shared by every project on the machine, and
+  # fails if another project holds it for 5 seconds. Skipping it lets worktrees
+  # and projects lint at the same time.
+  allow-parallel-runners: true
 
 linters:
   default: none
