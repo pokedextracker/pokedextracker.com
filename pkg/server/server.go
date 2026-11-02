@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -51,29 +50,26 @@ func New(cfg *config.Config, db *pg.DB) (*http.Server, error) {
 }
 
 func newServer(cfg *config.Config, db *pg.DB, frontend http.Handler) (*http.Server, error) {
-	e := echo.NewWithConfig(echo.Config{
-		// Requests are logged by the logger middleware below.
-		Logger:      slog.New(slog.DiscardHandler),
-		IPExtractor: clientIP(),
-		Router:      echo.NewRouter(echo.RouterConfig{NotFoundHandler: notFoundHandler}),
-	})
-
 	b, err := binder.New()
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	e.Binder = b
+	cors, err := middleware.CORSConfig{AllowOrigins: cfg.CORSAllowedOrigins}.ToMiddleware()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	e := echo.NewWithConfig(echo.Config{
+		Binder:           b,
+		HTTPErrorHandler: errcodes.NewHandler().Handle,
+		IPExtractor:      clientIP(),
+		Router:           echo.NewRouter(echo.RouterConfig{NotFoundHandler: notFoundHandler}),
+	})
 
 	e.Pre(redirectWWW)
 	e.Use(logger.Middleware())
 	e.Use(recovery.Middleware())
-	// Every real environment has origins; a server without any (in tests) has
-	// nothing for CORS to allow, and Echo refuses an empty list.
-	if len(cfg.CORSAllowedOrigins) > 0 {
-		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-			AllowOrigins: cfg.CORSAllowedOrigins,
-		}))
-	}
+	e.Use(cors)
 	// The frontend handler compresses its own files once, and the blog's
 	// upstream compresses its own responses, so only the API is gzipped here.
 	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{Skipper: func(c *echo.Context) bool {
@@ -110,8 +106,6 @@ func newServer(cfg *config.Config, db *pg.DB, frontend http.Handler) (*http.Serv
 		e.GET("/*", echo.WrapHandler(frontend))
 		e.HEAD("/*", echo.WrapHandler(frontend))
 	}
-
-	e.HTTPErrorHandler = errcodes.NewHandler().Handle
 
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", cfg.Port),
@@ -252,12 +246,13 @@ func forwardHeaders(r *httputil.ProxyRequest) {
 
 // serveProxy runs a reverse proxy as an Echo handler.
 func serveProxy(proxy *httputil.ReverseProxy) echo.HandlerFunc {
-	return func(c *echo.Context) (err error) {
+	return func(c *echo.Context) error {
 		// ReverseProxy panics with http.ErrAbortHandler when copying a response
 		// fails partway through. When that's because the visitor left (the
-		// request is canceled), it's routine. A broken upstream is returned as
-		// an error to be reported, since the recovery middleware passes this
-		// panic on without reporting it.
+		// request is canceled), it's routine. A broken upstream gets reported
+		// here, since the recovery middleware passes this panic on without
+		// doing so. It then carries on, so the server drops the connection: a
+		// chunked response that ended normally would pass for a complete one.
 		defer func() {
 			if recovered := recover(); recovered != nil {
 				abort, ok := recovered.(error)
@@ -265,7 +260,8 @@ func serveProxy(proxy *httputil.ReverseProxy) echo.HandlerFunc {
 					panic(recovered)
 				}
 				if c.Request().Context().Err() == nil {
-					err = errors.Wrap(abort, "upstream failed partway through a response")
+					c.Echo().HTTPErrorHandler(c, errors.Wrap(abort, "upstream failed partway through a response"))
+					panic(abort)
 				}
 			}
 		}()

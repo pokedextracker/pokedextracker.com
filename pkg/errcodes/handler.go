@@ -69,12 +69,11 @@ func (h *Handler) generatePayload(_ *echo.Context, err error) (int, map[string]a
 	msg := ""
 	httpCode := http.StatusInternalServerError
 
-	// Echo errors. Its own, like ErrMethodNotAllowed, only have a status code,
-	// which their message comes from.
-	var coded echo.HTTPStatusCoder
-	if ok := errors.As(err, &coded); ok {
-		httpCode = coded.StatusCode()
-		msg = http.StatusText(httpCode)
+	// Echo errors. Its sentinels, like ErrMethodNotAllowed, have no message, so
+	// it comes from the status.
+	if status := echo.StatusCode(err); status != 0 {
+		httpCode = status
+		msg = http.StatusText(status)
 		var he *echo.HTTPError
 		if ok := errors.As(err, &he); ok && he.Message != "" {
 			msg = he.Message

@@ -230,8 +230,8 @@ func TestInvalidUmamiURL(t *testing.T) {
 	db := pg.Connect(&pg.Options{Addr: "127.0.0.1:1"})
 	t.Cleanup(func() { _ = db.Close() })
 	for _, raw := range []string{"umami.example.com", "://nope", "/relative"} {
-		_, err := newServer(&config.Config{UmamiURL: raw, UmamiWebsiteID: "site-1"}, db, fakeFrontend)
-		assert.Error(t, err, raw)
+		_, err := newServer(&config.Config{CORSAllowedOrigins: []string{testOrigin}, UmamiURL: raw, UmamiWebsiteID: "site-1"}, db, fakeFrontend)
+		assert.ErrorContains(t, err, "invalid Umami URL", raw)
 	}
 }
 
