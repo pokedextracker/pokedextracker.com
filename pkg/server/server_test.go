@@ -11,15 +11,17 @@ import (
 	"time"
 
 	"github.com/go-pg/pg/v10"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/pokedextracker/pokedextracker.com/pkg/config"
 	"github.com/pokedextracker/pokedextracker.com/pkg/database"
-	"github.com/robinjoseph08/golib/echo/v4/middleware/recovery"
+	"github.com/robinjoseph08/golib/echo/v5/middleware/recovery"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 // fakeFrontend stands in for the embedded build.
+const testOrigin = "http://localhost:9898"
+
 var fakeFrontend = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_, _ = io.WriteString(w, "frontend "+r.URL.Path+" "+strings.Repeat("x", 2048))
@@ -40,9 +42,17 @@ func serve(t *testing.T, h http.Handler, method, target string, headers map[stri
 // database, so it uses a lazy connection that never dials.
 func testServer(t *testing.T, cfg *config.Config) http.Handler {
 	t.Helper()
+	return testServerWithFrontend(t, cfg, fakeFrontend)
+}
+
+// testServerWithFrontend makes a server with a database it can't reach, and the
+// CORS origin every real environment has some of.
+func testServerWithFrontend(t *testing.T, cfg *config.Config, frontend http.Handler) http.Handler {
+	t.Helper()
 	db := pg.Connect(&pg.Options{Addr: "127.0.0.1:1"})
 	t.Cleanup(func() { _ = db.Close() })
-	srv, err := newServer(cfg, db, fakeFrontend)
+	cfg.CORSAllowedOrigins = append(cfg.CORSAllowedOrigins, testOrigin)
+	srv, err := newServer(cfg, db, frontend)
 	require.NoError(t, err)
 	return srv.Handler
 }
@@ -99,12 +109,7 @@ func TestFrontendServesEverythingElse(t *testing.T) {
 func TestWithoutAFrontendUnknownPathsAreNotFound(t *testing.T) {
 	t.Parallel()
 
-	db := pg.Connect(&pg.Options{Addr: "127.0.0.1:1"})
-	t.Cleanup(func() { _ = db.Close() })
-	srv, err := newServer(&config.Config{}, db, nil)
-	require.NoError(t, err)
-
-	w := serve(t, srv.Handler, http.MethodGet, "/foo", nil)
+	w := serve(t, testServerWithFrontend(t, &config.Config{}, nil), http.MethodGet, "/foo", nil)
 
 	assert.Equal(t, http.StatusNotFound, w.Code)
 	assert.Contains(t, w.Body.String(), "page not found")
@@ -212,7 +217,7 @@ func blogServer(t *testing.T, upstream string) (*httptest.Server, func() []error
 	e.Use(recovery.Middleware())
 	var mutex sync.Mutex
 	var reported []error
-	e.HTTPErrorHandler = func(err error, _ echo.Context) {
+	e.HTTPErrorHandler = func(_ *echo.Context, err error) {
 		mutex.Lock()
 		defer mutex.Unlock()
 		reported = append(reported, err)
@@ -324,6 +329,29 @@ func TestBlogURLPathIsNotJoinedOn(t *testing.T) {
 	assert.Equal(t, "/blog/post/", seen)
 }
 
+// A chunked response that ended normally would pass for a complete one, to a
+// browser or anything caching it.
+func TestBlogUpstreamBreakingMidResponseDropsTheConnection(t *testing.T) {
+	t.Parallel()
+
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = io.WriteString(w, "partial")
+		w.(http.Flusher).Flush()
+		panic(http.ErrAbortHandler)
+	}))
+	t.Cleanup(upstream.Close)
+	srv := httptest.NewServer(testServer(t, &config.Config{BlogURL: upstream.URL}))
+	t.Cleanup(srv.Close)
+
+	response, err := http.Get(srv.URL + "/blog/post/")
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = response.Body.Close() })
+	body, err := io.ReadAll(response.Body)
+
+	require.Error(t, err, "the visitor can tell the page is incomplete")
+	assert.Equal(t, "partial", string(body), "with nothing added to it")
+}
+
 func TestBlogUpstreamBreakingMidResponseIsReported(t *testing.T) {
 	t.Parallel()
 
@@ -355,6 +383,47 @@ func TestNoBlogFallsThroughToTheFrontend(t *testing.T) {
 	w := serve(t, h, http.MethodGet, "/blog/", nil)
 
 	assert.Contains(t, w.Body.String(), "frontend /blog/", "staging has no blog, like today")
+}
+
+func TestAServerNeedsCORSOrigins(t *testing.T) {
+	t.Parallel()
+
+	_, err := newServer(&config.Config{}, nil, nil)
+
+	require.Error(t, err)
+}
+
+func TestCORSOnlyAllowsItsOrigins(t *testing.T) {
+	t.Parallel()
+
+	h := testServer(t, &config.Config{})
+	preflight := func(origin string) *httptest.ResponseRecorder {
+		return serve(t, h, http.MethodOptions, "/api/captures", map[string]string{
+			"Access-Control-Request-Method": http.MethodPost,
+			"Origin":                        origin,
+		})
+	}
+
+	w := preflight(testOrigin)
+	assert.Equal(t, http.StatusNoContent, w.Code)
+	assert.Equal(t, testOrigin, w.Header().Get("Access-Control-Allow-Origin"))
+
+	w = preflight("https://evil.example")
+	assert.Empty(t, w.Header().Get("Access-Control-Allow-Origin"))
+}
+
+func TestAPanicIsAnInternalServerError(t *testing.T) {
+	t.Parallel()
+
+	h := testServerWithFrontend(t, &config.Config{}, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		panic("something went wrong")
+	}))
+
+	w := serve(t, h, http.MethodGet, "/login", nil)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	assert.Contains(t, w.Body.String(), `"code":"internal_server_error"`)
+	assert.NotContains(t, w.Body.String(), "something went wrong", "a panic's message stays private")
 }
 
 func TestFrontendConfigScript(t *testing.T) {

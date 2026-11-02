@@ -11,9 +11,8 @@ import (
 	"time"
 
 	"github.com/go-pg/pg/v10"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"github.com/labstack/gommon/log"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 	"github.com/pkg/errors"
 	"github.com/pokedextracker/pokedextracker.com/internal/webapp"
 	"github.com/pokedextracker/pokedextracker.com/pkg/auth"
@@ -26,20 +25,12 @@ import (
 	"github.com/pokedextracker/pokedextracker.com/pkg/games"
 	"github.com/pokedextracker/pokedextracker.com/pkg/pokemon"
 	"github.com/pokedextracker/pokedextracker.com/pkg/users"
-	"github.com/robinjoseph08/golib/echo/v4/middleware/logger"
-	"github.com/robinjoseph08/golib/echo/v4/middleware/recovery"
+	"github.com/robinjoseph08/golib/echo/v5/middleware/logger"
+	"github.com/robinjoseph08/golib/echo/v5/middleware/recovery"
 	glogger "github.com/robinjoseph08/golib/logger"
 )
 
 var healthResponse = []byte(`{"healthy":true}`)
-
-// Echo reads its not found handler from a package variable (in its router, its
-// groups, and each request's context), with no setting for one server, so it's
-// set once here rather than by every server, which would race when two are made
-// at once.
-func init() {
-	echo.NotFoundHandler = notFoundHandler
-}
 
 // New builds the server for the whole site: the API under /api, the /blog and
 // /stats proxies, and the embedded frontend for everything else.
@@ -59,26 +50,29 @@ func New(cfg *config.Config, db *pg.DB) (*http.Server, error) {
 }
 
 func newServer(cfg *config.Config, db *pg.DB, frontend http.Handler) (*http.Server, error) {
-	e := echo.New()
-
-	e.Logger.SetLevel(log.OFF)
-	e.IPExtractor = clientIP()
-
 	b, err := binder.New()
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	e.Binder = b
+	cors, err := middleware.CORSConfig{AllowOrigins: cfg.CORSAllowedOrigins}.ToMiddleware()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	e := echo.NewWithConfig(echo.Config{
+		Binder:           b,
+		HTTPErrorHandler: errcodes.NewHandler().Handle,
+		IPExtractor:      clientIP(),
+		Router:           echo.NewRouter(echo.RouterConfig{NotFoundHandler: notFoundHandler}),
+	})
 
 	e.Pre(redirectWWW)
 	e.Use(logger.Middleware())
 	e.Use(recovery.Middleware())
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: cfg.CORSAllowedOrigins,
-	}))
+	e.Use(cors)
 	// The frontend handler compresses its own files once, and the blog's
 	// upstream compresses its own responses, so only the API is gzipped here.
-	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{Skipper: func(c echo.Context) bool {
+	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{Skipper: func(c *echo.Context) bool {
 		return !strings.HasPrefix(c.Request().URL.Path, "/api/")
 	}}))
 
@@ -112,8 +106,6 @@ func newServer(cfg *config.Config, db *pg.DB, frontend http.Handler) (*http.Serv
 		e.GET("/*", echo.WrapHandler(frontend))
 		e.HEAD("/*", echo.WrapHandler(frontend))
 	}
-
-	e.HTTPErrorHandler = errcodes.NewHandler().Handle
 
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", cfg.Port),
@@ -162,18 +154,18 @@ func registerAPI(g *echo.Group, cfg *config.Config, db *pg.DB) {
 	users.RegisterRoutes(g, cfg, db, enforcedAuth, nonEnforcedAuth)
 }
 
-func health(c echo.Context) error {
+func health(c *echo.Context) error {
 	return errors.WithStack(c.JSONBlob(http.StatusOK, healthResponse))
 }
 
-func notFoundHandler(c echo.Context) error {
+func notFoundHandler(c *echo.Context) error {
 	c.SetPath("/:path")
 	return errcodes.NotFound("page")
 }
 
 // noStore keeps browsers and proxies from caching API responses.
 func noStore(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
+	return func(c *echo.Context) error {
 		c.Response().Header().Set("Cache-Control", "no-store")
 		return next(c)
 	}
@@ -182,7 +174,7 @@ func noStore(next echo.HandlerFunc) echo.HandlerFunc {
 // redirectWWW sends www.pokedextracker.com (and www.staging...) to the bare
 // domain, keeping the path and query.
 func redirectWWW(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
+	return func(c *echo.Context) error {
 		host := c.Request().Host
 		if name, _, err := net.SplitHostPort(host); err == nil {
 			host = name
@@ -254,18 +246,23 @@ func forwardHeaders(r *httputil.ProxyRequest) {
 
 // serveProxy runs a reverse proxy as an Echo handler.
 func serveProxy(proxy *httputil.ReverseProxy) echo.HandlerFunc {
-	return func(c echo.Context) (err error) {
+	return func(c *echo.Context) error {
 		// ReverseProxy panics with http.ErrAbortHandler when copying a response
 		// fails partway through. When that's because the visitor left (the
-		// request is canceled), it's routine and shouldn't reach the recovery
-		// middleware as a 500. A broken upstream still does.
+		// request is canceled), it's routine. A broken upstream gets reported
+		// here, since the recovery middleware passes this panic on without
+		// doing so. It then carries on, so the server drops the connection: a
+		// chunked response that ended normally would pass for a complete one.
 		defer func() {
 			if recovered := recover(); recovered != nil {
 				abort, ok := recovered.(error)
-				if !ok || !errors.Is(abort, http.ErrAbortHandler) || c.Request().Context().Err() == nil {
+				if !ok || !errors.Is(abort, http.ErrAbortHandler) {
 					panic(recovered)
 				}
-				err = nil
+				if c.Request().Context().Err() == nil {
+					c.Echo().HTTPErrorHandler(c, errors.Wrap(abort, "upstream failed partway through a response"))
+					panic(abort)
+				}
 			}
 		}()
 		proxy.ServeHTTP(c.Response(), c.Request())

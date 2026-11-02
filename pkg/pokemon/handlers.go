@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/pkg/errors"
 	"github.com/pokedextracker/pokedextracker.com/pkg/dextypes"
 	"github.com/pokedextracker/pokedextracker.com/pkg/errcodes"
@@ -15,7 +15,7 @@ type handler struct {
 	pokemonService *Service
 }
 
-func (h *handler) retrieve(c echo.Context) error {
+func (h *handler) retrieve(c *echo.Context) error {
 	ctx := c.Request().Context()
 
 	idParam := c.Param("id")
