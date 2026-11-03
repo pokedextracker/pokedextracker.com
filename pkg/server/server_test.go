@@ -448,6 +448,10 @@ func TestFrontendConfigScript(t *testing.T) {
 
 //nolint:paralleltest // It sets environment variables, which t.Parallel() doesn't allow.
 func TestEnvironmentsGetTheirOwnFrontendConfig(t *testing.T) {
+	// What staging and production can't start without.
+	for _, name := range []string{"DATABASE_HOST", "DATABASE_NAME", "DATABASE_PASSWORD", "DATABASE_SSL_MODE", "DATABASE_USER", "JWT_SECRET"} {
+		t.Setenv(name, "set")
+	}
 	for _, env := range []string{"development", "staging", "production"} {
 		t.Setenv("ENVIRONMENT", env)
 		cfg, err := config.New()
