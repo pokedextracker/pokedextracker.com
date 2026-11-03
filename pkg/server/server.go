@@ -209,7 +209,7 @@ func clientIP() echo.IPExtractor {
 func blogProxy(rawURL string) (echo.HandlerFunc, error) {
 	target, err := url.Parse(rawURL)
 	if err != nil || target.Scheme == "" || target.Host == "" {
-		return nil, errors.Errorf("invalid blog URL %q", rawURL)
+		return nil, errors.New("invalid blog URL")
 	}
 	proxy := &httputil.ReverseProxy{
 		Rewrite: func(r *httputil.ProxyRequest) {

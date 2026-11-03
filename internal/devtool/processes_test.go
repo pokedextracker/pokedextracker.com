@@ -180,3 +180,23 @@ func TestServerEnvironmentAlwaysSetsTheTokenNamespace(t *testing.T) {
 	assert.Contains(t, serverEnvironment(Servers{TokenNamespace: "feature_1a2b3c4d"}), "POKEDEXTRACKER_TOKEN_NAMESPACE=feature_1a2b3c4d")
 	assert.Contains(t, serverEnvironment(Servers{}), "POKEDEXTRACKER_TOKEN_NAMESPACE=", "an empty one still overrides the shell's")
 }
+
+//nolint:paralleltest // It sets environment variables, which t.Parallel() doesn't allow.
+func TestAPIEnvironmentIgnoresTheShellsDatabaseSettings(t *testing.T) {
+	for _, name := range []string{"DATABASE_PASSWORD", "DATABASE_SSL_HOST", "DATABASE_SSL_MODE", "DATABASE_USER", "JWT_SECRET", "PORT"} {
+		t.Setenv(name, "from the shell")
+	}
+
+	environment := apiEnvironment(DatabaseTarget{Environment: "test", Name: "worktree", Port: 9876})
+
+	// When a variable is listed twice, the last one wins.
+	values := map[string]string{}
+	for _, entry := range environment {
+		name, value, _ := strings.Cut(entry, "=")
+		values[name] = value
+	}
+	for _, name := range []string{"DATABASE_PASSWORD", "DATABASE_SSL_HOST", "DATABASE_SSL_MODE", "DATABASE_USER", "JWT_SECRET", "PORT"} {
+		assert.Empty(t, values[name], name)
+	}
+	assert.Equal(t, "worktree", values["DATABASE_NAME"])
+}

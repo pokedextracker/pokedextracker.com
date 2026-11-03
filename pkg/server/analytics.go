@@ -58,7 +58,7 @@ func analyticsScript(cfg *config.Config) string {
 func registerAnalytics(e *echo.Echo, rawURL string) error {
 	target, err := url.Parse(rawURL)
 	if err != nil || target.Scheme == "" || target.Host == "" {
-		return errors.Errorf("invalid Umami URL %q", rawURL)
+		return errors.New("invalid Umami URL")
 	}
 
 	transport := http.DefaultTransport.(*http.Transport).Clone() //nolint:forcetypeassert // The standard library's default always is one.
