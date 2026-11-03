@@ -433,6 +433,14 @@ func apiEnvironment(target DatabaseTarget) []string {
 		"DATABASE_HOST=127.0.0.1",
 		"DATABASE_PORT="+strconv.Itoa(target.Port),
 		"DATABASE_NAME="+target.Name,
+		// Blank counts as unset, so these stay the environment's defaults, whatever
+		// the shell has set: they'd only break a connection to the local database.
+		"DATABASE_PASSWORD=",
+		"DATABASE_SSL_HOST=",
+		"DATABASE_SSL_MODE=",
+		"DATABASE_USER=",
+		"JWT_SECRET=",
+		"PORT=",
 		"TZ=UTC",
 	)
 }

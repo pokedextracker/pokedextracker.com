@@ -1,7 +1,9 @@
 package config
 
 import (
+	"net/url"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -40,6 +42,8 @@ type Config struct {
 }
 
 const environmentENV = "ENVIRONMENT"
+
+var databaseSSLModes = []string{"disable", "allow", "prefer", "require", "verify-ca", "verify-full"}
 
 // New returns the Config for the "ENVIRONMENT" environment variable: the
 // defaults, then that environment's own, then any environment variables that
@@ -95,7 +99,8 @@ func applyEnvironmentVariables(cfg *Config) []string {
 		name    string
 		setting *string
 	}{
-		// Where /blog is forwarded, or empty for no blog.
+		// Where /blog is forwarded. Only production has a default, so elsewhere
+		// there's no blog without this, which also lets a proxy be tried locally.
 		{"BLOG_URL", &cfg.BlogURL},
 		{"DATABASE_HOST", &cfg.DatabaseHost},
 		{"DATABASE_NAME", &cfg.DatabaseName},
@@ -142,20 +147,42 @@ func applyEnvironmentVariables(cfg *Config) []string {
 		*p.setting = port
 	}
 
-	if value := os.Getenv("DATABASE_DEBUG"); value != "" {
-		debug, err := strconv.ParseBool(value)
-		if err != nil {
-			problems = append(problems, "DATABASE_DEBUG must be true or false")
+	switch os.Getenv("DATABASE_DEBUG") {
+	case "":
+	case "true":
+		cfg.DatabaseDebug = true
+	case "false":
+		cfg.DatabaseDebug = false
+	default:
+		problems = append(problems, "DATABASE_DEBUG must be true or false")
+	}
+
+	// Anything but "disable" turns TLS on, so a typo like "disabled" would only
+	// show up as a connection error that doesn't name the setting.
+	if !slices.Contains(databaseSSLModes, cfg.DatabaseSSLMode) && cfg.DatabaseSSLMode != "" {
+		problems = append(problems, "DATABASE_SSL_MODE must be one of "+strings.Join(databaseSSLModes, ", "))
+	}
+
+	urls := []struct {
+		name  string
+		value string
+	}{
+		{"BLOG_URL", cfg.BlogURL},
+		{"UMAMI_URL", cfg.UmamiURL},
+	}
+	for _, u := range urls {
+		if parsed, err := url.Parse(u.value); u.value != "" && (err != nil || parsed.Scheme == "" || parsed.Host == "") {
+			problems = append(problems, u.name+" must be a full URL")
 		}
-		cfg.DatabaseDebug = debug
 	}
 
 	return problems
 }
 
 // missingSettings lists what staging and production can't run without. Without
-// them the server would still start, signing logins with an empty key, or fail
-// only once it first needs the database. Development and test have defaults.
+// JWT_SECRET the server would sign logins with an empty key, and without the
+// database settings it would retry and then fail with an error that doesn't name
+// what's missing. Development and test have defaults.
 func missingSettings(cfg *Config) []string {
 	if cfg.Environment != "staging" && cfg.Environment != "production" {
 		return nil
@@ -165,12 +192,12 @@ func missingSettings(cfg *Config) []string {
 		name string
 		set  bool
 	}{
-		{"DATABASE_HOST", cfg.DatabaseHost != ""},
-		{"DATABASE_NAME", cfg.DatabaseName != ""},
-		{"DATABASE_PASSWORD", cfg.DatabasePassword != ""},
-		{"DATABASE_SSL_MODE", cfg.DatabaseSSLMode != ""},
-		{"DATABASE_USER", cfg.DatabaseUser != ""},
-		{"JWT_SECRET", len(cfg.JWTSecret) > 0},
+		{"DATABASE_HOST", isSet(cfg.DatabaseHost)},
+		{"DATABASE_NAME", isSet(cfg.DatabaseName)},
+		{"DATABASE_PASSWORD", isSet(cfg.DatabasePassword)},
+		{"DATABASE_SSL_MODE", isSet(cfg.DatabaseSSLMode)},
+		{"DATABASE_USER", isSet(cfg.DatabaseUser)},
+		{"JWT_SECRET", isSet(string(cfg.JWTSecret))},
 	}
 	var missing []string
 	for _, r := range required {
@@ -179,4 +206,9 @@ func missingSettings(cfg *Config) []string {
 		}
 	}
 	return missing
+}
+
+// isSet reports whether a required setting has a value, which whitespace isn't.
+func isSet(value string) bool {
+	return strings.TrimSpace(value) != ""
 }

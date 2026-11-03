@@ -446,12 +446,13 @@ func TestFrontendConfigScript(t *testing.T) {
 	assert.Contains(t, script, `"version":"unknown"`)
 }
 
-//nolint:paralleltest // It sets environment variables, which t.Parallel() doesn't allow.
+// Not parallel: it sets environment variables.
 func TestEnvironmentsGetTheirOwnFrontendConfig(t *testing.T) {
 	// What staging and production can't start without.
-	for _, name := range []string{"DATABASE_HOST", "DATABASE_NAME", "DATABASE_PASSWORD", "DATABASE_SSL_MODE", "DATABASE_USER", "JWT_SECRET"} {
+	for _, name := range []string{"DATABASE_HOST", "DATABASE_NAME", "DATABASE_PASSWORD", "DATABASE_USER", "JWT_SECRET"} {
 		t.Setenv(name, "set")
 	}
+	t.Setenv("DATABASE_SSL_MODE", "require")
 	for _, env := range []string{"development", "staging", "production"} {
 		t.Setenv("ENVIRONMENT", env)
 		cfg, err := config.New()

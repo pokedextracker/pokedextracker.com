@@ -196,13 +196,6 @@ an hour. `mise start:preview` runs this same build locally.
 
 > Note: you need the necessary permissions to be able to deploy.
 
-The app reads its settings from environment variables, which override its
-defaults in every environment. Staging and production won't start without
-`JWT_SECRET`, `DATABASE_HOST`, `DATABASE_NAME`, `DATABASE_USER`,
-`DATABASE_PASSWORD`, and `DATABASE_SSL_MODE`, set as Fly secrets. A missing or
-invalid one stops the release step, so the deploy fails and the running version
-keeps serving.
-
 `mise deploy` builds a multi-arch image (`linux/amd64` and `linux/arm64`)
 from the `Dockerfile`, pushes it to the GitHub Container Registry
 (`ghcr.io/pokedextracker/pokedextracker.com`), uploads source maps to Rollbar,
@@ -215,3 +208,11 @@ your `gh` login, which needs the `write:packages` scope once:
 gh auth refresh -s write:packages
 mise deploy
 ```
+
+Most settings come from environment variables, which override the defaults in
+every environment. Staging and production won't start without `JWT_SECRET`,
+`DATABASE_HOST`, `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASSWORD`, and
+`DATABASE_SSL_MODE`, which are Fly secrets. A missing one, or a bad value for any
+setting, fails the deploy at its release step, and the running version keeps
+serving. `fly secrets set` and `unset` restart machines without that step, so
+change a secret with `--stage` and then deploy, to have it checked first.
