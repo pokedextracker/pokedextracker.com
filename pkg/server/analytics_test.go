@@ -14,6 +14,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// upstreamOnlyHeaders would apply to the site's whole origin if forwarded.
+var upstreamOnlyHeaders = []string{"Nel", "Report-To", "Alt-Svc", "Strict-Transport-Security", "Set-Cookie", "Location", "Access-Control-Allow-Origin"}
+
 // upstreamRequest is what a fake Umami saw.
 type upstreamRequest struct {
 	method       string
@@ -49,6 +52,9 @@ func fakeUmami(t *testing.T) (*httptest.Server, func() []upstreamRequest) {
 			body:         string(body),
 		})
 		mu.Unlock()
+		for _, name := range upstreamOnlyHeaders {
+			w.Header().Set(name, "from-umami")
+		}
 		switch r.URL.Path {
 		case "/script.js":
 			if r.Header.Get("If-None-Match") == `"v1"` {
@@ -93,6 +99,11 @@ func TestAnalyticsForwardsTheScript(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "/* tracker */", w.Body.String())
 	assert.Equal(t, "public, max-age=3600", w.Header().Get("Cache-Control"), "kept for an hour, whatever Umami says")
+	assert.Equal(t, `"v1"`, w.Header().Get("ETag"))
+	assert.Equal(t, "application/javascript", w.Header().Get("Content-Type"))
+	for _, name := range upstreamOnlyHeaders {
+		assert.Empty(t, w.Header().Get(name), name)
+	}
 	require.Len(t, seen(), 1)
 	got := seen()[0]
 	assert.Equal(t, "/script.js", got.path, "the /stats prefix is stripped")
