@@ -26,6 +26,20 @@ const (
 	analyticsMaxBody = 64 << 10
 )
 
+// analyticsResponseHeaders are the only Umami response headers sent on to the
+// visitor. Anything else would apply to this site's whole origin: Cloudflare in
+// front of Umami adds Nel and Report-To (browsers would report this site's
+// network errors to Cloudflare) and Alt-Svc (browsers would try HTTP/3 here), and
+// Location would reveal Umami's address.
+var analyticsResponseHeaders = []string{
+	"Content-Encoding",
+	"Content-Length",
+	"Content-Type",
+	"ETag",
+	"Last-Modified",
+	"Vary",
+}
+
 // analyticsEnabled reports whether Umami is set up. Without it, the page gets
 // no tracker and /stats isn't served.
 func analyticsEnabled(cfg *config.Config) bool {
@@ -81,6 +95,14 @@ func registerAnalytics(e *echo.Echo, rawURL string) error {
 		},
 		Transport: transport,
 		ModifyResponse: func(res *http.Response) error {
+			headers := http.Header{}
+			for _, name := range analyticsResponseHeaders {
+				if values := res.Header.Values(name); len(values) > 0 {
+					headers[http.CanonicalHeaderKey(name)] = values
+				}
+			}
+			res.Header = headers
+
 			fresh := res.StatusCode == http.StatusOK || res.StatusCode == http.StatusNotModified
 			if strings.HasSuffix(res.Request.URL.Path, analyticsScriptPath) && fresh {
 				res.Header.Set("Cache-Control", "public, max-age=3600")
