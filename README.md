@@ -190,7 +190,10 @@ One Go binary serves the whole site: the API under `/api`, the frontend
 and `/blog`, which it forwards to the hosted Ghost blog. It also redirects
 `www.` to the bare domain. Hashed JavaScript is cached forever, `index.html`
 and `/version` are always revalidated, and other static files are cached for
-an hour. `mise start:preview` runs this same build locally.
+an hour. `/version` answers with an ID for the frontend build (a hash of its
+`index.html`). When it stops matching the build an open tab loaded, the tab
+shows a "new version" banner, and its next page change is a full page load
+onto the new build. `mise start:preview` runs this same build locally.
 
 ## Deployments
 

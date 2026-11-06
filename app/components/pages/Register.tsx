@@ -55,7 +55,6 @@ import {
 import { pageContainer } from "../library/layout";
 import { link } from "../library/links";
 import { Nav } from "../library/Nav";
-import { Reload } from "../library/Reload";
 import { Tooltip } from "../library/Tooltip";
 
 // The account and dex columns, side by side unless the screen is narrow. The
@@ -304,7 +303,6 @@ export function Register() {
   return (
     <div className={pageContainer}>
       <Nav />
-      <Reload />
       <div className={formPage}>
         <h1 className={formTitle}>Register</h1>
         <form className={form} onSubmit={handleSubmit}>

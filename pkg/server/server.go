@@ -35,11 +35,13 @@ var healthResponse = []byte(`{"healthy":true}`)
 // New builds the server for the whole site: the API under /api, the /blog and
 // /stats proxies, and the embedded frontend for everything else.
 func New(cfg *config.Config, db *pg.DB) (*http.Server, error) {
-	script, err := frontendConfigScript(cfg)
-	if err != nil {
-		return nil, err
-	}
-	frontend, ok, err := webapp.Handler(script + analyticsScript(cfg))
+	frontend, ok, err := webapp.Handler(func(build string) (string, error) {
+		script, err := frontendConfigScript(cfg, build)
+		if err != nil {
+			return "", err
+		}
+		return script + analyticsScript(cfg), nil
+	})
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -119,19 +121,25 @@ func newServer(cfg *config.Config, db *pg.DB, frontend http.Handler) (*http.Serv
 // frontendConfig is what the frontend reads from window.POKEDEXTRACKER_CONFIG
 // (config/index.ts). It comes from the server so the same build reports the
 // right environment wherever it runs, without guessing from the hostname.
+//
+// Version is the deploy (the git commit), for error reports and analytics.
+// Build identifies the frontend code itself, and changes only when that code
+// does; the app shows a "new version" banner when /version stops matching it.
 type frontendConfig struct {
+	Build        string `json:"build"`
 	Environment  string `json:"environment"`
 	RollbarToken string `json:"rollbarToken"`
 	Version      string `json:"version"`
 }
 
-func frontendConfigScript(cfg *config.Config) (string, error) {
+func frontendConfigScript(cfg *config.Config, build string) (string, error) {
 	version := cfg.Version
 	if version == "" {
 		version = "unknown"
 	}
 	// json.Marshal escapes <, >, and &, so the values can't close the script.
 	value, err := json.Marshal(frontendConfig{
+		Build:        build,
 		Environment:  cfg.Environment,
 		RollbarToken: cfg.RollbarClientToken,
 		Version:      version,

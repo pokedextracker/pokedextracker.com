@@ -17,7 +17,6 @@ import { LoadError } from "../../library/LoadError";
 import { Loading } from "../../library/Loading";
 import { Nav } from "../../library/Nav";
 import { Notification } from "../../library/Notification";
-import { Reload } from "../../library/Reload";
 import { NotFound } from "../NotFound";
 import { DexCreate } from "./DexCreate";
 import { DexPreview } from "./DexPreview";
@@ -65,7 +64,6 @@ export function Profile() {
   return (
     <div className={pageContainer}>
       <Nav />
-      <Reload />
       <div className="relative top-70 flex-[1_0_auto] animate-slide-fast overflow-y-auto px-0 pt-100 pb-60 dark:bg-night max-750:px-15 max-750:pt-40 max-750:pb-20">
         <div className={wrapper}>
           <header>

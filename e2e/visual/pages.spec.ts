@@ -367,20 +367,33 @@ test.describe("tracker", () => {
 
   test("new version banner", async ({ page }) => {
     // The app checks /version every 30 seconds, and whenever the page becomes
-    // visible again, and shows the banner when the answer changes. The test
-    // uses the second: waiting on the timer is at the mercy of a busy machine.
-    let version = "first";
-    await page.route("**/version", (route) => route.fulfill({ body: version }));
+    // visible again, and shows the banner when the answer stops matching the
+    // build the page loaded. The test uses the second: waiting on the timer is
+    // at the mercy of a busy machine. Until it's told otherwise, /version
+    // answers for real, which matches.
+    let newBuild = false;
+    await page.route("**/version", (route) =>
+      newBuild
+        ? route.fulfill({ body: "a-new-build", contentType: "text/plain" })
+        : route.continue(),
+    );
     await signIn(page, ash);
     const firstCheck = page.waitForResponse("**/version");
     await page.goto(livingDex);
     await firstCheck;
     await expect(page.getByTestId("progress-count")).toContainText("7 caught");
-    version = "second";
-    await page.evaluate(() =>
-      window.dispatchEvent(new Event("visibilitychange")),
-    );
-    await expect(page.getByTestId("reload-banner")).toBeVisible();
+    await expect(page.getByTestId("reload-banner")).toHaveCount(0);
+    // Asked again until the banner shows, since a check already in flight
+    // (the timer's) can swallow the first ask.
+    newBuild = true;
+    await expect(async () => {
+      await page.evaluate(() =>
+        window.dispatchEvent(new Event("visibilitychange")),
+      );
+      await expect(page.getByTestId("reload-banner")).toBeVisible({
+        timeout: 1_000,
+      });
+    }).toPass();
     await settle(page);
     await expect(page).toHaveScreenshot("dex-new-version.png");
   });

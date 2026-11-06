@@ -37,7 +37,6 @@ import {
 import { pageContainer } from "../library/layout";
 import { LoadError } from "../library/LoadError";
 import { Nav } from "../library/Nav";
-import { Reload } from "../library/Reload";
 
 export function Account() {
   const navigate = useNavigate();
@@ -131,7 +130,6 @@ function AccountForm({ sessionUser }: AccountFormProps) {
   return (
     <div className={pageContainer}>
       <Nav />
-      <Reload />
       <div className={formPage}>
         <h1 className={formTitle}>{sessionUser.username}&apos;s Account</h1>
         <form className={`${form} ${formColumn}`} onSubmit={handleSubmit}>

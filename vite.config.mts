@@ -7,9 +7,11 @@ import { defineConfig, type Plugin } from "vite";
 // which mDNS advertises with a .local suffix.
 const machine = hostname().toLowerCase();
 
-// The Go server answers /version with the date the frontend was built, and
-// the app shows a "new version" banner when it changes. The dev server always
-// answers "development", so the banner never shows while developing.
+// The Go server answers /version with an ID for the frontend build, and the
+// app shows a "new version" banner when it stops matching the build the page
+// loaded with. The dev server always answers "development", the same as the
+// development config's build (config/development.ts), so the banner never
+// shows while developing.
 function developmentVersion(): Plugin {
   return {
     name: "development-version",

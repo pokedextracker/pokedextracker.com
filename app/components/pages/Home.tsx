@@ -8,6 +8,7 @@ import { useSession } from "../../hooks/contexts/use-session";
 import { tw } from "../../utils/tw";
 import { buttonClassName, buttonIcon } from "../library/Button";
 import { link } from "../library/links";
+import { Reload } from "../library/Reload";
 
 // The text under the title, and the headings in the list, which sit closer.
 // Both are a little smaller on a narrow phone; the list itself isn't.
@@ -27,6 +28,8 @@ export function Home() {
 
   return (
     <div className="flex flex-[1_1_auto] flex-col bg-yellow-400 bg-[url(/pattern.png)] bg-[size:31.25rem_15.625rem] bg-center bg-repeat text-center dark:bg-night dark:bg-[url(/pattern-night.png)]">
+      {/* The home page has no nav, so it shows the banner itself. */}
+      <Reload />
       <div className="flex grow flex-col justify-center overflow-y-auto pt-20">
         <div className="relative -top-100 animate-slide">
           <img

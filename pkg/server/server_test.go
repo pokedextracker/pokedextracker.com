@@ -433,15 +433,16 @@ func TestFrontendConfigScript(t *testing.T) {
 		Environment:        "production",
 		RollbarClientToken: "token</script><script>alert(1)",
 		Version:            "abc1234",
-	})
+	}, "0123456789abcdef")
 	require.NoError(t, err)
 
 	assert.True(t, strings.HasPrefix(script, "<script>window.POKEDEXTRACKER_CONFIG = {"))
 	assert.Contains(t, script, `"environment":"production"`)
 	assert.Contains(t, script, `"version":"abc1234"`)
+	assert.Contains(t, script, `"build":"0123456789abcdef"`)
 	assert.Equal(t, 1, strings.Count(script, "</script>"), "values can't close the script tag")
 
-	script, err = frontendConfigScript(&config.Config{Environment: "development"})
+	script, err = frontendConfigScript(&config.Config{Environment: "development"}, "")
 	require.NoError(t, err)
 	assert.Contains(t, script, `"version":"unknown"`)
 }
@@ -457,7 +458,7 @@ func TestEnvironmentsGetTheirOwnFrontendConfig(t *testing.T) {
 		t.Setenv("ENVIRONMENT", env)
 		cfg, err := config.New()
 		require.NoError(t, err)
-		script, err := frontendConfigScript(cfg)
+		script, err := frontendConfigScript(cfg, "")
 		require.NoError(t, err)
 		assert.Contains(t, script, `"environment":"`+env+`"`, env)
 		assert.Contains(t, script, `"rollbarToken":"19ffd96c890b422287ce3a06a917678e"`, env)

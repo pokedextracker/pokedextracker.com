@@ -26,6 +26,11 @@ var embedded embed.FS
 
 const indexFile = "index.html"
 
+// versionFile is the path the app polls to learn whether a new frontend has
+// been deployed since it loaded. It isn't in the build; the handler answers it
+// with the build ID.
+const versionFile = "version"
+
 // hashedAssets is where Vite puts the files whose names contain a hash of
 // their content, like assets/index-B80ZTyZ2.js. A new build gets new names, so
 // they can be cached forever. Files from public/ keep their names and go at
@@ -64,11 +69,15 @@ type handler struct {
 	files map[string]*file
 }
 
+// HeadScript returns what to add to the end of index.html's <head>, given the
+// build ID. The server uses it to hand the frontend its configuration,
+// including the build ID, which the app compares with /version.
+type HeadScript func(build string) (string, error)
+
 // Handler serves the embedded frontend build. headScript, when given, is
-// added to the end of index.html's <head>; the server uses it to hand the
-// frontend its configuration. The boolean is false when the binary was built
-// without a frontend.
-func Handler(headScript string) (http.Handler, bool, error) {
+// added to the end of index.html's <head>. The boolean is false when the
+// binary was built without a frontend.
+func Handler(headScript HeadScript) (http.Handler, bool, error) {
 	root, err := fs.Sub(embedded, "dist")
 	if err != nil {
 		return nil, false, errors.WithStack(err)
@@ -76,9 +85,24 @@ func Handler(headScript string) (http.Handler, bool, error) {
 	return newHandler(root, headScript)
 }
 
-func newHandler(root fs.FS, headScript string) (http.Handler, bool, error) {
+func newHandler(root fs.FS, headScript HeadScript) (http.Handler, bool, error) {
+	index, err := fs.ReadFile(root, indexFile)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, false, nil
+	}
+	if err != nil {
+		return nil, false, errors.WithStack(err)
+	}
+	build := buildID(index)
+	script := ""
+	if headScript != nil {
+		if script, err = headScript(build); err != nil {
+			return nil, false, errors.WithStack(err)
+		}
+	}
+
 	files := map[string]*file{}
-	err := fs.WalkDir(root, ".", func(name string, entry fs.DirEntry, err error) error {
+	err = fs.WalkDir(root, ".", func(name string, entry fs.DirEntry, err error) error {
 		if err != nil || entry.IsDir() || path.Base(name) == ".gitkeep" {
 			return err
 		}
@@ -86,24 +110,19 @@ func newHandler(root fs.FS, headScript string) (http.Handler, bool, error) {
 		if err != nil {
 			return err
 		}
-		if name == indexFile && headScript != "" {
+		if name == indexFile && script != "" {
 			if !bytes.Contains(content, []byte("</head>")) {
 				return errors.New("index.html has no </head> to add the config before")
 			}
-			content = bytes.Replace(content, []byte("</head>"), []byte(headScript+"</head>"), 1)
+			content = bytes.Replace(content, []byte("</head>"), []byte(script+"</head>"), 1)
 		}
-		// Embedded files have no modification time, so caches revalidate with a
-		// fingerprint of the content instead.
-		sum := sha256.Sum256(content)
-		files[name] = &file{content: content, etag: hex.EncodeToString(sum[:8])}
+		files[name] = newFile(content)
 		return nil
 	})
 	if err != nil {
 		return nil, false, errors.WithStack(err)
 	}
-	if _, ok := files[indexFile]; !ok {
-		return nil, false, nil
-	}
+	files[versionFile] = newFile([]byte(build))
 	go func() {
 		for name, f := range files {
 			if compressible[strings.ToLower(path.Ext(name))] && len(f.content) >= minimumGzipSize {
@@ -165,6 +184,26 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Ranges then apply to the bytes actually sent.
 	header.Set("ETag", `"`+etag+`"`)
 	http.ServeContent(w, r, name, time.Time{}, bytes.NewReader(content))
+}
+
+func newFile(content []byte) *file {
+	// Embedded files have no modification time, so caches revalidate with a
+	// fingerprint of the content instead.
+	return &file{content: content, etag: fingerprint(content)}
+}
+
+func fingerprint(content []byte) string {
+	sum := sha256.Sum256(content)
+	return hex.EncodeToString(sum[:8])
+}
+
+// buildID identifies a frontend build by its index.html, as Vite wrote it.
+// The page links the JavaScript and CSS by names that contain a hash of their
+// content, so the ID changes exactly when the app's code does, and rebuilding
+// the same code gives the same ID. A deploy that only changes the backend
+// keeps the ID, so open tabs aren't told to reload for nothing.
+func buildID(index []byte) string {
+	return fingerprint(index)
 }
 
 func (f *file) gzip() []byte {
@@ -230,7 +269,7 @@ func typeByName(name string) string {
 // revalidated with its ETag.
 func cacheControl(name string) string {
 	switch {
-	case name == indexFile || name == "version":
+	case name == indexFile || name == versionFile:
 		return "no-cache"
 	case strings.HasPrefix(name, hashedAssets):
 		return "public, max-age=31536000, immutable"
