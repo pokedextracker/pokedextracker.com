@@ -22,7 +22,6 @@ type Config struct {
 	CORSAllowedOrigins        []string
 	DatabaseConnectRetryCount int
 	DatabaseConnectRetryDelay time.Duration
-	DatabaseDebug             bool
 	DatabaseHost              string
 	DatabaseName              string
 	DatabasePassword          string
@@ -145,16 +144,6 @@ func applyEnvironmentVariables(cfg *Config) []string {
 			continue
 		}
 		*p.setting = port
-	}
-
-	switch os.Getenv("DATABASE_DEBUG") {
-	case "":
-	case "true":
-		cfg.DatabaseDebug = true
-	case "false":
-		cfg.DatabaseDebug = false
-	default:
-		problems = append(problems, "DATABASE_DEBUG must be true or false")
 	}
 
 	// Anything but "disable" turns TLS on, so a typo like "disabled" would only

@@ -1,7 +1,6 @@
 package database
 
 import (
-	"context"
 	"crypto/tls"
 	"fmt"
 	"time"
@@ -9,40 +8,7 @@ import (
 	"github.com/go-pg/pg/v10"
 	"github.com/pkg/errors"
 	"github.com/pokedextracker/pokedextracker.com/pkg/config"
-	"github.com/robinjoseph08/golib/logger"
 )
-
-type key int
-
-const ctxKey key = 0
-
-func WithLogging(ctx context.Context, value bool) context.Context {
-	return context.WithValue(ctx, ctxKey, value)
-}
-
-type logQueryHook struct {
-	log logger.Logger
-}
-
-func (logQueryHook) BeforeQuery(ctx context.Context, _ *pg.QueryEvent) (context.Context, error) {
-	return ctx, nil
-}
-
-func (qh logQueryHook) AfterQuery(ctx context.Context, event *pg.QueryEvent) error {
-	enabled, ok := ctx.Value(ctxKey).(bool)
-	if !ok || !enabled {
-		return nil
-	}
-
-	query, err := event.FormattedQuery()
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	qh.log.Debug(string(query))
-
-	return nil
-}
 
 // New initializes a new database struct.
 func New(applicationName string, cfg *config.Config) (*pg.DB, error) {
@@ -69,11 +35,6 @@ func New(applicationName string, cfg *config.Config) (*pg.DB, error) {
 	}
 
 	db := pg.Connect(opts)
-
-	// print out all queries in debug mode
-	if cfg.DatabaseDebug {
-		db.AddQueryHook(logQueryHook{logger.NewWithLevel("debug")})
-	}
 
 	// retry up to 5 times to ensure that the database can connect
 	var err error

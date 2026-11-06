@@ -30,7 +30,7 @@ var requiredSettings = map[string]string{
 func setEnvironment(t *testing.T, environment string) {
 	t.Helper()
 	t.Setenv(environmentENV, environment)
-	for _, name := range []string{"BLOG_URL", "DATABASE_DEBUG", "DATABASE_PORT", "DATABASE_SSL_HOST", "PORT", "ROLLBAR_TOKEN", "UMAMI_URL", "UMAMI_WEBSITE_ID"} {
+	for _, name := range []string{"BLOG_URL", "DATABASE_PORT", "DATABASE_SSL_HOST", "PORT", "ROLLBAR_TOKEN", "UMAMI_URL", "UMAMI_WEBSITE_ID"} {
 		t.Setenv(name, "")
 	}
 	for name := range requiredSettings {
@@ -112,7 +112,6 @@ func TestEnvironmentVariablesOverrideEveryEnvironment(t *testing.T) {
 			setEnvironment(t, env)
 			setRequiredSettings(t)
 			t.Setenv("BLOG_URL", "https://blog.example.com")
-			t.Setenv("DATABASE_DEBUG", "true")
 			t.Setenv("DATABASE_PORT", "9876")
 			t.Setenv("DATABASE_SSL_HOST", "ssl.example.com")
 			t.Setenv("PORT", "1234")
@@ -124,7 +123,6 @@ func TestEnvironmentVariablesOverrideEveryEnvironment(t *testing.T) {
 
 			require.NoError(t, err)
 			assert.Equal(t, "https://blog.example.com", cfg.BlogURL)
-			assert.True(t, cfg.DatabaseDebug)
 			assert.Equal(t, "value of DATABASE_HOST", cfg.DatabaseHost)
 			assert.Equal(t, "value of DATABASE_NAME", cfg.DatabaseName)
 			assert.Equal(t, "value of DATABASE_PASSWORD", cfg.DatabasePassword)
@@ -172,7 +170,6 @@ func TestStagingAndProductionRequireTheirSettings(t *testing.T) {
 func TestInvalidValuesAreErrorsThatDontPrintThem(t *testing.T) {
 	cases := map[string]string{
 		"BLOG_URL":          "http://user:hunter2@[bad",
-		"DATABASE_DEBUG":    "maybe",
 		"DATABASE_PORT":     "70000",
 		"DATABASE_SSL_MODE": "disabled",
 		"PORT":              "not-a-port",
@@ -191,14 +188,8 @@ func TestInvalidValuesAreErrorsThatDontPrintThem(t *testing.T) {
 		})
 	}
 
-	// It only used to count when it was exactly "true", so this mustn't turn it on.
-	setEnvironment(t, "development")
-	t.Setenv("DATABASE_DEBUG", "1")
-	_, err := New()
-	require.ErrorContains(t, err, "DATABASE_DEBUG")
-
 	setEnvironment(t, "development")
 	t.Setenv("PORT", "0")
-	_, err = New()
+	_, err := New()
 	require.ErrorContains(t, err, "PORT", "a port has to be one the server can be reached on")
 }
