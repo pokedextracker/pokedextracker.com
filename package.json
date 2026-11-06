@@ -2,8 +2,7 @@
   "name": "pokedextracker.com",
   "description": "A website to track your completion of a Living Pokedex",
   "scripts": {
-    "build": "vite build; result=$?; touch internal/webapp/dist/.gitkeep; [ $result -eq 0 ] && pnpm build:version",
-    "build:version": "date > internal/webapp/dist/version",
+    "build": "vite build; result=$?; touch internal/webapp/dist/.gitkeep; exit $result",
     "format": "prettier --write .",
     "lint": "eslint --max-warnings 0 .",
     "lint:all": "pnpm lint && pnpm lint:prettier && pnpm lint:types",

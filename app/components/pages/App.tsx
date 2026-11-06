@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 
 import { Rollbar } from "../../utils/rollbar";
+import { ReloadOnNavigation } from "../library/Reload";
 import { Account } from "./Account";
 import { Home } from "./Home";
 import { Login } from "./Login";
@@ -26,6 +27,7 @@ export function App() {
   return (
     <BrowserRouter>
       <RollbarContext />
+      <ReloadOnNavigation />
       <div className="flex h-screen flex-col print:block print:h-auto">
         <Routes>
           <Route element={<Home />} path="/" />

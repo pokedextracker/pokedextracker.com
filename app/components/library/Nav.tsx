@@ -14,6 +14,7 @@ import { useLocalStorageContext } from "../../hooks/contexts/use-local-storage-c
 import { useSession } from "../../hooks/contexts/use-session";
 import { trackEvent } from "../../utils/analytics";
 import { tw } from "../../utils/tw";
+import { Reload } from "./Reload";
 import { TooltipText } from "./Tooltip";
 
 const nav = tw`relative flex flex-[0_0_2.625rem] bg-nav font-secondary`;
@@ -38,7 +39,19 @@ const toggle = tw`${base} flex min-w-0 items-center group-hover/dropdown:bg-nav-
 const item = tw`${base} block truncate border-t-2 border-t-nav bg-nav-raised hover:bg-nav-raised-hover`;
 const itemIcon = tw`float-left mt-2 mr-15`;
 
+// Nav is the bar at the top of every page but the home page, with the "new
+// version" banner under it when a new build is out. Pages get the banner from
+// here, so a new page can't forget it.
 export function Nav() {
+  return (
+    <>
+      <NavBar />
+      <Reload />
+    </>
+  );
+}
+
+function NavBar() {
   const { isNightMode, setIsNightMode } = useLocalStorageContext();
   const { session, sessionUser, sessionUserIsLoading, setToken } = useSession();
 

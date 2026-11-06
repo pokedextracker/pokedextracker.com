@@ -32,7 +32,6 @@ import {
 import { pageContainer } from "../library/layout";
 import { link } from "../library/links";
 import { Nav } from "../library/Nav";
-import { Reload } from "../library/Reload";
 
 export function Login() {
   const navigate = useNavigate();
@@ -86,7 +85,6 @@ export function Login() {
   return (
     <div className={pageContainer}>
       <Nav />
-      <Reload />
       <div className={formPage}>
         <h1 className={formTitle}>Login</h1>
         <form className={`${form} ${formColumn}`} onSubmit={handleSubmit}>

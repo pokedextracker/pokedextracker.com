@@ -10,7 +10,6 @@ import { pageContainer } from "../../library/layout";
 import { LoadError } from "../../library/LoadError";
 import { Loading } from "../../library/Loading";
 import { Nav } from "../../library/Nav";
-import { Reload } from "../../library/Reload";
 import { NotFound } from "../NotFound";
 import { Dex } from "./Dex";
 import { Info } from "./Info";
@@ -121,7 +120,6 @@ function TrackerInner({ dexTitle, initialSelectedPokemon }: TrackerInnerProps) {
   return (
     <div className={pageContainer}>
       <Nav />
-      <Reload />
       <div className="relative flex min-h-0 flex-[1_1_auto] print:block">
         <div className="flex grow flex-col print:block">
           <SearchBar

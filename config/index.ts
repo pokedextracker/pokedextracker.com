@@ -4,6 +4,7 @@ import type { Config as ConfigType } from "./types";
 // The Go server adds this to index.html (pkg/server's frontendConfig), so the
 // same build reports the right environment wherever it runs.
 interface ServerConfig {
+  build: string;
   environment: string;
   rollbarToken: string;
   version: string;
@@ -19,6 +20,7 @@ declare global {
 function fromServer(server: Partial<ServerConfig>): ConfigType {
   return {
     API_HOST: "/api",
+    BUILD: server.build || Development.BUILD,
     ENVIRONMENT: server.environment || Development.ENVIRONMENT,
     ROLLBAR_TOKEN: server.rollbarToken || Development.ROLLBAR_TOKEN,
     VERSION: server.version || Development.VERSION,

@@ -3,6 +3,7 @@ package webapp
 import (
 	"bytes"
 	"compress/gzip"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -16,20 +17,21 @@ import (
 
 func testHandler(t *testing.T) http.Handler {
 	t.Helper()
-	return testHandlerWithScript(t, "")
+	return testHandlerWith(t, testIndex, nil)
 }
 
-func testHandlerWithScript(t *testing.T, script string) http.Handler {
+const testIndex = "<html><head></head>app</html>"
+
+func testHandlerWith(t *testing.T, index string, headScript HeadScript) http.Handler {
 	t.Helper()
 	h, ok, err := newHandler(fstest.MapFS{
 		".gitkeep":                     {},
-		"index.html":                   {Data: []byte("<html><head></head>app</html>" + strings.Repeat(" ", 2048))},
-		"version":                      {Data: []byte("Sat Oct 17 2026\n")},
+		"index.html":                   {Data: []byte(index + strings.Repeat(" ", 2048))},
 		"assets/index-B80ZTyZ2.js":     {Data: []byte(strings.Repeat("console.log(1);\n", 200))},
 		"assets/index-B80ZTyZ2.js.map": {Data: []byte("{}")},
 		"pokesprite-v12.png":           {Data: []byte("png")},
 		"favicon/favicon-16x16.png":    {Data: []byte("icon")},
-	}, script)
+	}, headScript)
 	require.NoError(t, err)
 	require.True(t, ok)
 	return h
@@ -125,7 +127,7 @@ func TestPathsCantEscapeTheBuild(t *testing.T) {
 func TestNoBuildMeansNoHandler(t *testing.T) {
 	t.Parallel()
 
-	_, ok, err := newHandler(fstest.MapFS{".gitkeep": {}}, "")
+	_, ok, err := newHandler(fstest.MapFS{".gitkeep": {}}, nil)
 
 	require.NoError(t, err)
 	assert.False(t, ok)
@@ -183,7 +185,9 @@ func TestHeadScriptIsAddedToIndexOnly(t *testing.T) {
 	t.Parallel()
 
 	plain := testHandler(t)
-	h := testHandlerWithScript(t, "<script>window.X = 1;</script>")
+	h := testHandlerWith(t, testIndex, func(string) (string, error) {
+		return "<script>window.X = 1;</script>", nil
+	})
 
 	for _, target := range []string{"/", "/u/ash/living-dex"} {
 		w := get(h, http.MethodGet, target, nil)
@@ -196,7 +200,48 @@ func TestHeadScriptIsAddedToIndexOnly(t *testing.T) {
 func TestHeadScriptNeedsAHead(t *testing.T) {
 	t.Parallel()
 
-	_, _, err := newHandler(fstest.MapFS{"index.html": {Data: []byte("<html>no head</html>")}}, "<script></script>")
+	_, _, err := newHandler(fstest.MapFS{"index.html": {Data: []byte("<html>no head</html>")}}, func(string) (string, error) {
+		return "<script></script>", nil
+	})
+
+	assert.Error(t, err)
+}
+
+func TestVersionIsTheBuildID(t *testing.T) {
+	t.Parallel()
+
+	var given string
+	h := testHandlerWith(t, testIndex, func(build string) (string, error) {
+		given = build
+		return "<script>window.X = 1;</script>", nil
+	})
+
+	w := get(h, http.MethodGet, "/version", nil)
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, given, w.Body.String(), "the page and /version agree on the build")
+	assert.Regexp(t, `^[0-9a-f]{16}$`, given)
+	assert.Contains(t, w.Header().Get("Content-Type"), "text/plain")
+}
+
+func TestBuildIDFollowsTheCode(t *testing.T) {
+	t.Parallel()
+
+	version := func(index string, script string) string {
+		h := testHandlerWith(t, index, func(string) (string, error) { return script, nil })
+		return get(h, http.MethodGet, "/version", nil).Body.String()
+	}
+
+	first := version(testIndex, "<script>window.X = 1;</script>")
+	assert.Equal(t, first, version(testIndex, "<script>window.X = 2;</script>"), "a new config (like a new deploy's version) isn't a new build")
+	assert.NotEqual(t, first, version(`<html><head><script src="/assets/index-C9aYzX1q.js"></script></head>app</html>`, ""), "new code is a new build")
+}
+
+func TestHeadScriptErrorsStopTheHandler(t *testing.T) {
+	t.Parallel()
+
+	_, _, err := newHandler(fstest.MapFS{"index.html": {Data: []byte(testIndex)}}, func(string) (string, error) {
+		return "", errors.New("broken")
+	})
 
 	assert.Error(t, err)
 }
