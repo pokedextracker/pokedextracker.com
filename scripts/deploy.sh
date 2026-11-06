@@ -136,6 +136,17 @@ if [ "${proceed}" == "yes" ]; then
   fly deploy \
     --config .fly/production.toml \
     --image ${IMAGE}:${TAG}
+
+  echo
+  echo -e "\033[1;32m==> Tagging ${TAG} as latest...\033[0m"
+  echo
+
+  # latest tracks production, so it only moves once production is running this
+  # image. This copies the multi-arch index in the registry without rebuilding.
+  # Production is already deployed by now, so a failure here is only a warning.
+  if ! docker buildx imagetools create --tag ${IMAGE}:latest ${IMAGE}:${TAG}; then
+    echo -e "\n\033[1;33m==> Couldn't tag ${TAG} as latest; production is still deployed\033[0m"
+  fi
 else
   echo
   echo -e "\033[1;33m==> Skipping deploying ${TAG} to production...\033[0m"
