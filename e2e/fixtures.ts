@@ -49,8 +49,11 @@ export { expect };
 export const PASSWORD = "e2e-password";
 
 // Tests run in parallel against one database, so each one makes its own users.
-export function uniqueUsername(): string {
-  return `e2e_${randomBytes(6).toString("hex")}`;
+// Usernames can be up to 20 characters, for a test that needs the longest.
+export function uniqueUsername(length = 16): string {
+  return `e2e_${randomBytes(8)
+    .toString("hex")
+    .slice(0, length - 4)}`;
 }
 
 export interface CreatedUser {
@@ -63,9 +66,8 @@ export interface CreatedUser {
 // dex, for tests that aren't about registering.
 export async function createUser(
   request: APIRequestContext,
-  title = "Living Dex",
+  { title = "Living Dex", username = uniqueUsername() } = {},
 ): Promise<CreatedUser> {
-  const username = uniqueUsername();
   const slug = slugOf(title);
   const response = await request.post("/api/users", {
     data: {

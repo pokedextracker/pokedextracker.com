@@ -144,9 +144,7 @@ function AccountForm({ sessionUser }: AccountFormProps) {
             type="success"
           />
           <div className={formGroup}>
-            <label className={formLabel} htmlFor="password">
-              Password
-            </label>
+            <span className={formLabel}>Password</span>
             <button
               className={buttonClassName("yellow")}
               onClick={handleChangePasswordClick}
@@ -158,7 +156,11 @@ function AccountForm({ sessionUser }: AccountFormProps) {
           {isEditingPassword && (
             <div>
               <div className={formGroup}>
+                <label className={formLabel} htmlFor="password">
+                  New Password
+                </label>
                 <input
+                  autoComplete="new-password"
                   className={`${formControlClassName()} tracking-2`}
                   id="password"
                   name="password"
@@ -171,7 +173,11 @@ function AccountForm({ sessionUser }: AccountFormProps) {
                 <FontAwesomeIcon className={inputIcon} icon={faAsterisk} />
               </div>
               <div className={formGroup}>
+                <label className={formLabel} htmlFor="password_confirm">
+                  Confirm New Password
+                </label>
                 <input
+                  autoComplete="new-password"
                   className={`${formControlClassName()} tracking-2`}
                   id="password_confirm"
                   name="password_confirm"

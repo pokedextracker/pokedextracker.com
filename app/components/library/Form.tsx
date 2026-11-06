@@ -5,8 +5,9 @@ import { tw } from "../../utils/tw";
 // The page a form takes up, like the login page, or a dex modal.
 export const formPage = tw`flex flex-[1_0_auto] flex-col items-center overflow-y-auto px-0 pt-50 pb-100`;
 
-// The form page's title.
-export const formTitle = tw`mb-15 text-32 text-heading`;
+// The form page's title. A long username can be wider than a phone, so it
+// breaks onto the next line instead of running off both sides.
+export const formTitle = tw`mb-15 max-w-full px-16 text-center text-32 wrap-break-word text-heading`;
 
 // A form slides up into place.
 export const form = tw`relative top-60 animate-slide-fast`;

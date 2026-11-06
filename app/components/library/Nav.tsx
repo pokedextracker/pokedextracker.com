@@ -30,8 +30,9 @@ const navLink = tw`${base} flex items-center no-touch:hover:bg-nav-hover no-touc
 const logo = tw`${navLink} mr-auto`;
 
 // The username, which opens the dropdown. It lights up while the dropdown is
-// hovered, on touch devices too.
-const toggle = tw`${base} flex items-center group-hover/dropdown:bg-nav-raised no-touch:focus-visible:bg-nav-raised no-touch:focus-visible:text-nav-text-hover`;
+// hovered, on touch devices too. A username too long for a small phone gets
+// cut off with an ellipsis instead of pushing the page wider than the screen.
+const toggle = tw`${base} flex min-w-0 items-center group-hover/dropdown:bg-nav-raised no-touch:focus-visible:bg-nav-raised no-touch:focus-visible:text-nav-text-hover`;
 
 // The dropdown's links.
 const item = tw`${base} block truncate border-t-2 border-t-nav bg-nav-raised hover:bg-nav-raised-hover`;
@@ -95,10 +96,10 @@ export function Nav() {
     return (
       <nav className={nav}>
         {links}
-        <div className="group/dropdown flex" data-testid="nav-dropdown">
+        <div className="group/dropdown flex min-w-0" data-testid="nav-dropdown">
           <a className={toggle} href="#">
-            {session.username}{" "}
-            <FontAwesomeIcon className="ml-3" icon={faCaretDown} />
+            <span className="truncate">{session.username}</span>
+            <FontAwesomeIcon className="ml-3 shrink-0" icon={faCaretDown} />
           </a>
           <ul
             className="invisible absolute top-[70%] right-0 z-10 m-0 w-230 list-none p-0 text-right opacity-0 transition-all duration-100 ease-out group-hover/dropdown:visible group-hover/dropdown:top-full group-hover/dropdown:opacity-100"

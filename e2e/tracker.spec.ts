@@ -93,7 +93,7 @@ test("the info panel shows the chosen Pokémon", async ({ page, request }) => {
 });
 
 test("the tab's title is the dex's", async ({ page, request }) => {
-  const user = await createUser(request, "Shiny Hunt");
+  const user = await createUser(request, { title: "Shiny Hunt" });
   await page.goto(`/u/${user.username}/${user.slug}`);
 
   await expect(page).toHaveTitle(
