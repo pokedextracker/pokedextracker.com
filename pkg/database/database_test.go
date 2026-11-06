@@ -14,7 +14,6 @@ func TestNew(t *testing.T) {
 
 	cfg, err := config.New()
 	require.NoError(t, err)
-	cfg.DatabaseDebug = true
 
 	db, err := New("database test", cfg)
 

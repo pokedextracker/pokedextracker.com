@@ -451,10 +451,6 @@ func serverEnvironment(servers Servers) []string {
 	var values []string
 	if servers.APIPort != 0 {
 		values = append(values, "PORT="+strconv.Itoa(servers.APIPort))
-		// The dev API logs its queries unless DATABASE_DEBUG says otherwise.
-		if os.Getenv("DATABASE_DEBUG") == "" {
-			values = append(values, "DATABASE_DEBUG=true")
-		}
 	}
 	if servers.WebPort != 0 {
 		values = append(values, "WEB_PORT="+strconv.Itoa(servers.WebPort))
