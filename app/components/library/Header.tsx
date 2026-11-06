@@ -62,7 +62,9 @@ export function Header({ profile = false }: Props) {
 
   return (
     <div className="flex items-center">
-      <h1 className="relative m-0 inline-block text-40 text-strong max-750:text-32">
+      {/* A long username can be wider than a phone, so it breaks onto the next
+          line instead of running off the side. */}
+      <h1 className="relative m-0 inline-block min-w-0 text-40 wrap-break-word text-strong max-750:text-32">
         {title.slice(0, lastSpace + 1)}
         <span className="whitespace-nowrap">
           {title.slice(lastSpace + 1)}
