@@ -1,4 +1,5 @@
 import { hostname } from "node:os";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
@@ -46,7 +47,22 @@ export default defineConfig({
     chunkSizeWarningLimit: 3000,
   },
   clearScreen: false,
-  plugins: [react(), tailwindcss(), developmentVersion()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    developmentVersion(),
+    // Stamps each script and its source map with a matching debug ID, so
+    // Sentry can pair them up whichever host serves the script. It only
+    // stamps: the deploy script uploads the source maps (scripts/deploy.sh),
+    // and the release is the deploy version, set when Sentry starts
+    // (app/utils/sentry.ts). An empty release name keeps the plugin from
+    // naming one after the git commit and warning that it can't create it.
+    sentryVitePlugin({
+      release: { name: "", inject: false },
+      sourcemaps: { disable: "disable-upload" },
+      telemetry: false,
+    }),
+  ],
   server: {
     allowedHosts: [machine, `${machine}.local`],
     host: true,

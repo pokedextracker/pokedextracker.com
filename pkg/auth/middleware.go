@@ -54,6 +54,7 @@ func newMiddlewareFunction(authService *Service, shouldEnforce bool) echo.Middle
 			}
 
 			c.Set(sessionKey, session)
+			// Error reports name the user from this too (errcodes.Handler).
 			c.Set(userIDKey, session.ID)
 
 			// Update the logger with session info.
@@ -62,8 +63,6 @@ func newMiddlewareFunction(authService *Service, shouldEnforce bool) echo.Middle
 				"user_id": session.ID,
 			})
 			c.SetRequest(c.Request().WithContext(log.WithContext(c.Request().Context())))
-
-			// TODO: configure error reporting user info.
 
 			return next(c)
 		}

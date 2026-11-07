@@ -835,7 +835,7 @@ func testTarget(env Environment, port int) DatabaseTarget {
 }
 
 // e2eTarget is the database the e2e server runs against. The server runs as
-// development, which turns off Rollbar and the blog proxy.
+// development, which turns off Sentry and the blog proxy.
 func e2eTarget(env Environment, port int) DatabaseTarget {
 	return DatabaseTarget{Environment: "development", Name: env.E2EDatabase(), Port: port}
 }

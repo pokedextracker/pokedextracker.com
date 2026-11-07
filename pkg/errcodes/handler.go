@@ -3,13 +3,14 @@ package errcodes
 import (
 	"context"
 	"net/http"
+	"strconv"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/iancoleman/strcase"
 	"github.com/labstack/echo/v5"
 	"github.com/pkg/errors"
 	"github.com/robinjoseph08/golib/echo/v5/middleware/logger"
 	"github.com/robinjoseph08/golib/errutils"
-	"github.com/rollbar/rollbar-go"
 )
 
 type Handler struct{}
@@ -42,14 +43,18 @@ func (h *Handler) Handle(c *echo.Context, err error) {
 
 	// Internal server errors
 	if httpCode == http.StatusInternalServerError {
-		extra := map[string]any{
-			"request_id": logger.IDFromEchoContext(c),
-		}
-		// We can't import the auth package since it would create an import cycle.
-		if userID, ok := c.Get("userID").(int); ok {
-			extra["user_id"] = userID
-		}
-		rollbar.RequestErrorWithExtrasAndContext(c.Request().Context(), rollbar.ERR, c.Request(), errutils.Unwrap(err), extra)
+		// A hub of its own, so this request's details don't end up on another
+		// request's report.
+		hub := sentry.CurrentHub().Clone()
+		hub.ConfigureScope(func(scope *sentry.Scope) {
+			scope.SetRequest(c.Request())
+			scope.SetTag("request_id", logger.IDFromEchoContext(c))
+			// We can't import the auth package since it would create an import cycle.
+			if userID, ok := c.Get("userID").(int); ok {
+				scope.SetUser(sentry.User{ID: strconv.Itoa(userID)})
+			}
+		})
+		hub.CaptureException(errutils.Unwrap(err))
 		logger.FromEchoContext(c).Err(err).Error("server error")
 	}
 

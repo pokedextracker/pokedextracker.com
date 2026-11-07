@@ -126,10 +126,10 @@ func newServer(cfg *config.Config, db *pg.DB, frontend http.Handler) (*http.Serv
 // Build identifies the frontend code itself, and changes only when that code
 // does; the app shows a "new version" banner when /version stops matching it.
 type frontendConfig struct {
-	Build        string `json:"build"`
-	Environment  string `json:"environment"`
-	RollbarToken string `json:"rollbarToken"`
-	Version      string `json:"version"`
+	Build       string `json:"build"`
+	Environment string `json:"environment"`
+	SentryDSN   string `json:"sentryDsn"`
+	Version     string `json:"version"`
 }
 
 func frontendConfigScript(cfg *config.Config, build string) (string, error) {
@@ -139,10 +139,10 @@ func frontendConfigScript(cfg *config.Config, build string) (string, error) {
 	}
 	// json.Marshal escapes <, >, and &, so the values can't close the script.
 	value, err := json.Marshal(frontendConfig{
-		Build:        build,
-		Environment:  cfg.Environment,
-		RollbarToken: cfg.RollbarClientToken,
-		Version:      version,
+		Build:       build,
+		Environment: cfg.Environment,
+		SentryDSN:   cfg.SentryClientDSN,
+		Version:     version,
 	})
 	if err != nil {
 		return "", errors.WithStack(err)

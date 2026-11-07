@@ -30,8 +30,7 @@ RUN mkdir -p internal/webapp/dist && pnpm build \
 FROM scratch AS web-dist
 COPY --from=web /src/internal/webapp/dist /
 
-# Built under /app and run from /app/bin, so Rollbar trims stack frames to
-# repository paths (/app/pkg/... becomes pkg/...).
+# Built under /app and run from /app/bin.
 FROM --platform=$BUILDPLATFORM golang:1.27.0 AS api
 WORKDIR /app
 COPY go.mod go.sum ./

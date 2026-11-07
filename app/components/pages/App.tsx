@@ -1,7 +1,7 @@
+import { getCurrentScope } from "@sentry/react";
 import { useEffect } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 
-import { Rollbar } from "../../utils/rollbar";
 import { ReloadOnNavigation } from "../library/Reload";
 import { Account } from "./Account";
 import { Home } from "./Home";
@@ -12,12 +12,12 @@ import { ProfileRedirect } from "./ProfileRedirect";
 import { Register } from "./Register";
 import { Tracker } from "./Tracker";
 
-// RollbarContext tags error reports with the page they happened on.
-function RollbarContext() {
+// ErrorReportPage tags error reports with the page they happened on.
+function ErrorReportPage() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    Rollbar.configure({ payload: { context: pathname } });
+    getCurrentScope().setTransactionName(pathname);
   }, [pathname]);
 
   return null;
@@ -26,7 +26,7 @@ function RollbarContext() {
 export function App() {
   return (
     <BrowserRouter>
-      <RollbarContext />
+      <ErrorReportPage />
       <ReloadOnNavigation />
       <div className="flex h-screen flex-col print:block print:h-auto">
         <Routes>

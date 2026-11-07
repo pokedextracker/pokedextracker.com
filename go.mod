@@ -4,6 +4,7 @@ go 1.27
 
 require (
 	github.com/creasty/defaults v1.11.0
+	github.com/getsentry/sentry-go v0.50.0
 	github.com/go-pg/pg/v10 v10.15.1
 	github.com/go-playground/mold/v4 v4.5.1
 	github.com/go-playground/universal-translator v0.18.2
@@ -15,8 +16,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/robinjoseph08/go-pg-migrations/v3 v3.1.0
 	github.com/robinjoseph08/golib v0.6.0
-	github.com/rollbar/rollbar-go v1.4.8
-	github.com/rollbar/rollbar-go/errors v1.0.0
 	github.com/segmentio/encoding v0.5.4
 	github.com/stretchr/testify v1.12.1
 	golang.org/x/crypto v0.58.0

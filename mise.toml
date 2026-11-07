@@ -11,10 +11,6 @@ pnpm = "12.14.0"
 # which is gitignored. A missing .env is fine. Use names that don't collide with
 # the app's own config (DATABASE_*, PORT, etc.) so local dev never picks them up.
 _.file = ".env"
-# The deploy scripts read ROLLBAR_TOKEN from .env themselves to upload source
-# maps. Blank it here so the local API (which reads the same variable) doesn't
-# report development errors to Rollbar.
-ROLLBAR_TOKEN = ""
 
 # === Build ===
 
