@@ -29,6 +29,9 @@ export function App() {
       <RollbarContext />
       <ReloadOnNavigation />
       <div className="flex h-screen flex-col print:block print:h-auto">
+        {/* The server gives each of these routes its own title and search
+            tags, and a 404 to anything else (pkg/server/pages.go), so a new
+            route needs adding there too. */}
         <Routes>
           <Route element={<Home />} path="/" />
           <Route element={<Login />} path="/login" />

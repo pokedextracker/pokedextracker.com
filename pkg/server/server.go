@@ -41,7 +41,7 @@ func New(cfg *config.Config, db *pg.DB) (*http.Server, error) {
 			return "", err
 		}
 		return script + analyticsScript(cfg), nil
-	})
+	}, pages(cfg.Environment, serviceLookup{users: users.NewService(db), dexes: dexes.NewService(db)}, lookupTimeout))
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -171,10 +171,13 @@ func notFoundHandler(c *echo.Context) error {
 	return errcodes.NotFound("page")
 }
 
-// noStore keeps browsers and proxies from caching API responses.
+// noStore keeps browsers and proxies from caching API responses, and search
+// engines from listing them. robots.txt lets crawlers fetch the API, since
+// Google needs it to render profiles and dexes.
 func noStore(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c *echo.Context) error {
 		c.Response().Header().Set("Cache-Control", "no-store")
+		c.Response().Header().Set("X-Robots-Tag", "noindex")
 		return next(c)
 	}
 }

@@ -1,2 +1,8 @@
+# Everything is crawlable. Pages that shouldn't be in search results say so
+# with a noindex tag (see pkg/server/pages.go), which crawlers can only see if
+# they're allowed in. /api/ stays open too: Google loads it to render profiles
+# and dexes, and without it they'd render as errors.
 User-agent: *
-Disallow: /u/
+Disallow:
+
+Sitemap: https://pokedextracker.com/sitemap.xml

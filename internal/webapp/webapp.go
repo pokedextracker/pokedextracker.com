@@ -67,7 +67,33 @@ type file struct {
 
 type handler struct {
 	files map[string]*file
+
+	// With a PageFunc, index.html is cut around its page block, and each
+	// request for it gets its own block in between.
+	page        PageFunc
+	indexBefore []byte
+	indexAfter  []byte
 }
+
+// The markers around the part of index.html that changes from page to page:
+// the title, description, and the like. What's between them is the home
+// page's, which the Vite dev server shows on every page.
+const (
+	pageStart = "<!-- page -->"
+	pageEnd   = "<!-- /page -->"
+)
+
+// Page is what a frontend route gets in place of index.html's page block, and
+// the status it's served with. A zero Status is 200.
+type Page struct {
+	Status int
+	Head   string
+}
+
+// PageFunc decides the page block and status for a request to a frontend
+// route. It's what lets search engines see each page's own title and
+// description, and a real 404 for a page that doesn't exist.
+type PageFunc func(r *http.Request) Page
 
 // HeadScript returns what to add to the end of index.html's <head>, given the
 // build ID. The server uses it to hand the frontend its configuration,
@@ -75,17 +101,18 @@ type handler struct {
 type HeadScript func(build string) (string, error)
 
 // Handler serves the embedded frontend build. headScript, when given, is
-// added to the end of index.html's <head>. The boolean is false when the
+// added to the end of index.html's <head>. page, when given, replaces
+// index.html's page block on each request. The boolean is false when the
 // binary was built without a frontend.
-func Handler(headScript HeadScript) (http.Handler, bool, error) {
+func Handler(headScript HeadScript, page PageFunc) (http.Handler, bool, error) {
 	root, err := fs.Sub(embedded, "dist")
 	if err != nil {
 		return nil, false, errors.WithStack(err)
 	}
-	return newHandler(root, headScript)
+	return newHandler(root, headScript, page)
 }
 
-func newHandler(root fs.FS, headScript HeadScript) (http.Handler, bool, error) {
+func newHandler(root fs.FS, headScript HeadScript, page PageFunc) (http.Handler, bool, error) {
 	index, err := fs.ReadFile(root, indexFile)
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil, false, nil
@@ -123,6 +150,15 @@ func newHandler(root fs.FS, headScript HeadScript) (http.Handler, bool, error) {
 		return nil, false, errors.WithStack(err)
 	}
 	files[versionFile] = newFile([]byte(build))
+	h := &handler{files: files, page: page}
+	if page != nil {
+		before, rest, ok := bytes.Cut(files[indexFile].content, []byte(pageStart))
+		_, after, ok2 := bytes.Cut(rest, []byte(pageEnd))
+		if !ok || !ok2 {
+			return nil, false, errors.New("index.html has no page block to replace")
+		}
+		h.indexBefore, h.indexAfter = before, after
+	}
 	go func() {
 		for name, f := range files {
 			if compressible[strings.ToLower(path.Ext(name))] && len(f.content) >= minimumGzipSize {
@@ -130,7 +166,7 @@ func newHandler(root fs.FS, headScript HeadScript) (http.Handler, bool, error) {
 			}
 		}
 	}()
-	return &handler{files: files}, true, nil
+	return h, true, nil
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -155,6 +191,10 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		name = indexFile
 		f = h.files[indexFile]
+	}
+	if name == indexFile && h.page != nil {
+		h.serveIndex(w, r)
+		return
 	}
 
 	header := w.Header()
@@ -186,6 +226,42 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.ServeContent(w, r, name, time.Time{}, bytes.NewReader(content))
 }
 
+// serveIndex serves index.html with the request's own page block and status.
+func (h *handler) serveIndex(w http.ResponseWriter, r *http.Request) {
+	page := h.page(r)
+	content := make([]byte, 0, len(h.indexBefore)+len(page.Head)+len(h.indexAfter))
+	content = append(content, h.indexBefore...)
+	content = append(content, page.Head...)
+	content = append(content, h.indexAfter...)
+
+	header := w.Header()
+	header.Set("Cache-Control", cacheControl(indexFile))
+	header.Set("X-Content-Type-Options", "nosniff")
+	header.Set("Content-Type", typeByName(indexFile))
+	if len(content) >= minimumGzipSize {
+		header.Add("Vary", "Accept-Encoding")
+		if acceptsGzip(r) {
+			content = gzipBytes(content)
+			header.Set("Content-Encoding", "gzip")
+			r.Header.Del("Range")
+			r.Header.Del("If-Range")
+		}
+	}
+
+	if page.Status != 0 && page.Status != http.StatusOK {
+		// ServeContent only sends successes, and a page that doesn't exist has
+		// nothing to revalidate or take a range of.
+		header.Set("Content-Length", strconv.Itoa(len(content)))
+		w.WriteHeader(page.Status)
+		if r.Method != http.MethodHead {
+			_, _ = w.Write(content)
+		}
+		return
+	}
+	header.Set("ETag", `"`+fingerprint(content)+`"`)
+	http.ServeContent(w, r, indexFile, time.Time{}, bytes.NewReader(content))
+}
+
 func newFile(content []byte) *file {
 	// Embedded files have no modification time, so caches revalidate with a
 	// fingerprint of the content instead.
@@ -208,13 +284,17 @@ func buildID(index []byte) string {
 
 func (f *file) gzip() []byte {
 	f.gzipOnce.Do(func() {
-		var buffer bytes.Buffer
-		writer := gzip.NewWriter(&buffer)
-		_, _ = writer.Write(f.content)
-		_ = writer.Close()
-		f.gzipped = buffer.Bytes()
+		f.gzipped = gzipBytes(f.content)
 	})
 	return f.gzipped
+}
+
+func gzipBytes(content []byte) []byte {
+	var buffer bytes.Buffer
+	writer := gzip.NewWriter(&buffer)
+	_, _ = writer.Write(content)
+	_ = writer.Close()
+	return buffer.Bytes()
 }
 
 // acceptsGzip reports whether the request's Accept-Encoding lists gzip with a
