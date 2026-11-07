@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 	"testing/fstest"
@@ -31,7 +32,7 @@ func testHandlerWith(t *testing.T, index string, headScript HeadScript) http.Han
 		"assets/index-B80ZTyZ2.js.map": {Data: []byte("{}")},
 		"pokesprite-v12.png":           {Data: []byte("png")},
 		"favicon/favicon-16x16.png":    {Data: []byte("icon")},
-	}, headScript)
+	}, headScript, nil)
 	require.NoError(t, err)
 	require.True(t, ok)
 	return h
@@ -127,7 +128,7 @@ func TestPathsCantEscapeTheBuild(t *testing.T) {
 func TestNoBuildMeansNoHandler(t *testing.T) {
 	t.Parallel()
 
-	_, ok, err := newHandler(fstest.MapFS{".gitkeep": {}}, nil)
+	_, ok, err := newHandler(fstest.MapFS{".gitkeep": {}}, nil, nil)
 
 	require.NoError(t, err)
 	assert.False(t, ok)
@@ -202,7 +203,7 @@ func TestHeadScriptNeedsAHead(t *testing.T) {
 
 	_, _, err := newHandler(fstest.MapFS{"index.html": {Data: []byte("<html>no head</html>")}}, func(string) (string, error) {
 		return "<script></script>", nil
-	})
+	}, nil)
 
 	assert.Error(t, err)
 }
@@ -241,7 +242,83 @@ func TestHeadScriptErrorsStopTheHandler(t *testing.T) {
 
 	_, _, err := newHandler(fstest.MapFS{"index.html": {Data: []byte(testIndex)}}, func(string) (string, error) {
 		return "", errors.New("broken")
+	}, nil)
+
+	assert.Error(t, err)
+}
+
+const pagedIndex = "<html><head><!-- page --><title>Home</title><!-- /page --><script>config</script></head>app</html>"
+
+func pagedHandler(t *testing.T, page PageFunc) http.Handler {
+	t.Helper()
+	h, ok, err := newHandler(fstest.MapFS{
+		"index.html":                {Data: []byte(pagedIndex + strings.Repeat(" ", 2048))},
+		"favicon/favicon-16x16.png": {Data: []byte("icon")},
+	}, nil, page)
+	require.NoError(t, err)
+	require.True(t, ok)
+	return h
+}
+
+func TestPagesReplaceThePageBlock(t *testing.T) {
+	t.Parallel()
+
+	var paths []string
+	h := pagedHandler(t, func(r *http.Request) Page {
+		paths = append(paths, r.URL.Path)
+		return Page{Head: "<title>" + r.URL.Path + "</title>"}
 	})
+
+	w := get(h, http.MethodGet, "/u/ash", nil)
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.True(t, strings.HasPrefix(w.Body.String(), "<html><head><title>/u/ash</title><script>config</script></head>app</html>"), w.Body.String())
+	assert.Equal(t, "no-cache", w.Header().Get("Cache-Control"))
+	assert.Contains(t, w.Header().Get("Content-Type"), "text/html")
+	etag := w.Header().Get("ETag")
+	assert.NotEmpty(t, etag)
+
+	w = get(h, http.MethodGet, "/u/ash", map[string]string{"If-None-Match": etag})
+	assert.Equal(t, http.StatusNotModified, w.Code, "the same page revalidates")
+
+	w = get(h, http.MethodGet, "/u/misty", map[string]string{"If-None-Match": etag})
+	assert.Equal(t, http.StatusOK, w.Code, "another page's ETag doesn't match")
+
+	w = get(h, http.MethodGet, "/favicon/favicon-16x16.png", nil)
+	assert.Equal(t, "icon", w.Body.String())
+	assert.Equal(t, []string{"/u/ash", "/u/ash", "/u/misty"}, paths, "files other than index.html aren't pages")
+}
+
+func TestPagesSetTheStatus(t *testing.T) {
+	t.Parallel()
+
+	h := pagedHandler(t, func(*http.Request) Page {
+		return Page{Status: http.StatusNotFound, Head: "<title>404</title>"}
+	})
+
+	w := get(h, http.MethodGet, "/u/nobody", nil)
+	assert.Equal(t, http.StatusNotFound, w.Code)
+	assert.True(t, strings.HasPrefix(w.Body.String(), "<html><head><title>404</title>"), "a missing page still gets the app, to show its not found page")
+	assert.Empty(t, w.Header().Get("ETag"))
+
+	w = get(h, http.MethodHead, "/u/nobody", nil)
+	assert.Equal(t, http.StatusNotFound, w.Code)
+	assert.Empty(t, w.Body.String())
+
+	w = get(h, http.MethodGet, "/u/nobody", map[string]string{"Accept-Encoding": "gzip"})
+	assert.Equal(t, http.StatusNotFound, w.Code)
+	assert.Equal(t, "gzip", w.Header().Get("Content-Encoding"))
+	assert.Equal(t, strconv.Itoa(w.Body.Len()), w.Header().Get("Content-Length"))
+	reader, err := gzip.NewReader(w.Body)
+	require.NoError(t, err)
+	body, err := io.ReadAll(reader)
+	require.NoError(t, err)
+	assert.True(t, strings.HasPrefix(string(body), "<html><head><title>404</title>"))
+}
+
+func TestPagesNeedAPageBlock(t *testing.T) {
+	t.Parallel()
+
+	_, _, err := newHandler(fstest.MapFS{"index.html": {Data: []byte(testIndex)}}, nil, func(*http.Request) Page { return Page{} })
 
 	assert.Error(t, err)
 }

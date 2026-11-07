@@ -75,6 +75,7 @@ func TestNew(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.True(t, strings.HasPrefix(w.Body.String(), "["))
 	assert.Equal(t, "no-store", w.Header().Get("Cache-Control"))
+	assert.Equal(t, "noindex", w.Header().Get("X-Robots-Tag"), "crawlers may load the API, but don't list it")
 }
 
 func TestAPIHealthAndNotFound(t *testing.T) {
