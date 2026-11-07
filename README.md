@@ -28,6 +28,7 @@ mise lint               # golangci-lint, ESLint, Prettier, and TypeScript checks
 mise format             # Format the code, config, and docs with Prettier
 mise tygo               # Generate the frontend's API types from the Go models
 mise test:go            # Go tests
+mise test:web           # Frontend unit tests
 mise test:e2e           # End-to-end tests in Chromium (test:e2e:all for every browser)
 mise test:visual        # Compare how the site looks with master (needs Docker)
 mise build              # Build the frontend, then the API (which embeds it) and migrations

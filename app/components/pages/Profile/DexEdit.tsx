@@ -20,7 +20,6 @@ import {
   type MouseEvent,
 } from "react";
 import Modal from "react-modal";
-import slug from "slug";
 
 import { useSession } from "../../../hooks/contexts/use-session";
 import { useDexTypes } from "../../../hooks/queries/dex-types";
@@ -28,6 +27,7 @@ import { useDeleteDex, useUpdateDex } from "../../../hooks/queries/dexes";
 import { useGames } from "../../../hooks/queries/games";
 import type { Customization, Dex, DexType, Game } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
+import { slug } from "../../../utils/slug";
 import { tw } from "../../../utils/tw";
 import { Alert } from "../../library/Alert";
 import { buttonClassName, buttonIcon } from "../../library/Button";
@@ -221,7 +221,7 @@ export function DexEdit({ dex, onRequestClose }: Props) {
     ? REGIONAL_WARNING
     : showDexTypeWarning && DEX_TYPE_WARNING;
   const showUrlWarning = useMemo(
-    () => slug(title || "Living Dex", { lower: true }) !== dex.slug,
+    () => slug(title || "Living Dex") !== dex.slug,
     [dex, title],
   );
 
@@ -316,7 +316,7 @@ export function DexEdit({ dex, onRequestClose }: Props) {
         slug: dex.slug,
         payload: {
           title,
-          slug: title !== dex.title ? slug(title, { lower: true }) : undefined,
+          slug: title !== dex.title ? slug(title) : undefined,
           shiny,
           game,
           dex_type: resolvedDexType,
@@ -379,8 +379,7 @@ export function DexEdit({ dex, onRequestClose }: Props) {
           />
           <div className={formGroup}>
             <div className={formNote}>
-              /u/{session!.username}/
-              {slug(title || "Living Dex", { lower: true })}
+              /u/{session!.username}/{slug(title || "Living Dex")}
             </div>
             <label className={formLabel} htmlFor="dex_title">
               Title

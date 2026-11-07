@@ -19,7 +19,6 @@ import {
 } from "react";
 import Modal from "react-modal";
 import { useNavigate } from "react-router";
-import slug from "slug";
 
 import { useSession } from "../../../hooks/contexts/use-session";
 import { useDexTypes } from "../../../hooks/queries/dex-types";
@@ -27,6 +26,7 @@ import { useCreateDex } from "../../../hooks/queries/dexes";
 import { useGames } from "../../../hooks/queries/games";
 import type { Customization, DexType, Game } from "../../../types";
 import { trackEvent } from "../../../utils/analytics";
+import { slug } from "../../../utils/slug";
 import { Alert } from "../../library/Alert";
 import {
   buttonClassName,
@@ -228,7 +228,7 @@ export function DexCreate({ onRequestClose }: Props) {
         username: session!.username,
         payload: {
           title,
-          slug: slug(title, { lower: true }),
+          slug: slug(title),
           shiny,
           game,
           dex_type: resolvedDexType,
@@ -269,8 +269,7 @@ export function DexCreate({ onRequestClose }: Props) {
           <Alert message={createDexMutation.error?.message} type="error" />
           <div className={formGroup}>
             <div className={formNote}>
-              /u/{session!.username}/
-              {slug(title || "Living Dex", { lower: true })}
+              /u/{session!.username}/{slug(title || "Living Dex")}
             </div>
             <label className={formLabel} htmlFor="dex_title">
               Title

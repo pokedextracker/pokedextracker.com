@@ -50,6 +50,9 @@ jobs:
       - name: Type check
         run: pnpm lint:types
 
+      - name: Test
+        run: pnpm test
+
       - name: Build
         run: mise build:web
 

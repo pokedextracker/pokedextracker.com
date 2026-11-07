@@ -127,6 +127,11 @@ run = ["rm -rf app/types/generated", "tygo generate"]
 description = "Run Go tests against this worktree's test database (extra args replace the default go test args)"
 run = "go run ./cmd/dev test"
 
+[tasks."test:web"]
+description = "Run the frontend unit tests (extra args go to Vitest, like a file to run)"
+depends = ["install:web"]
+run = "pnpm test"
+
 # The e2e tasks build the site, serve it from the binary against a freshly
 # seeded database, and run Playwright against it. Extra args go to Playwright,
 # like a spec file or --headed. CI runs every browser.
