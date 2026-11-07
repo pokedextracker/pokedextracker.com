@@ -30,7 +30,7 @@ var requiredSettings = map[string]string{
 func setEnvironment(t *testing.T, environment string) {
 	t.Helper()
 	t.Setenv(environmentENV, environment)
-	for _, name := range []string{"BLOG_URL", "DATABASE_PORT", "DATABASE_SSL_HOST", "PORT", "ROLLBAR_TOKEN", "UMAMI_URL", "UMAMI_WEBSITE_ID"} {
+	for _, name := range []string{"BLOG_URL", "DATABASE_PORT", "DATABASE_SSL_HOST", "PORT", "SENTRY_DSN", "UMAMI_URL", "UMAMI_WEBSITE_ID"} {
 		t.Setenv(name, "")
 	}
 	for name := range requiredSettings {
@@ -115,7 +115,7 @@ func TestEnvironmentVariablesOverrideEveryEnvironment(t *testing.T) {
 			t.Setenv("DATABASE_PORT", "9876")
 			t.Setenv("DATABASE_SSL_HOST", "ssl.example.com")
 			t.Setenv("PORT", "1234")
-			t.Setenv("ROLLBAR_TOKEN", "token")
+			t.Setenv("SENTRY_DSN", "https://key@sentry.example.com/1")
 			t.Setenv("UMAMI_URL", "https://umami.example.com")
 			t.Setenv("UMAMI_WEBSITE_ID", "site")
 
@@ -132,7 +132,7 @@ func TestEnvironmentVariablesOverrideEveryEnvironment(t *testing.T) {
 			assert.Equal(t, "value of DATABASE_USER", cfg.DatabaseUser)
 			assert.Equal(t, []byte("value of JWT_SECRET"), cfg.JWTSecret)
 			assert.Equal(t, 1234, cfg.Port)
-			assert.Equal(t, "token", cfg.RollbarToken)
+			assert.Equal(t, "https://key@sentry.example.com/1", cfg.SentryDSN)
 			assert.Equal(t, "https://umami.example.com", cfg.UmamiURL)
 			assert.Equal(t, "site", cfg.UmamiWebsiteID)
 		})
@@ -173,6 +173,7 @@ func TestInvalidValuesAreErrorsThatDontPrintThem(t *testing.T) {
 		"DATABASE_PORT":     "70000",
 		"DATABASE_SSL_MODE": "disabled",
 		"PORT":              "not-a-port",
+		"SENTRY_DSN":        "hunter2@o1.ingest.sentry.io/1",
 		"UMAMI_URL":         "umami.example.com",
 	}
 	for name, value := range cases {

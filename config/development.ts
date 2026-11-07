@@ -6,6 +6,7 @@ export const Development: Config = {
   // the new version banner never shows while developing.
   BUILD: "development",
   ENVIRONMENT: "development",
-  ROLLBAR_TOKEN: "19ffd96c890b422287ce3a06a917678e",
+  SENTRY_DSN:
+    "https://5042d6a50748d18f4c6d5495ca48b8c3@o48077.ingest.us.sentry.io/4512390974472192",
   VERSION: "development",
 };

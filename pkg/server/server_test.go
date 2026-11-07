@@ -431,9 +431,9 @@ func TestFrontendConfigScript(t *testing.T) {
 	t.Parallel()
 
 	script, err := frontendConfigScript(&config.Config{
-		Environment:        "production",
-		RollbarClientToken: "token</script><script>alert(1)",
-		Version:            "abc1234",
+		Environment:     "production",
+		SentryClientDSN: "dsn</script><script>alert(1)",
+		Version:         "abc1234",
 	}, "0123456789abcdef")
 	require.NoError(t, err)
 
@@ -462,6 +462,6 @@ func TestEnvironmentsGetTheirOwnFrontendConfig(t *testing.T) {
 		script, err := frontendConfigScript(cfg, "")
 		require.NoError(t, err)
 		assert.Contains(t, script, `"environment":"`+env+`"`, env)
-		assert.Contains(t, script, `"rollbarToken":"19ffd96c890b422287ce3a06a917678e"`, env)
+		assert.Contains(t, script, `"sentryDsn":"https://5042d6a50748d18f4c6d5495ca48b8c3@o48077.ingest.us.sentry.io/4512390974472192"`, env)
 	}
 }

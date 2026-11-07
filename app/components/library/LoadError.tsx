@@ -21,7 +21,7 @@ export function LoadError({ error, thing }: Props) {
     document.title = "Error | Pokédex Tracker";
   }, []);
 
-  // The API reports its own 500s to Rollbar. Anything else isn't reported:
+  // The API reports its own 500s to Sentry. Anything else isn't reported:
   // timeouts and the proxy finding the API down never reach it, and are
   // usually worth trying again.
   const message =

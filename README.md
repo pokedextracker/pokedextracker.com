@@ -201,7 +201,7 @@ onto the new build. `mise start:preview` runs this same build locally.
 
 `mise deploy` builds a multi-arch image (`linux/amd64` and `linux/arm64`)
 from the `Dockerfile`, pushes it to the GitHub Container Registry
-(`ghcr.io/pokedextracker/pokedextracker.com`), uploads source maps to Rollbar,
+(`ghcr.io/pokedextracker/pokedextracker.com`), uploads source maps to Sentry,
 and deploys it to the `pokedextracker-staging` app on [Fly.io](https://fly.io/).
 Once you've checked staging, type `yes` at the prompt to deploy the same image
 to `pokedextracker-production`. Anything else skips production. Each image is
@@ -221,3 +221,8 @@ every environment. Staging and production won't start without `JWT_SECRET`,
 setting, fails the deploy at its release step, and the running version keeps
 serving. `fly secrets set` and `unset` restart machines without that step, so
 change a secret with `--stage` and then deploy, to have it checked first.
+
+Errors go to [Sentry](https://sentry.io/): the API reports to the `backend`
+project when its `SENTRY_DSN` Fly secret is set, and the frontend reports to the
+`frontend` project everywhere but development. Source maps are uploaded only when
+`SENTRY_AUTH_TOKEN` (an organization token) is in `.env`.

@@ -1,14 +1,14 @@
+import { setUser } from "@sentry/react";
+
 import type { Session } from "../types";
-import { Rollbar } from "./rollbar";
 
 // tokenToUser reads the session out of a login token, or returns null when
 // there's no token or it doesn't hold one, like a corrupted one in storage.
 export function tokenToUser(token: string | null): Session | null {
   const user = token ? decodeToken(token) : null;
 
-  Rollbar.configure({
-    payload: { user: user && { id: user.id, username: user.username } },
-  });
+  // Error reports name who was signed in, if anyone.
+  setUser(user && { id: user.id, username: user.username });
 
   return user;
 }

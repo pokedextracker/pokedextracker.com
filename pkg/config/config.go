@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/pkg/errors"
 )
 
@@ -33,8 +34,8 @@ type Config struct {
 	Hostname                  string
 	JWTSecret                 []byte
 	Port                      int
-	RollbarClientToken        string
-	RollbarToken              string
+	SentryClientDSN           string
+	SentryDSN                 string
 	UmamiURL                  string
 	UmamiWebsiteID            string
 	Version                   string
@@ -65,9 +66,9 @@ func New() (*Config, error) {
 		Version:                   Version,
 	}
 
-	// The frontend's Rollbar token, handed to it with index.html (see
+	// The frontend's Sentry DSN, handed to it with index.html (see
 	// server.frontendConfig). It's public: it's in every page anyway.
-	cfg.RollbarClientToken = "19ffd96c890b422287ce3a06a917678e"
+	cfg.SentryClientDSN = "https://5042d6a50748d18f4c6d5495ca48b8c3@o48077.ingest.us.sentry.io/4512390974472192"
 
 	switch os.Getenv(environmentENV) {
 	case "development", "":
@@ -107,7 +108,8 @@ func applyEnvironmentVariables(cfg *Config) []string {
 		{"DATABASE_SSL_HOST", &cfg.DatabaseSSLHost},
 		{"DATABASE_SSL_MODE", &cfg.DatabaseSSLMode},
 		{"DATABASE_USER", &cfg.DatabaseUser},
-		{"ROLLBAR_TOKEN", &cfg.RollbarToken},
+		// Where the API reports its errors. Without it, they're only logged.
+		{"SENTRY_DSN", &cfg.SentryDSN},
 		// Web analytics, sent to a self-hosted Umami through /stats (see
 		// server.registerAnalytics). They're on only when both are set, which is
 		// done outside this repository, so other copies of the site send nothing.
@@ -162,6 +164,14 @@ func applyEnvironmentVariables(cfg *Config) []string {
 	for _, u := range urls {
 		if parsed, err := url.Parse(u.value); u.value != "" && (err != nil || parsed.Scheme == "" || parsed.Host == "") {
 			problems = append(problems, u.name+" must be a full URL")
+		}
+	}
+
+	// The API won't start with a DSN Sentry can't read, so check it here, where
+	// a bad one fails the deploy's release step instead.
+	if cfg.SentryDSN != "" {
+		if _, err := sentry.NewDsn(cfg.SentryDSN); err != nil {
+			problems = append(problems, "SENTRY_DSN must be a Sentry DSN")
 		}
 	}
 

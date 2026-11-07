@@ -3,7 +3,7 @@
 # Deploys the single-binary app (API and frontend in one image) to Fly.io:
 # staging first, then production after a prompt.
 
-# Load any secrets (ROLLBAR_TOKEN for source maps): the main checkout's .env,
+# Load any secrets (SENTRY_AUTH_TOKEN for source maps): the main checkout's .env,
 # so deploys from other worktrees get it too, then this worktree's own.
 MAIN_ROOT=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
 test -f "$MAIN_ROOT/.env" && . "$MAIN_ROOT/.env"
@@ -67,13 +67,16 @@ if [ "${visibility}" != "public" ]; then
   exit 1
 fi
 
-if [ -n "$ROLLBAR_TOKEN" ]; then
+if [ -n "$SENTRY_AUTH_TOKEN" ]; then
   echo
-  echo -e "\033[1;32m==> Uploading source maps to Rollbar\033[0m"
+  echo -e "\033[1;32m==> Uploading source maps to Sentry\033[0m"
   echo
 
   # Export the frontend stage of the same build (it's cached, so these are
-  # the exact files in the image) and upload its source maps.
+  # the exact files in the image) and upload its source maps. The build
+  # stamped each script and its map with a matching debug ID (see
+  # vite.config.mts), which is how Sentry pairs them up, so one upload covers
+  # every host and deploy that serves these files.
   WEB_DIR=$(mktemp -d)
   trap 'rm -rf "$WEB_DIR"' EXIT
   DOCKER_BUILDKIT=1 docker buildx build \
@@ -90,24 +93,17 @@ if [ -n "$ROLLBAR_TOKEN" ]; then
     echo "No assets/*.js in the frontend build; can't upload source maps." >&2
     exit 1
   fi
-  for script_path in "${script_paths[@]}"; do
-    script_file="assets/$(basename "$script_path")"
-    for host in staging.pokedextracker.com pokedextracker.com; do
-      # The site works without source maps, so a failed upload is a warning
-      # rather than a reason to stop the deploy.
-      if ! curl -q -sS --fail-with-body --retry 3 --retry-all-errors https://api.rollbar.com/api/1/sourcemap \
-        -F access_token=$ROLLBAR_TOKEN \
-        -F version=$TAG \
-        -F minified_url=//$host/$script_file \
-        -F source_map=@$script_path.map; then
-        echo -e "\n\033[1;33m==> Couldn't upload the source map for //$host/$script_file; continuing\033[0m"
-      fi
-      echo
-    done
-  done
+  # The site works without source maps, so a failed upload is a warning
+  # rather than a reason to stop the deploy.
+  if ! SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" pnpm exec sentry-cli sourcemaps upload \
+    --org pokedextracker \
+    --project frontend \
+    "$WEB_DIR/assets"; then
+    echo -e "\n\033[1;33m==> Couldn't upload the source maps; continuing\033[0m"
+  fi
 else
   echo
-  echo -e "\033[1;33m==> Skipping uploading source maps to Rollbar\033[0m"
+  echo -e "\033[1;33m==> Skipping uploading source maps to Sentry\033[0m"
   echo
 fi
 

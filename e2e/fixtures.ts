@@ -95,7 +95,7 @@ export async function signIn(page: Page, user: CreatedUser): Promise<void> {
 }
 
 // SERVER_ERROR is what the API sends with a 500, for faking one with
-// page.route. The API reports those to Rollbar.
+// page.route. The API reports those to Sentry.
 export const SERVER_ERROR = {
   status: 500,
   json: {

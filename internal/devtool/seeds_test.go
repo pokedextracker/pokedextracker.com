@@ -76,7 +76,7 @@ func TestProductionDatabaseURL(t *testing.T) {
 	require.ErrorContains(t, err, productionDatabaseURLEnv)
 
 	require.NoError(t, os.WriteFile(filepath.Join(env.MainRoot, ".env"), []byte(
-		"# Deploy secrets\nROLLBAR_TOKEN=abc\nexport PRODUCTION_DATABASE_URL=\"postgres://u:p%40ss@db:5432/pdt?sslmode=require\"\n",
+		"# Deploy secrets\nSENTRY_AUTH_TOKEN=abc\nexport PRODUCTION_DATABASE_URL=\"postgres://u:p%40ss@db:5432/pdt?sslmode=require\"\n",
 	), 0o600))
 	url, err := productionDatabaseURL(env, none)
 	require.NoError(t, err)

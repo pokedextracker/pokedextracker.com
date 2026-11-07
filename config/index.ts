@@ -6,7 +6,7 @@ import type { Config as ConfigType } from "./types";
 interface ServerConfig {
   build: string;
   environment: string;
-  rollbarToken: string;
+  sentryDsn: string;
   version: string;
 }
 
@@ -22,7 +22,7 @@ function fromServer(server: Partial<ServerConfig>): ConfigType {
     API_HOST: "/api",
     BUILD: server.build || Development.BUILD,
     ENVIRONMENT: server.environment || Development.ENVIRONMENT,
-    ROLLBAR_TOKEN: server.rollbarToken || Development.ROLLBAR_TOKEN,
+    SENTRY_DSN: server.sentryDsn || Development.SENTRY_DSN,
     VERSION: server.version || Development.VERSION,
   };
 }

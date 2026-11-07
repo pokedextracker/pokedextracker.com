@@ -5,3 +5,7 @@ allowBuilds:
   # prebuilt binary matches the platform, and every platform we build on has
   # one.
   "@parcel/watcher": false
+  # The deploy script's source map uploader. Its script only downloads the
+  # binary when the platform package (@sentry/cli-darwin, -linux-x64, etc.)
+  # didn't install, and every platform we deploy from has one.
+  "@sentry/cli": false
