@@ -2,7 +2,8 @@ import { hostname } from "node:os";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig, type Plugin } from "vite";
+import { type Plugin } from "vite";
+import { defineConfig } from "vitest/config";
 
 // Other machines on the network reach the dev server by this machine's name,
 // which mDNS advertises with a .local suffix.
@@ -42,9 +43,10 @@ export default defineConfig({
     outDir: "../internal/webapp/dist",
     emptyOutDir: true,
     sourcemap: true,
-    // The app ships as one bundle, so Vite's warning about chunks over 500 kB
-    // would show on every build. Splitting the bundle is its own change.
-    chunkSizeWarningLimit: 3000,
+    // The app ships as one bundle, a little over Vite's default limit of
+    // 500 kB. This limit still warns when a dependency makes it jump, like
+    // the 2 MB table the slug package used to bring in.
+    chunkSizeWarningLimit: 1000,
   },
   clearScreen: false,
   plugins: [
@@ -63,6 +65,11 @@ export default defineConfig({
       telemetry: false,
     }),
   ],
+  // Unit tests sit next to the code they test in app/. The end-to-end tests in
+  // e2e/ are Playwright's.
+  test: {
+    include: ["**/*.test.ts"],
+  },
   server: {
     allowedHosts: [machine, `${machine}.local`],
     host: true,

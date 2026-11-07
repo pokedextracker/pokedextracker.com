@@ -19,7 +19,6 @@ import {
   type FormEvent,
 } from "react";
 import { Link, useNavigate } from "react-router";
-import slug from "slug";
 
 import { useLocalStorageContext } from "../../hooks/contexts/use-local-storage-context";
 import { useSession } from "../../hooks/contexts/use-session";
@@ -32,6 +31,7 @@ import {
   friendCode3dsFormatter,
   friendCodeSwitchFormatter,
 } from "../../utils/formatting";
+import { slug } from "../../utils/slug";
 import { tw } from "../../utils/tw";
 import { Alert } from "../library/Alert";
 import { buttonClassName, buttonIcon, buttonLayout } from "../library/Button";
@@ -227,7 +227,7 @@ export function Register() {
       friend_code_3ds: friendCode3ds,
       friend_code_switch: friendCodeSwitch,
       title,
-      slug: slug(title, { lower: true }),
+      slug: slug(title),
       shiny,
       game,
       dex_type: resolvedDexType,

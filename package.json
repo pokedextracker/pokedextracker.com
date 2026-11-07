@@ -8,7 +8,8 @@
     "lint:all": "pnpm lint && pnpm lint:prettier && pnpm lint:types",
     "lint:prettier": "prettier --check .",
     "lint:types": "tsc -b --noEmit",
-    "start": "vite"
+    "start": "vite",
+    "test": "vitest run"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.27",
@@ -23,15 +24,13 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/react-modal": "^3.16.0",
-    "@types/slug": "^5.0.3",
     "classnames": "^2.3.2",
     "lodash": "^4.17.21",
     "qs": "^6.11.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-modal": "^3.16.3",
-    "react-router": "^8.4.0",
-    "slug": "^2.1.1"
+    "react-router": "^8.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
@@ -51,7 +50,8 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.71.2",
-    "vite": "^8.3.4"
+    "vite": "^8.3.4",
+    "vitest": "^5.1.0"
   },
   "repository": {
     "type": "git",
