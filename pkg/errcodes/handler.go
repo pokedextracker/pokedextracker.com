@@ -13,7 +13,11 @@ import (
 	"github.com/robinjoseph08/golib/errutils"
 )
 
-type Handler struct{}
+type Handler struct {
+	// hub is where 500s are reported. Nil means Sentry's global hub, which
+	// main sets up; tests give their own.
+	hub *sentry.Hub
+}
 
 func NewHandler() *Handler {
 	return &Handler{}
@@ -45,7 +49,11 @@ func (h *Handler) Handle(c *echo.Context, err error) {
 	if httpCode == http.StatusInternalServerError {
 		// A hub of its own, so this request's details don't end up on another
 		// request's report.
-		hub := sentry.CurrentHub().Clone()
+		hub := h.hub
+		if hub == nil {
+			hub = sentry.CurrentHub()
+		}
+		hub = hub.Clone()
 		hub.ConfigureScope(func(scope *sentry.Scope) {
 			scope.SetRequest(c.Request())
 			scope.SetTag("request_id", logger.IDFromEchoContext(c))

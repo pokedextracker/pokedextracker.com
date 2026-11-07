@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/labstack/echo/v5"
 	"github.com/pkg/errors"
 	"github.com/robinjoseph08/golib/echo/v5/test"
@@ -57,4 +58,34 @@ func TestHandlerLeavesAStartedResponseAlone(t *testing.T) {
 	h.Handle(c, errors.New("foo"))
 
 	assert.Equal(t, "partial", rr.Body.String())
+}
+
+func TestHandlerReportsOnlyServerErrors(t *testing.T) {
+	t.Parallel()
+
+	transport := &sentry.MockTransport{}
+	client, err := sentry.NewClient(sentry.ClientOptions{
+		Dsn:       "https://key@sentry.example.com/1",
+		Transport: transport,
+	})
+	require.NoError(t, err)
+	h := &Handler{hub: sentry.NewHub(client, sentry.NewScope())}
+
+	c, _ := test.NewContext(t, nil)
+	h.Handle(c, &Error{http.StatusTeapot, "foo", "code"})
+	assert.Empty(t, transport.Events(), "errors the client caused aren't reported")
+
+	c, _ = test.NewContext(t, nil)
+	c.Set("userID", 12345)
+	h.Handle(c, errors.WithStack(errors.New("boom")))
+
+	events := transport.Events()
+	require.Len(t, events, 1)
+	event := events[0]
+	assert.Equal(t, "12345", event.User.ID)
+	assert.Contains(t, event.Tags, "request_id")
+	require.NotNil(t, event.Request)
+	require.NotEmpty(t, event.Exception)
+	assert.Equal(t, "boom", event.Exception[len(event.Exception)-1].Value)
+	assert.NotNil(t, event.Exception[len(event.Exception)-1].Stacktrace, "the error's own stack trace is kept")
 }

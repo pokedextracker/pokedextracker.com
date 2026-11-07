@@ -173,6 +173,7 @@ func TestInvalidValuesAreErrorsThatDontPrintThem(t *testing.T) {
 		"DATABASE_PORT":     "70000",
 		"DATABASE_SSL_MODE": "disabled",
 		"PORT":              "not-a-port",
+		"SENTRY_DSN":        "hunter2@o1.ingest.sentry.io/1",
 		"UMAMI_URL":         "umami.example.com",
 	}
 	for name, value := range cases {

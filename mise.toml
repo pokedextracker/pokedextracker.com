@@ -226,6 +226,8 @@ run = "go run ./cmd/dev psql --test"
 
 [tasks.deploy]
 description = "Deploy the site to pokedextracker-staging, then pokedextracker-production after a prompt"
+# The deploy script uploads source maps with sentry-cli, a frontend dependency.
+depends = ["install:web"]
 run = "./scripts/deploy.sh"
 
 # === Other ===

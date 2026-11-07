@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/pkg/errors"
 )
 
@@ -163,6 +164,14 @@ func applyEnvironmentVariables(cfg *Config) []string {
 	for _, u := range urls {
 		if parsed, err := url.Parse(u.value); u.value != "" && (err != nil || parsed.Scheme == "" || parsed.Host == "") {
 			problems = append(problems, u.name+" must be a full URL")
+		}
+	}
+
+	// The API won't start with a DSN Sentry can't read, so check it here, where
+	// a bad one fails the deploy's release step instead.
+	if cfg.SentryDSN != "" {
+		if _, err := sentry.NewDsn(cfg.SentryDSN); err != nil {
+			problems = append(problems, "SENTRY_DSN must be a Sentry DSN")
 		}
 	}
 
