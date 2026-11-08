@@ -51,6 +51,141 @@ test("marking a Pokémon as caught is saved", async ({ page, request }) => {
   );
 });
 
+// A save that fails puts the tile back instead of leaving it pending, and the
+// failure isn't an uncaught error (the fixture fails the test on one).
+test("a failed save puts the tiles back", async ({ page, request }) => {
+  const user = await createUser(request);
+  await signIn(page, user);
+  await page.goto(`/u/${user.username}/${user.slug}`);
+  const progress = page.getByTestId("progress-count");
+  await expect(progress).toHaveText("(0 caught, 237 to go)");
+  await page.route("**/api/captures", (route) =>
+    route.request().method() === "GET"
+      ? route.fallback()
+      : route.fulfill(SERVER_ERROR),
+  );
+
+  const failed = page.waitForResponse((response) =>
+    response.url().endsWith("/api/captures"),
+  );
+  await tile(page, "Chikorita").getByTestId("set-captured").click();
+  await failed;
+  await expect(tile(page, "Chikorita")).toHaveAttribute(
+    "data-captured",
+    "false",
+  );
+  await expect(tile(page, "Chikorita")).not.toHaveClass(/bg-pending/);
+
+  const markAll = page.getByRole("button", { name: "Mark All" }).first();
+  const markAllFailed = page.waitForResponse((response) =>
+    response.url().endsWith("/api/captures"),
+  );
+  await markAll.click();
+  await markAllFailed;
+  await expect(tile(page, "Bayleef")).not.toHaveClass(/bg-pending/);
+  await expect(tile(page, "Bayleef")).toHaveAttribute("data-captured", "false");
+  await expect(progress).toHaveText("(0 caught, 237 to go)");
+  await expect(page.getByTestId("nav-dropdown")).toContainText(user.username);
+  // Both failures show one banner.
+  await expect(page.getByTestId("save-error-banner")).toHaveCount(1);
+  await expect(page.getByTestId("save-error-banner")).toHaveText(
+    "Couldn't save your last change. Something went wrong on our end, so try again in a bit.",
+  );
+
+  // The next save that works takes it away.
+  await page.unroute("**/api/captures");
+  await toggleCaught(page, "Chikorita");
+  await expect(page.getByTestId("save-error-banner")).toHaveCount(0);
+  await expect(progress).toHaveText("(1 caught, 236 to go)");
+});
+
+// A dropped connection gets no response at all, so the error is a plain
+// TypeError, not one from the API. The tile still goes back.
+test("a save with no response puts the tile back", async ({
+  page,
+  request,
+}) => {
+  const user = await createUser(request);
+  await signIn(page, user);
+  await page.goto(`/u/${user.username}/${user.slug}`);
+  await expect(page.getByTestId("progress-count")).toHaveText(
+    "(0 caught, 237 to go)",
+  );
+  let aborted!: () => void;
+  const wasAborted = new Promise<void>((resolve) => (aborted = resolve));
+  await page.route("**/api/captures", async (route) => {
+    if (route.request().method() === "GET") {
+      return route.fallback();
+    }
+    await route.abort("internetdisconnected");
+    aborted();
+  });
+
+  await tile(page, "Chikorita").getByTestId("set-captured").click();
+  await wasAborted;
+  await expect(tile(page, "Chikorita")).not.toHaveClass(/bg-pending/);
+  await expect(tile(page, "Chikorita")).toHaveAttribute(
+    "data-captured",
+    "false",
+  );
+  await expect(page.getByTestId("progress-count")).toHaveText(
+    "(0 caught, 237 to go)",
+  );
+  await expect(page.getByTestId("nav-dropdown")).toContainText(user.username);
+
+  const banner = page.getByTestId("save-error-banner");
+  await expect(banner).toHaveText(
+    "Couldn't save your last change. Check your connection and try again.",
+  );
+  await banner.getByRole("button", { name: "Close" }).click();
+  await expect(banner).toHaveCount(0);
+});
+
+// A tab still open on an account deleted elsewhere is signed out the first time
+// it tries to save.
+test("marking on a deleted account signs the tab out", async ({
+  page,
+  request,
+}) => {
+  const user = await createUser(request);
+  await signIn(page, user);
+  await page.goto(`/u/${user.username}/${user.slug}`);
+  await expect(page.getByTestId("nav-dropdown")).toContainText(user.username);
+
+  // Fetching the user again would find it gone and sign the tab out on its
+  // own, so the tab keeps getting the account as it was.
+  const before = await (
+    await request.get(`/api/users/${user.username}`)
+  ).json();
+  await page.route(`**/api/users/${user.username}`, (route) =>
+    route.request().method() === "GET"
+      ? route.fulfill({ json: before })
+      : route.fallback(),
+  );
+  const deleted = await request.delete(`/api/users/${user.username}`, {
+    headers: { Authorization: `Bearer ${user.token}` },
+  });
+  expect(deleted.status()).toBe(200);
+
+  const rejected = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/api/captures") && response.status() === 401,
+  );
+  await tile(page, "Chikorita").getByTestId("set-captured").click();
+  await rejected;
+  await expect(
+    page.locator("nav").getByRole("link", { name: "Login", exact: true }),
+  ).toBeVisible();
+  await expect(tile(page, "Chikorita")).toHaveAttribute(
+    "data-captured",
+    "false",
+  );
+  expect(await page.evaluate(() => localStorage.getItem("token"))).toBeNull();
+  await expect(page.getByTestId("save-error-banner")).toHaveText(
+    "This account no longer exists.",
+  );
+});
+
 // A printed dex is just its boxes, in the desktop grid even though a page is
 // narrower than the phone breakpoint, with the caught colors and sprites kept.
 test("a dex prints as a grid of its boxes", async ({ page, request }) => {

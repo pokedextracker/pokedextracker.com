@@ -19,7 +19,11 @@ import { nationalId, padding } from "../../../utils/formatting";
 import { iconClass } from "../../../utils/pokemon";
 import { tw } from "../../../utils/tw";
 import { PokemonName } from "../../library/PokemonName";
-import { useTrackerContext, type UICapture } from "./use-tracker";
+import {
+  useSaveResult,
+  useTrackerContext,
+  type UICapture,
+} from "./use-tracker";
 
 interface Props {
   capture: UICapture | null;
@@ -104,6 +108,7 @@ export function Pokemon({
 
   const createCapturesMutation = useCreateCapture();
   const deleteCapturesMutation = useDeleteCapture();
+  const { onSaved, onFailed } = useSaveResult();
 
   if (!render || !capture) {
     return (
@@ -151,18 +156,26 @@ export function Pokemon({
 
     // Marking isn't sent to analytics: it's the most frequent thing visitors
     // do, and the captures themselves are already in the database.
-    if (capture.captured) {
-      await deleteCapturesMutation.mutateAsync({
-        username: user.username,
-        slug,
-        payload,
-      });
-    } else {
-      await createCapturesMutation.mutateAsync({
-        username: user.username,
-        slug,
-        payload,
-      });
+    let saved = true;
+    try {
+      if (capture.captured) {
+        await deleteCapturesMutation.mutateAsync({
+          username: user.username,
+          slug,
+          payload,
+        });
+      } else {
+        await createCapturesMutation.mutateAsync({
+          username: user.username,
+          slug,
+          payload,
+        });
+      }
+      onSaved();
+    } catch (error) {
+      // The tile goes back to how it was, and a banner says why.
+      saved = false;
+      onFailed(error);
     }
 
     setCaptures((prev) =>
@@ -174,7 +187,7 @@ export function Pokemon({
         return {
           ...cap,
           pending: false,
-          captured: !capture.captured,
+          captured: saved ? !capture.captured : capture.captured,
         };
       }),
     );

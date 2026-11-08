@@ -6,10 +6,13 @@ import { TOKEN_KEY } from "./token";
 
 export class PokedexTrackerError extends Error {
   public response: Response;
+  // The API's error code, like "not_found" or "deleted_user".
+  public code?: string;
 
-  constructor(message: string, response: Response) {
+  constructor(message: string, response: Response, code?: string) {
     super(message);
     this.response = response;
+    this.code = code;
   }
 }
 
@@ -19,13 +22,19 @@ export function isNotFound(error: { response?: Response } | null): boolean {
   return error?.response?.status === 404;
 }
 
+// isDeletedUser reports whether a request failed because the signed-in account
+// was deleted, like from another tab or device.
+export function isDeletedUser(error: unknown): boolean {
+  return error instanceof PokedexTrackerError && error.code === "deleted_user";
+}
+
 async function handleResponse(response: Response) {
   const json = await response.json();
   if (response.status >= 200 && response.status < 300) {
     return json;
   }
 
-  throw new PokedexTrackerError(json.error.message, response);
+  throw new PokedexTrackerError(json.error.message, response, json.error.code);
 }
 
 function getHeaders() {

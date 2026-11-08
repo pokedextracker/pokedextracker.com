@@ -13,6 +13,7 @@ import { Nav } from "../../library/Nav";
 import { NotFound } from "../NotFound";
 import { Dex } from "./Dex";
 import { Info } from "./Info";
+import { SaveError } from "./SaveError";
 import { SHOW_SCROLL_THRESHOLD } from "./Scroll";
 import { SearchBar } from "./SearchBar";
 import { TrackerContextProvider } from "./use-tracker";
@@ -120,6 +121,7 @@ function TrackerInner({ dexTitle, initialSelectedPokemon }: TrackerInnerProps) {
   return (
     <div className={pageContainer}>
       <Nav />
+      <SaveError />
       <div className="relative flex min-h-0 flex-[1_1_auto] print:block">
         <div className="flex grow flex-col print:block">
           <SearchBar

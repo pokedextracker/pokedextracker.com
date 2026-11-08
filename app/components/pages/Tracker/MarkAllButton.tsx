@@ -11,7 +11,11 @@ import { useUserParams } from "../../../hooks/use-user-params";
 import { trackEvent } from "../../../utils/analytics";
 import { padding } from "../../../utils/formatting";
 import { buttonClassName, ButtonSpinner } from "../../library/Button";
-import { useTrackerContext, type UICapture } from "./use-tracker";
+import {
+  useSaveResult,
+  useTrackerContext,
+  type UICapture,
+} from "./use-tracker";
 
 interface Props {
   captures: UICapture[];
@@ -28,6 +32,7 @@ export function MarkAllButton({ captures }: Props) {
 
   const createCapturesMutation = useCreateCapture();
   const deleteCapturesMutation = useDeleteCapture();
+  const { onSaved, onFailed } = useSaveResult();
 
   const uncaught = useMemo(() => {
     return captures.reduce(
@@ -67,18 +72,26 @@ export function MarkAllButton({ captures }: Props) {
       }),
     );
 
-    if (deleting) {
-      await deleteCapturesMutation.mutateAsync({
-        username: user.username,
-        slug,
-        payload,
-      });
-    } else {
-      await createCapturesMutation.mutateAsync({
-        username: user.username,
-        slug,
-        payload,
-      });
+    let saved = true;
+    try {
+      if (deleting) {
+        await deleteCapturesMutation.mutateAsync({
+          username: user.username,
+          slug,
+          payload,
+        });
+      } else {
+        await createCapturesMutation.mutateAsync({
+          username: user.username,
+          slug,
+          payload,
+        });
+      }
+      onSaved();
+    } catch (error) {
+      // The tiles go back to how they were, and a banner says why.
+      saved = false;
+      onFailed(error);
     }
 
     setCaptures((prev) =>
@@ -90,10 +103,14 @@ export function MarkAllButton({ captures }: Props) {
         return {
           ...cap,
           pending: false,
-          captured: !deleting,
+          captured: saved ? !deleting : deleting,
         };
       }),
     );
+
+    if (!saved) {
+      return;
+    }
 
     trackEvent(
       "Box",
