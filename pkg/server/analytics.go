@@ -46,6 +46,35 @@ func analyticsEnabled(cfg *config.Config) bool {
 	return cfg.UmamiURL != "" && cfg.UmamiWebsiteID != ""
 }
 
+// analyticsIdentify runs before the tracker sends anything and adds the
+// signed-in user's id to it, so the dashboard can count signed-in users (break
+// down by Distinct ID). It's read from the login token on every send rather
+// than set with umami.identify() from the app: the tracker sends the first
+// pageview before the app has loaded, and signing out doesn't reload the page.
+// Umami keeps identified events in their own session, so tagging only some of
+// a visit's events would count the visitor twice. (Signing in partway through
+// a visit still does, which can't be helped: the pageviews before it were
+// anonymous.)
+//
+// It reads the token the way tokenToUser does (app/utils/state.ts), from
+// production's key (app/utils/token.ts). A token it can't read counts as
+// signed out. app/utils/analytics.test.ts runs it against the same tokens.
+const analyticsIdentify = `<script>
+      window.umamiBeforeSend = function (type, payload) {
+        try {
+          var token = localStorage.getItem("token");
+          if (token) {
+            var claims = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+            var user = JSON.parse(atob(claims));
+            if (typeof user.id === "number" && typeof user.username === "string") {
+              payload.id = String(user.id);
+            }
+          }
+        } catch (e) {}
+        return payload;
+      };
+    </script>`
+
 // analyticsScript is the tracker tag added to index.html's <head>, or nothing
 // when analytics are off. The tracker records a pageview on every route
 // change, and sends to api/send next to where it was loaded from, so its
@@ -55,7 +84,8 @@ func analyticsEnabled(cfg *config.Config) bool {
 //
 // Everything it records is tagged with the deployed version, so the dashboard
 // can show who's still on an older build: a tab keeps the version it loaded
-// with until it's reloaded.
+// with until it's reloaded. Signed-in users' events also carry their id (see
+// analyticsIdentify).
 func analyticsScript(cfg *config.Config) string {
 	if !analyticsEnabled(cfg) {
 		return ""
@@ -64,7 +94,7 @@ func analyticsScript(cfg *config.Config) string {
 	if cfg.Version != "" {
 		tag = ` data-tag="` + html.EscapeString(cfg.Version) + `"`
 	}
-	return `<script async src="` + analyticsPrefix + analyticsScriptPath + `" data-website-id="` + html.EscapeString(cfg.UmamiWebsiteID) + `"` + tag + `></script>`
+	return analyticsIdentify + `<script async src="` + analyticsPrefix + analyticsScriptPath + `" data-website-id="` + html.EscapeString(cfg.UmamiWebsiteID) + `"` + tag + ` data-before-send="umamiBeforeSend"></script>`
 }
 
 // registerAnalytics forwards the tracker script and its event endpoint to
