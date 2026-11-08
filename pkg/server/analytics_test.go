@@ -230,8 +230,10 @@ func TestAnalyticsScript(t *testing.T) {
 
 	script := analyticsScript(&config.Config{UmamiURL: "https://umami.example.com", UmamiWebsiteID: `id"><script>alert(1)</script>`})
 
-	assert.True(t, strings.HasPrefix(script, `<script async src="/stats/script.js" data-website-id="`), "async, so a slow Umami can't hold up the app")
-	assert.Equal(t, 1, strings.Count(script, "<script"), "the website ID can't add a tag")
+	assert.True(t, strings.HasPrefix(script, analyticsIdentify), "the identify hook comes before the tracker, so it's there for the first pageview")
+	tracker := strings.TrimPrefix(script, analyticsIdentify)
+	assert.True(t, strings.HasPrefix(tracker, `<script async src="/stats/script.js" data-website-id="`), "async, so a slow Umami can't hold up the app")
+	assert.Equal(t, 1, strings.Count(tracker, "<script"), "the website ID can't add a tag")
 	assert.NotContains(t, script, "umami.example.com", "Umami's address stays out of the page")
 }
 
@@ -250,11 +252,11 @@ func TestAnalyticsAreTaggedWithTheVersion(t *testing.T) {
 	t.Parallel()
 
 	cfg := &config.Config{UmamiURL: "https://umami.example.com", UmamiWebsiteID: "site-1", Version: "08730e5"}
-	assert.Equal(t, `<script async src="/stats/script.js" data-website-id="site-1" data-tag="08730e5"></script>`, analyticsScript(cfg))
+	assert.Equal(t, analyticsIdentify+`<script async src="/stats/script.js" data-website-id="site-1" data-tag="08730e5" data-before-send="umamiBeforeSend"></script>`, analyticsScript(cfg))
 
 	cfg.Version = ""
 	assert.NotContains(t, analyticsScript(cfg), "data-tag", "a build without a version isn't tagged")
 
 	cfg.Version = `v"><script>alert(1)</script>`
-	assert.Equal(t, 1, strings.Count(analyticsScript(cfg), "<script"), "the version can't add a tag")
+	assert.Equal(t, 1, strings.Count(strings.TrimPrefix(analyticsScript(cfg), analyticsIdentify), "<script"), "the version can't add a tag")
 }
