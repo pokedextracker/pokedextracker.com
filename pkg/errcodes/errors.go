@@ -151,6 +151,15 @@ func InvalidJWT() error {
 	}
 }
 
+// DeletedUser is for a token whose account has been deleted.
+func DeletedUser() error {
+	return &Error{
+		http.StatusUnauthorized,
+		"this account no longer exists",
+		"deleted_user",
+	}
+}
+
 func EmptySlug() error {
 	return &Error{
 		http.StatusUnprocessableEntity,

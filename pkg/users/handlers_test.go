@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/labstack/echo/v5"
+	"github.com/pokedextracker/pokedextracker.com/pkg/auth"
 	"github.com/pokedextracker/pokedextracker.com/pkg/binder"
 	"github.com/pokedextracker/pokedextracker.com/pkg/errcodes"
 	"github.com/stretchr/testify/assert"
@@ -41,4 +42,18 @@ func TestCreateRequiresASlug(t *testing.T) {
 			assert.Equal(t, errcodes.EmptySlug(), h.create(c))
 		})
 	}
+}
+
+func TestDeleteOnlyAllowsTheSignedInUser(t *testing.T) {
+	t.Parallel()
+
+	req := httptest.NewRequest(http.MethodDelete, "/users/gary", nil)
+	c := echo.New().NewContext(req, httptest.NewRecorder())
+	c.SetPathValues(echo.PathValues{{Name: "username", Value: "gary"}})
+	c.Set("session", &auth.Session{ID: 1, Username: "ash"})
+
+	// The check comes before anything touches the database, so the handler
+	// needs no services.
+	h := &handler{}
+	assert.Equal(t, errcodes.Forbidden("deleting this user"), h.delete(c))
 }

@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"regexp"
 
 	"github.com/go-pg/pg/v10"
@@ -18,13 +19,20 @@ const (
 
 var authHeaderRE = regexp.MustCompile(`^Bearer (\S+)$`)
 
+// tokenChecker turns a token into the session it was signed for, and checks
+// that the session's user still exists.
+type tokenChecker interface {
+	ParseToken(ctx context.Context, signed string) (*Session, error)
+	TokenUserExists(ctx context.Context, session *Session) (bool, error)
+}
+
 func Middleware(cfg *config.Config, db *pg.DB) (echo.MiddlewareFunc, echo.MiddlewareFunc) {
 	authService := NewService(cfg, db)
 
 	return newMiddlewareFunction(authService, true), newMiddlewareFunction(authService, false)
 }
 
-func newMiddlewareFunction(authService *Service, shouldEnforce bool) echo.MiddlewareFunc {
+func newMiddlewareFunction(authService tokenChecker, shouldEnforce bool) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c *echo.Context) error {
 			ctx := c.Request().Context()
@@ -49,6 +57,18 @@ func newMiddlewareFunction(authService *Service, shouldEnforce bool) echo.Middle
 			if err != nil {
 				if shouldEnforce {
 					return errors.WithStack(err)
+				}
+				return next(c)
+			}
+
+			// A token for a deleted account counts as no token at all.
+			exists, err := authService.TokenUserExists(ctx, session)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			if !exists {
+				if shouldEnforce {
+					return errcodes.DeletedUser()
 				}
 				return next(c)
 			}

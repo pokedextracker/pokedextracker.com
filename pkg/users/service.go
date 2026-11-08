@@ -145,3 +145,31 @@ func (svc *Service) UpdateUser(ctx context.Context, user *User, opts UpdateUserO
 
 	return nil
 }
+
+// DeleteUser deletes a user along with all of their dexes and captures. The
+// foreign keys cascade too, but clearing each table explicitly keeps this from
+// depending on them.
+func (svc *Service) DeleteUser(ctx context.Context, id int) error {
+	err := svc.db.RunInTransaction(ctx, func(tx *pg.Tx) error {
+		_, err := tx.ExecContext(ctx, "DELETE FROM captures WHERE dex_id IN (SELECT id FROM dexes WHERE user_id = ?)", id)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		_, err = tx.ExecContext(ctx, "DELETE FROM dexes WHERE user_id = ?", id)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		res, err := tx.ExecContext(ctx, "DELETE FROM users WHERE id = ?", id)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		if res.RowsAffected() == 0 {
+			return errcodes.NotFound("user")
+		}
+
+		return nil
+	})
+	return errors.WithStack(err)
+}

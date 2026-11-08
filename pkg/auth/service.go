@@ -79,6 +79,19 @@ func (svc *Service) SignSession(_ context.Context, session *Session) (string, er
 	return signed, nil
 }
 
+// TokenUserExists reports whether the user a token was signed for still exists
+// with the same username.
+// Tokens don't expire, so one can outlive its account, and its username can
+// later belong to someone who signed up after the account was deleted.
+func (svc *Service) TokenUserExists(ctx context.Context, session *Session) (bool, error) {
+	exists, err := svc.db.
+		ModelContext(ctx, (*Session)(nil)).
+		Where("u.id = ?", session.ID).
+		Where("u.username = ?", session.Username).
+		Exists()
+	return exists, errors.WithStack(err)
+}
+
 func (svc *Service) ParseToken(_ context.Context, signed string) (*Session, error) {
 	token, err := jwt.ParseWithClaims(signed, &Session{}, func(*jwt.Token) (any, error) {
 		return svc.config.JWTSecret, nil

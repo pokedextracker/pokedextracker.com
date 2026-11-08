@@ -89,3 +89,17 @@ export const useUpdateUser = () => {
     },
   );
 };
+
+interface DeleteUserMutationVariables {
+  username: string;
+}
+
+export const useDeleteUser = () => {
+  return useMutation<unknown, PokedexTrackerError, DeleteUserMutationVariables>(
+    {
+      mutationFn: ({ username }) => {
+        return API.delete(`/users/${username}`);
+      },
+    },
+  );
+};
