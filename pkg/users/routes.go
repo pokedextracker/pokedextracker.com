@@ -28,4 +28,5 @@ func RegisterRoutes(e *echo.Group, cfg *config.Config, db *pg.DB, enforceAuth ec
 	e.GET("/users/:username", h.retrieve, nonEnforceAuth)
 	e.GET("/users", h.list, nonEnforceAuth)
 	e.POST("/users/:username", h.update, enforceAuth)
+	e.DELETE("/users/:username", h.delete, enforceAuth)
 }

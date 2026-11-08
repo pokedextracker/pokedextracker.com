@@ -6,6 +6,8 @@ import { tw } from "../../utils/tw";
 
 // Each color darkens on hover or keyboard focus, on devices without touch.
 const colors = {
+  // For something that can't be undone. It fades while it's disabled.
+  red: tw`bg-danger text-white disabled:opacity-50 no-touch:enabled:hover:bg-danger-hover no-touch:enabled:focus-visible:bg-danger-hover`,
   blue: tw`bg-button-blue text-white no-touch:hover:bg-button-blue-hover no-touch:focus-visible:bg-button-blue-hover`,
   white: tw`bg-button-white text-button-white-text no-touch:hover:bg-button-white-hover no-touch:focus-visible:bg-button-white-hover`,
   yellow: tw`bg-button-yellow text-button-yellow-text no-touch:hover:bg-button-yellow-hover no-touch:focus-visible:bg-button-yellow-hover`,

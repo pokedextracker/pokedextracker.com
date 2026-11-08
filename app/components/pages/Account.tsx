@@ -28,6 +28,7 @@ import {
   formColumn,
   formControlClassName,
   formGroup,
+  formHeading,
   formLabel,
   formPage,
   formTitle,
@@ -37,6 +38,7 @@ import {
 import { pageContainer } from "../library/layout";
 import { LoadError } from "../library/LoadError";
 import { Nav } from "../library/Nav";
+import { DeleteAccountModal } from "./DeleteAccount";
 
 export function Account() {
   const navigate = useNavigate();
@@ -76,6 +78,7 @@ function AccountForm({ sessionUser }: AccountFormProps) {
 
   const [error, setError] = useState("");
   const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [friendCode3ds, setFriendCode3ds] = useState(
@@ -244,8 +247,28 @@ function AccountForm({ sessionUser }: AccountFormProps) {
             </span>
             {updateUserMutation.isPending ? <ButtonSpinner /> : null}
           </button>
+          <div className="mt-60">
+            <h2 className={formHeading}>Delete Account</h2>
+            <p className="mx-0 mt-0 mb-15 text-center text-14">
+              Permanently delete your account, all of your dexes, and everything
+              you&apos;ve caught in them.
+            </p>
+            <button
+              className={buttonClassName("red")}
+              onClick={() => setIsDeleting(true)}
+              type="button"
+            >
+              Delete Account
+            </button>
+          </div>
         </form>
       </div>
+      {isDeleting && (
+        <DeleteAccountModal
+          onRequestClose={() => setIsDeleting(false)}
+          sessionUser={sessionUser}
+        />
+      )}
       <Footer />
     </div>
   );

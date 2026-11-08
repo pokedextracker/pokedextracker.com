@@ -236,3 +236,21 @@ func (h *handler) update(c *echo.Context) error {
 
 	return errors.WithStack(c.JSON(http.StatusOK, resp))
 }
+
+func (h *handler) delete(c *echo.Context) error {
+	ctx := c.Request().Context()
+	session := auth.FromContext(c)
+
+	username := c.Param("username")
+
+	if username != session.Username {
+		return errcodes.Forbidden("deleting this user")
+	}
+
+	err := h.userService.DeleteUser(ctx, session.ID)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return errors.WithStack(c.JSONBlob(http.StatusOK, []byte(`{"deleted":true}`)))
+}

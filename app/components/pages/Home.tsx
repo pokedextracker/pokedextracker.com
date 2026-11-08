@@ -1,14 +1,16 @@
 import { faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { faLongArrowAltRight, faRss } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect } from "react";
-import { Link } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router";
 
 import { useSession } from "../../hooks/contexts/use-session";
 import { tw } from "../../utils/tw";
+import { Alert } from "../library/Alert";
 import { buttonClassName, buttonIcon } from "../library/Button";
 import { link } from "../library/links";
 import { Reload } from "../library/Reload";
+import type { AccountDeletedState } from "./DeleteAccount";
 
 // The text under the title, and the headings in the list, which sit closer.
 // Both are a little smaller on a narrow phone; the list itself isn't.
@@ -20,6 +22,19 @@ const homeButton = tw`mx-8 mt-20 mb-0 inline-block w-180 p-15 text-11 max-400:w-
 
 export function Home() {
   const { session } = useSession();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Someone who just deleted their account is told it worked. It's only said
+  // once: the history entry forgets it, so reloading doesn't say it again.
+  const [accountDeleted] = useState(() =>
+    Boolean((location.state as AccountDeletedState | null)?.accountDeleted),
+  );
+  useEffect(() => {
+    if (accountDeleted) {
+      navigate(".", { replace: true, state: null });
+    }
+  }, [accountDeleted, navigate]);
 
   useEffect(() => {
     document.title =
@@ -31,6 +46,11 @@ export function Home() {
       {/* The home page has no nav, so it shows the banner itself. */}
       <Reload />
       <div className="flex grow flex-col justify-center overflow-y-auto pt-20">
+        <Alert
+          className="mx-auto mt-0 w-[calc(100%-2rem)] max-w-570 bg-surface"
+          message={accountDeleted && "Your account has been deleted."}
+          type="success"
+        />
         <div className="relative -top-100 animate-slide">
           <img
             alt="Gotta catch 'em all!"
