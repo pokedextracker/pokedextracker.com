@@ -1,3 +1,5 @@
+import emojiStar from "../../images/emoji_star2.png";
+
 interface Props {
   // Its size and place, which differ between the profile and a dex.
   className: string;
@@ -15,7 +17,7 @@ export function DonatedFlair({ className, user }: Props) {
     <img
       alt="Donation Star"
       className={className}
-      src="/emoji_star2.png"
+      src={emojiStar}
       title="This user has donated!"
     />
   );

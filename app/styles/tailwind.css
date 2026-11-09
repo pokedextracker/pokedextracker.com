@@ -406,3 +406,15 @@
     @slot;
   }
 }
+
+/* The home page's background patterns. They're here rather than in an
+   arbitrary class like bg-[url(...)] so the URLs are relative: Vite bundles
+   the images and gives them hashed names. public/pattern.png is a copy for
+   the blog's theme, which loads it from pokedextracker.com/pattern.png. */
+@utility bg-pattern {
+  background-image: url("../images/pattern.png");
+}
+
+@utility bg-pattern-night {
+  background-image: url("../images/pattern-night.png");
+}

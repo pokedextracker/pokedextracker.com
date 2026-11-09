@@ -337,6 +337,8 @@ func typeByName(name string) string {
 		return "text/plain; charset=utf-8"
 	case ".png":
 		return "image/png"
+	case ".webp":
+		return "image/webp"
 	case ".ico":
 		return "image/x-icon"
 	}
@@ -345,8 +347,8 @@ func typeByName(name string) string {
 
 // cacheControl decides how long browsers keep a file. index.html and /version
 // say which build is current, so they're always revalidated. Hashed assets
-// never change. Everything else (sprites, icons) is kept for an hour, then
-// revalidated with its ETag.
+// never change. Everything else (icons, og.png, manifest.json) is kept for an
+// hour, then revalidated with its ETag.
 func cacheControl(name string) string {
 	switch {
 	case name == indexFile || name == versionFile:

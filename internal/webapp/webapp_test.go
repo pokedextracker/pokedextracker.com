@@ -26,12 +26,13 @@ const testIndex = "<html><head></head>app</html>"
 func testHandlerWith(t *testing.T, index string, headScript HeadScript) http.Handler {
 	t.Helper()
 	h, ok, err := newHandler(fstest.MapFS{
-		".gitkeep":                     {},
-		"index.html":                   {Data: []byte(index + strings.Repeat(" ", 2048))},
-		"assets/index-B80ZTyZ2.js":     {Data: []byte(strings.Repeat("console.log(1);\n", 200))},
-		"assets/index-B80ZTyZ2.js.map": {Data: []byte("{}")},
-		"pokesprite-v12.png":           {Data: []byte("png")},
-		"favicon/favicon-16x16.png":    {Data: []byte("icon")},
+		".gitkeep":                        {},
+		"index.html":                      {Data: []byte(index + strings.Repeat(" ", 2048))},
+		"assets/index-B80ZTyZ2.js":        {Data: []byte(strings.Repeat("console.log(1);\n", 200))},
+		"assets/index-B80ZTyZ2.js.map":    {Data: []byte("{}")},
+		"assets/pokesprite-B-apAC5_.webp": {Data: []byte("webp")},
+		"og.png":                          {Data: []byte("png")},
+		"favicon/favicon-16x16.png":       {Data: []byte("icon")},
 	}, headScript, nil)
 	require.NoError(t, err)
 	require.True(t, ok)
@@ -53,20 +54,30 @@ func TestCacheHeaders(t *testing.T) {
 
 	h := testHandler(t)
 	for target, want := range map[string]string{
-		"/":                             "no-cache",
-		"/index.html":                   "no-cache",
-		"/version":                      "no-cache",
-		"/u/ash/living-dex":             "no-cache",
-		"/assets/index-B80ZTyZ2.js":     "public, max-age=31536000, immutable",
-		"/assets/index-B80ZTyZ2.js.map": "public, max-age=31536000, immutable",
-		"/pokesprite-v12.png":           "public, max-age=3600",
-		"/favicon/favicon-16x16.png":    "public, max-age=3600",
+		"/":                                "no-cache",
+		"/index.html":                      "no-cache",
+		"/version":                         "no-cache",
+		"/u/ash/living-dex":                "no-cache",
+		"/assets/index-B80ZTyZ2.js":        "public, max-age=31536000, immutable",
+		"/assets/index-B80ZTyZ2.js.map":    "public, max-age=31536000, immutable",
+		"/assets/pokesprite-B-apAC5_.webp": "public, max-age=31536000, immutable",
+		"/og.png":                          "public, max-age=3600",
+		"/favicon/favicon-16x16.png":       "public, max-age=3600",
 	} {
 		w := get(h, http.MethodGet, target, nil)
 		assert.Equal(t, http.StatusOK, w.Code, target)
 		assert.Equal(t, want, w.Header().Get("Cache-Control"), target)
 		assert.NotEmpty(t, w.Header().Get("ETag"), target)
 	}
+}
+
+func TestSpritesheetsAreWebP(t *testing.T) {
+	t.Parallel()
+
+	w := get(testHandler(t), http.MethodGet, "/assets/pokesprite-B-apAC5_.webp", nil)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "image/webp", w.Header().Get("Content-Type"))
 }
 
 func TestFrontendRoutesGetIndex(t *testing.T) {
@@ -94,9 +105,9 @@ func TestETagRevalidation(t *testing.T) {
 	t.Parallel()
 
 	h := testHandler(t)
-	etag := get(h, http.MethodGet, "/pokesprite-v12.png", nil).Header().Get("ETag")
+	etag := get(h, http.MethodGet, "/og.png", nil).Header().Get("ETag")
 
-	w := get(h, http.MethodGet, "/pokesprite-v12.png", map[string]string{"If-None-Match": etag})
+	w := get(h, http.MethodGet, "/og.png", map[string]string{"If-None-Match": etag})
 
 	assert.Equal(t, http.StatusNotModified, w.Code)
 	assert.Empty(t, w.Body.String())
@@ -178,7 +189,7 @@ func TestGzip(t *testing.T) {
 		assert.Empty(t, get(h, http.MethodGet, "/assets/index-B80ZTyZ2.js", map[string]string{"Accept-Encoding": refused}).Header().Get("Content-Encoding"), refused)
 	}
 	assert.Equal(t, "gzip", get(h, http.MethodGet, "/assets/index-B80ZTyZ2.js", map[string]string{"Accept-Encoding": "GZIP;q=0.5"}).Header().Get("Content-Encoding"))
-	assert.Empty(t, get(h, http.MethodGet, "/pokesprite-v12.png", map[string]string{"Accept-Encoding": "gzip"}).Header().Get("Content-Encoding"), "images aren't recompressed")
+	assert.Empty(t, get(h, http.MethodGet, "/og.png", map[string]string{"Accept-Encoding": "gzip"}).Header().Get("Content-Encoding"), "images aren't recompressed")
 	assert.Empty(t, get(h, http.MethodGet, "/version", map[string]string{"Accept-Encoding": "gzip"}).Header().Get("Content-Encoding"), "tiny files aren't worth it")
 }
 

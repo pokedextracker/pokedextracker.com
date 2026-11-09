@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 
+import missingno from "../../images/missingno.svg";
 import { Nav } from "../library/Nav";
 
 export function NotFound() {
@@ -14,7 +15,7 @@ export function NotFound() {
         <img
           alt="Missing No"
           className="relative -top-100 mt-50 h-[35vh] animate-slide"
-          src="/missingno.svg"
+          src={missingno}
         />
         <div className="relative top-100 animate-slide">
           <h1 className="mx-0 mt-15 mb-0 font-secondary text-50 font-bold tracking-1 text-blue-600 uppercase no-underline max-750:text-32">
