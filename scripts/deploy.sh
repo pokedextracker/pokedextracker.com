@@ -126,7 +126,7 @@ echo -n "Enter a value: "
 read proceed
 
 if [ "${proceed}" == "yes" ]; then
-  "$(dirname "$0")/promote.sh" "${TAG}"
+  "$(dirname "${0}")/promote.sh" "${TAG}"
 else
   echo
   echo -e "\033[1;33m==> Skipping deploying ${TAG} to production. To deploy it later:"
