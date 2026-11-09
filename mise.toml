@@ -235,6 +235,11 @@ description = "Deploy the site to pokedextracker-staging, then pokedextracker-pr
 depends = ["install:web"]
 run = "./scripts/deploy.sh"
 
+[tasks."deploy:production"]
+description = "Deploy an image that staging is already running to production, then tag it as latest"
+usage = 'arg "<tag>" help="The image tag staging is running, like af7ceb1 (mise deploy prints it)"'
+run = './scripts/promote.sh "$usage_tag"'
+
 # === Other ===
 
 [tasks.setup]
