@@ -23,7 +23,8 @@ export function groupApiErrors<E extends { fingerprint?: string[] }>(
 // initSentry turns on error reporting for uncaught errors and unhandled
 // rejections. Development sends nothing. Errors only count when they come from
 // the site's own scripts, so ones from browser extensions and injected scripts
-// don't use up the quota.
+// don't use up the quota. That check needs a stack trace, so extension errors
+// that come without one are dropped by their message instead.
 export function initSentry() {
   Sentry.init({
     dsn: Config.SENTRY_DSN,
@@ -31,6 +32,11 @@ export function initSentry() {
     environment: Config.ENVIRONMENT,
     release: Config.VERSION,
     allowUrls: [/^https:\/\/(staging\.)?pokedextracker\.com\//],
+    ignoreErrors: [
+      // A Safari extension on iOS failing to message its own tab. The site
+      // never calls the extension API.
+      /runtime\.sendMessage\(\)/,
+    ],
     beforeSend: groupApiErrors,
   });
 }
