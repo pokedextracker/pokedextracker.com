@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/go-pg/pg/v10"
+	"github.com/go-pg/pg/v10/orm"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
 	"github.com/pokedextracker/pokedextracker.com/pkg/config"
@@ -84,7 +85,13 @@ func (svc *Service) SignSession(_ context.Context, session *Session) (string, er
 // Tokens don't expire, so one can outlive its account, and its username can
 // later belong to someone who signed up after the account was deleted.
 func (svc *Service) TokenUserExists(ctx context.Context, session *Session) (bool, error) {
-	exists, err := svc.db.
+	return TokenUserExists(ctx, svc.db, session)
+}
+
+// TokenUserExists is Service.TokenUserExists for packages that have a database
+// but no Service.
+func TokenUserExists(ctx context.Context, db orm.DB, session *Session) (bool, error) {
+	exists, err := db.
 		ModelContext(ctx, (*Session)(nil)).
 		Where("u.id = ?", session.ID).
 		Where("u.username = ?", session.Username).

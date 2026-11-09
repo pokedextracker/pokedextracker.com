@@ -1,6 +1,7 @@
 package captures
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
@@ -11,10 +12,53 @@ import (
 	"github.com/pokedextracker/pokedextracker.com/pkg/pokemon"
 )
 
+// dexRetriever is the part of dexes.Service the handlers use, so tests can
+// fake it.
+type dexRetriever interface {
+	RetrieveDex(ctx context.Context, opts dexes.RetrieveDexOptions) (*dexes.Dex, error)
+}
+
 type handler struct {
 	captureService *Service
-	dexService     *dexes.Service
+	dexService     dexRetriever
 	pokemonService *pokemon.Service
+	// tokenUserExists is auth.TokenUserExists, which tests fake.
+	tokenUserExists func(ctx context.Context, session *auth.Session) (bool, error)
+}
+
+// retrieveOwnDex loads a dex that belongs to the token's user: same id, and
+// still the same username. The token isn't checked against the database
+// before the handler (auth's tokenOnly), so this is the check that an account
+// deleted after its token was signed, a username since taken by someone new,
+// or a token from another database can't pass. It's one query, which matches
+// the owner's username in a join.
+func (h *handler) retrieveOwnDex(ctx context.Context, session *auth.Session, dexID int, action string) (*dexes.Dex, error) {
+	dex, err := h.dexService.RetrieveDex(ctx, dexes.RetrieveDexOptions{
+		ID:       &dexID,
+		Username: &session.Username,
+	})
+	if err == nil && dex.UserID == session.ID {
+		return dex, nil
+	}
+	if err != nil && !errors.Is(err, errcodes.NotFound("dex")) {
+		return nil, errors.WithStack(err)
+	}
+
+	// It isn't this token's dex, which is rare, so the queries to say why
+	// cost nothing in normal use: the account is gone, the dex is, or it's
+	// someone else's.
+	exists, err := h.tokenUserExists(ctx, session)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	if !exists {
+		return nil, errcodes.DeletedUser()
+	}
+	_, err = h.dexService.RetrieveDex(ctx, dexes.RetrieveDexOptions{ID: &dexID})
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return nil, errcodes.Forbidden(action)
 }
 
 func (h *handler) create(c *echo.Context) error {
@@ -26,16 +70,9 @@ func (h *handler) create(c *echo.Context) error {
 		return errors.WithStack(err)
 	}
 
-	dex, err := h.dexService.RetrieveDex(ctx, dexes.RetrieveDexOptions{
-		ID: &params.Dex,
-	})
+	dex, err := h.retrieveOwnDex(ctx, session, params.Dex, "marking captures for this dex")
 	if err != nil {
 		return errors.WithStack(err)
-	}
-
-	// Validate that this user has permissions to mark captures for this dex.
-	if dex.UserID != session.ID {
-		return errcodes.Forbidden("marking captures for this dex")
 	}
 
 	mons, err := h.pokemonService.ListPokemon(ctx, pokemon.ListPokemonOptions{
@@ -133,16 +170,9 @@ func (h *handler) delete(c *echo.Context) error {
 		return errors.WithStack(err)
 	}
 
-	dex, err := h.dexService.RetrieveDex(ctx, dexes.RetrieveDexOptions{
-		ID: &params.Dex,
-	})
+	_, err := h.retrieveOwnDex(ctx, session, params.Dex, "deleting captures for this dex")
 	if err != nil {
 		return errors.WithStack(err)
-	}
-
-	// Validate that this user has permissions to delete captures for this dex.
-	if dex.UserID != session.ID {
-		return errcodes.Forbidden("deleting captures for this dex")
 	}
 
 	err = h.captureService.DeleteCaptures(ctx, DeleteCapturesOptions{

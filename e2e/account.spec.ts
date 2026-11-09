@@ -251,6 +251,9 @@ test("a failed delete says why and keeps the account", async ({
 test("a deleted account's token stops working", async ({ request }) => {
   const user = await createUser(request);
   const auth = { Authorization: `Bearer ${user.token}` };
+  const ownDexId = (
+    await (await request.get(`/api/users/${user.username}`)).json()
+  ).dexes[0].id;
 
   // Someone else's dex, with captures, which the delete mustn't touch.
   const otherUser = await createUser(request);
@@ -290,6 +293,17 @@ test("a deleted account's token stops working", async ({ request }) => {
   expect(again.status()).toBe(401);
   expect(await again.text()).toContain("deleted_user");
 
+  // Marking its old dex, which went with it, says the account is gone rather
+  // than that the dex is.
+  for (const method of ["post", "delete"] as const) {
+    const response = await request[method]("/api/captures", {
+      headers: auth,
+      data: { dex: ownDexId, pokemon: [1] },
+    });
+    expect(response.status(), method).toBe(401);
+    expect(await response.text(), method).toContain("deleted_user");
+  }
+
   const newcomer = await createUser(request, { username: user.username });
   const update = await request.post(`/api/users/${user.username}`, {
     headers: auth,
@@ -303,4 +317,47 @@ test("a deleted account's token stops working", async ({ request }) => {
     data: { friend_code_switch: "SW-1234-5678-9012" },
   });
   expect(own.status(), await own.text()).toBe(200);
+
+  // Nor can it mark the newcomer's dex, under the same username.
+  const newcomerDexId = (
+    await (await request.get(`/api/users/${newcomer.username}`)).json()
+  ).dexes[0].id;
+  const marking = await request.post("/api/captures", {
+    headers: auth,
+    data: { dex: newcomerDexId, pokemon: [1] },
+  });
+  expect(marking.status()).toBe(401);
+  expect(await marking.text()).toContain("deleted_user");
+  const ownMarking = await request.post("/api/captures", {
+    headers: { Authorization: `Bearer ${newcomer.token}` },
+    data: { dex: newcomerDexId, pokemon: [1] },
+  });
+  expect(ownMarking.status(), await ownMarking.text()).toBe(200);
+});
+
+// Marking needs the dex to be the token's own, which its handler checks without
+// the separate user lookup the other writes make.
+test("marking someone else's dex or a missing one is refused", async ({
+  request,
+}) => {
+  const user = await createUser(request);
+  const otherUser = await createUser(request);
+  const otherDexId = (
+    await (await request.get(`/api/users/${otherUser.username}`)).json()
+  ).dexes[0].id;
+  const auth = { Authorization: `Bearer ${user.token}` };
+
+  for (const method of ["post", "delete"] as const) {
+    const theirs = await request[method]("/api/captures", {
+      headers: auth,
+      data: { dex: otherDexId, pokemon: [1] },
+    });
+    expect(theirs.status(), method).toBe(403);
+
+    const missing = await request[method]("/api/captures", {
+      headers: auth,
+      data: { dex: 2147483647, pokemon: [1] },
+    });
+    expect(missing.status(), method).toBe(404);
+  }
 });

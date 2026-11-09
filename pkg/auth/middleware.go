@@ -26,13 +26,26 @@ type tokenChecker interface {
 	TokenUserExists(ctx context.Context, session *Session) (bool, error)
 }
 
-func Middleware(cfg *config.Config, db *pg.DB) (echo.MiddlewareFunc, echo.MiddlewareFunc) {
+// Middleware returns the auth middleware for each kind of route.
+//
+//   - enforced needs a token whose user still exists with the same username.
+//     It's for routes that allow access by the username in the URL, which a
+//     token can outlive: the account can be deleted and the username taken by
+//     someone new.
+//   - tokenOnly needs a valid token, without looking its user up. It's for
+//     routes whose handlers check ownership against the database themselves,
+//     so the lookup would only add a round trip.
+//   - optional reads a token if there is one. Its handlers don't use the
+//     session for access, so its user isn't looked up either.
+func Middleware(cfg *config.Config, db *pg.DB) (enforced, tokenOnly, optional echo.MiddlewareFunc) {
 	authService := NewService(cfg, db)
 
-	return newMiddlewareFunction(authService, true), newMiddlewareFunction(authService, false)
+	return newMiddlewareFunction(authService, true, true),
+		newMiddlewareFunction(authService, true, false),
+		newMiddlewareFunction(authService, false, false)
 }
 
-func newMiddlewareFunction(authService tokenChecker, shouldEnforce bool) echo.MiddlewareFunc {
+func newMiddlewareFunction(authService tokenChecker, shouldEnforce, checkUser bool) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c *echo.Context) error {
 			ctx := c.Request().Context()
@@ -61,16 +74,14 @@ func newMiddlewareFunction(authService tokenChecker, shouldEnforce bool) echo.Mi
 				return next(c)
 			}
 
-			// A token for a deleted account counts as no token at all.
-			exists, err := authService.TokenUserExists(ctx, session)
-			if err != nil {
-				return errors.WithStack(err)
-			}
-			if !exists {
-				if shouldEnforce {
+			if checkUser {
+				exists, err := authService.TokenUserExists(ctx, session)
+				if err != nil {
+					return errors.WithStack(err)
+				}
+				if !exists {
 					return errcodes.DeletedUser()
 				}
-				return next(c)
 			}
 
 			c.Set(sessionKey, session)

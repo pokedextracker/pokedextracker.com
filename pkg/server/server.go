@@ -151,10 +151,12 @@ func frontendConfigScript(cfg *config.Config, build string) (string, error) {
 }
 
 func registerAPI(g *echo.Group, cfg *config.Config, db *pg.DB) {
-	enforcedAuth, nonEnforcedAuth := auth.Middleware(cfg, db)
+	enforcedAuth, tokenOnlyAuth, nonEnforcedAuth := auth.Middleware(cfg, db)
 
 	auth.RegisterRoutes(g, cfg, db, nonEnforcedAuth)
-	captures.RegisterRoutes(g, db, enforcedAuth, nonEnforcedAuth)
+	// The captures handlers check that the dex belongs to the token's user
+	// themselves, in the query that loads it.
+	captures.RegisterRoutes(g, db, tokenOnlyAuth, nonEnforcedAuth)
 	dexes.RegisterRoutes(g, db, enforcedAuth, nonEnforcedAuth)
 	dextypes.RegisterRoutes(g, db, nonEnforcedAuth)
 	games.RegisterRoutes(g, db, nonEnforcedAuth)
