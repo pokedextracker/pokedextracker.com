@@ -10,7 +10,11 @@ import {
 } from "react";
 
 import type { Session, User } from "../../types";
-import { isNotFound, type PokedexTrackerError } from "../../utils/api";
+import {
+  isNotFound,
+  setAuthToken,
+  type PokedexTrackerError,
+} from "../../utils/api";
 import { tokenToUser } from "../../utils/state";
 import { TOKEN_KEY } from "../../utils/token";
 import { QueryKey as UserQueryKey, useUser } from "../queries/users";
@@ -41,21 +45,15 @@ interface Props {
 
 export const SessionProvider = ({ children }: Props) => {
   const queryClient = useQueryClient();
-  const [token, setStoredToken] = useLocalStorage<string | null>(TOKEN_KEY, {
-    defaultValue: null,
-  });
-  const tokenSession = useMemo(() => tokenToUser(token), [token]);
-  const {
-    data: tokenUser,
-    error: tokenUserError,
-    isFetching: tokenUserIsFetching,
-    isLoading: tokenUserIsLoading,
-  } = useUser(tokenSession?.username);
 
-  // A new token's user is fetched again before it's checked: the cached one
-  // can be from before the database was reset, with a different id.
-  const setToken = useCallback(
+  // adoptToken readies the tab for a new token, before it's rendered with
+  // it: requests are sent with it from now on (setAuthToken), and its user is
+  // fetched again before it's checked. The cached one can be from before the
+  // database was reset, or the account can have been deleted and its username
+  // registered again, so it has a different id.
+  const adoptToken = useCallback(
     (newToken: string | null) => {
+      setAuthToken(newToken);
       const newSession = tokenToUser(newToken);
       if (newSession) {
         // Without cancelling a fetch that's already on its way, like the one
@@ -65,9 +63,31 @@ export const SessionProvider = ({ children }: Props) => {
           { cancelRefetch: false },
         );
       }
-      setStoredToken(newToken);
     },
-    [queryClient, setStoredToken],
+    [queryClient],
+  );
+
+  // Signing in or out in another tab, or deleting the account there, changes
+  // the saved token, and this tab follows.
+  const [token, setStoredToken] = useLocalStorage<string | null>(TOKEN_KEY, {
+    defaultValue: null,
+    onOtherTabChange: adoptToken,
+  });
+  const tokenSession = useMemo(() => tokenToUser(token), [token]);
+  const {
+    data: tokenUser,
+    error: tokenUserError,
+    isFetching: tokenUserIsFetching,
+    isLoading: tokenUserIsLoading,
+  } = useUser(tokenSession?.username);
+
+  // Saved first, so a save that fails changes nothing.
+  const setToken = useCallback(
+    (newToken: string | null) => {
+      setStoredToken(newToken);
+      adoptToken(newToken);
+    },
+    [adoptToken, setStoredToken],
   );
 
   // A token from another database, like staging's, can name a user who has a

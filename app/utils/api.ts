@@ -37,10 +37,21 @@ async function handleResponse(response: Response) {
   throw new PokedexTrackerError(json.error.message, response, json.error.code);
 }
 
+// authToken is the token requests are sent with: the tab's own, which
+// SessionProvider keeps it in step with. Reading the saved one before
+// every request could send none if it ever reads as empty while the tab is
+// still signed in, which an iPhone tab back from the background seemed to do
+// (Sentry FRONTEND-7). It starts as the saved one, for requests made before
+// the session is set up.
+let authToken: string | null = localStorage.getItem(TOKEN_KEY);
+
+export function setAuthToken(token: string | null) {
+  authToken = token;
+}
+
 function getHeaders() {
-  const token = localStorage.getItem(TOKEN_KEY);
   return {
-    Authorization: token ? `Bearer ${token}` : "",
+    Authorization: authToken ? `Bearer ${authToken}` : "",
     "Content-Type": "application/json",
     "X-Version": Config.VERSION,
   };

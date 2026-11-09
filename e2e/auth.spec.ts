@@ -5,6 +5,7 @@ import {
   expect,
   PASSWORD,
   SERVER_ERROR,
+  signIn,
   test,
   uniqueUsername,
 } from "./fixtures";
@@ -215,4 +216,157 @@ test("a server error loading the user keeps the session and a way out", async ({
   await expect(
     page.locator("nav").getByRole("link", { name: "Login", exact: true }),
   ).toBeVisible();
+});
+
+// Tabs share the saved token, so signing in or out in one, or deleting the
+// account there, carries over to the others without a reload.
+test.describe("other tabs", () => {
+  const loginLink = (page: Page) =>
+    page.locator("nav").getByRole("link", { name: "Login", exact: true });
+
+  test("signing out in one tab signs the others out", async ({
+    context,
+    page,
+    request,
+  }) => {
+    const user = await createUser(request);
+    await signIn(page, user);
+    await page.goto(`/u/${user.username}/${user.slug}`);
+    await expect(page.getByTestId("nav-dropdown")).toContainText(user.username);
+
+    const other = await context.newPage();
+    await other.goto(`/u/${user.username}`);
+    await other.getByTestId("nav-dropdown").hover();
+    await other.getByText("Sign Out").click();
+    await expect(loginLink(other)).toBeVisible();
+
+    await expect(loginLink(page)).toBeVisible();
+    // Signed out, the tiles can't be marked.
+    await expect(page.getByTestId("pokemon").first()).toHaveAttribute(
+      "data-read-only",
+      "true",
+    );
+  });
+
+  test("deleting the account in one tab signs the others out", async ({
+    context,
+    page,
+    request,
+  }) => {
+    const user = await createUser(request);
+    await signIn(page, user);
+    await page.goto(`/u/${user.username}/${user.slug}`);
+    await expect(page.getByTestId("nav-dropdown")).toContainText(user.username);
+
+    const other = await context.newPage();
+    await other.goto("/account");
+    await other.getByRole("button", { name: "Delete Account" }).click();
+    await other
+      .getByLabel(`Type ${user.username} to confirm`)
+      .fill(user.username);
+    await other.getByRole("button", { name: "Delete My Account" }).click();
+    await expect(other.getByTestId("alert-success")).toHaveText(
+      "Your account has been deleted.",
+    );
+
+    await expect(loginLink(page)).toBeVisible();
+  });
+
+  // The other tab still has the deleted account cached, under the old id. It
+  // fetches the user again rather than calling the new sign-in stale, which
+  // would clear it everywhere.
+  test("registering a deleted account's username again keeps the new sign-in", async ({
+    context,
+    page,
+    request,
+  }) => {
+    const user = await createUser(request);
+    await signIn(page, user);
+    await page.goto(`/u/${user.username}/${user.slug}`);
+    await expect(page.getByTestId("nav-dropdown")).toContainText(user.username);
+
+    const other = await context.newPage();
+    await other.goto("/account");
+    await other.getByRole("button", { name: "Delete Account" }).click();
+    await other
+      .getByLabel(`Type ${user.username} to confirm`)
+      .fill(user.username);
+    await other.getByRole("button", { name: "Delete My Account" }).click();
+    await expect(loginLink(page)).toBeVisible();
+
+    const newcomer = await createUser(request, { username: user.username });
+    const refetched = page.waitForResponse(
+      (response) =>
+        response.url().endsWith(`/api/users/${user.username}`) &&
+        response.status() === 200,
+    );
+    await other.evaluate(
+      (token) => localStorage.setItem("token", token),
+      newcomer.token,
+    );
+    await refetched;
+
+    await expect(page.getByTestId("nav-dropdown")).toContainText(user.username);
+    await expect
+      .poll(() => other.evaluate(() => localStorage.getItem("token")))
+      .toBe(newcomer.token);
+  });
+
+  test("signing in in one tab signs the others in", async ({
+    context,
+    page,
+    request,
+  }) => {
+    const user = await createUser(request);
+    await page.goto(`/u/${user.username}/${user.slug}`);
+    await expect(loginLink(page)).toBeVisible();
+
+    const other = await context.newPage();
+    await other.goto("/login");
+    await other.locator("#username").fill(user.username);
+    await other.locator("#password").fill(PASSWORD);
+    await other.getByRole("button", { name: "Let's go!" }).click();
+    await expect(other).toHaveURL(`/u/${user.username}`);
+
+    await expect(page.getByTestId("nav-dropdown")).toContainText(user.username);
+    // And this tab's saves go out with the token.
+    const saved = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/captures") &&
+        response.request().method() === "POST",
+    );
+    await page
+      .getByTestId("pokemon")
+      .filter({ hasText: "Chikorita" })
+      .getByTestId("set-captured")
+      .click();
+    expect((await saved).status()).toBe(200);
+  });
+});
+
+// A save goes out with the tab's own token, even if the saved one reads as
+// empty for a moment. Removing it from within the tab fires no storage event,
+// so the tab still counts as signed in, like the iPhone in Sentry FRONTEND-7.
+test("a save uses the tab's token even when the saved one is missing", async ({
+  page,
+  request,
+}) => {
+  const user = await createUser(request);
+  await signIn(page, user);
+  await page.goto(`/u/${user.username}/${user.slug}`);
+  await expect(page.getByTestId("nav-dropdown")).toContainText(user.username);
+
+  await page.evaluate(() => localStorage.removeItem("token"));
+  const saved = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/api/captures") &&
+      response.request().method() === "POST",
+  );
+  await page
+    .getByTestId("pokemon")
+    .filter({ hasText: "Chikorita" })
+    .getByTestId("set-captured")
+    .click();
+  expect((await saved).status()).toBe(200);
+  await expect(page.getByTestId("save-error-banner")).toHaveCount(0);
 });
