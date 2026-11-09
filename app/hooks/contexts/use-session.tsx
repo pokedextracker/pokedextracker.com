@@ -50,17 +50,18 @@ export const SessionProvider = ({ children }: Props) => {
   // it: requests are sent with it from now on (setAuthToken), and its user is
   // fetched again before it's checked. The cached one can be from before the
   // database was reset, or the account can have been deleted and its username
-  // registered again, so it has a different id.
+  // registered again, so it has a different id. A fetch that's already on
+  // its way is kept when this tab changes the token, like the one saving the
+  // account starts, but not when another tab does: it started before the
+  // change, so it can be for the old account.
   const adoptToken = useCallback(
-    (newToken: string | null) => {
+    (newToken: string | null, cancelRefetch: boolean) => {
       setAuthToken(newToken);
       const newSession = tokenToUser(newToken);
       if (newSession) {
-        // Without cancelling a fetch that's already on its way, like the one
-        // saving the account starts.
         queryClient.invalidateQueries(
           { queryKey: [UserQueryKey.RetrieveUser, newSession.username] },
-          { cancelRefetch: false },
+          { cancelRefetch },
         );
       }
     },
@@ -71,7 +72,7 @@ export const SessionProvider = ({ children }: Props) => {
   // the saved token, and this tab follows.
   const [token, setStoredToken] = useLocalStorage<string | null>(TOKEN_KEY, {
     defaultValue: null,
-    onOtherTabChange: adoptToken,
+    onOtherTabChange: (newToken) => adoptToken(newToken, true),
   });
   const tokenSession = useMemo(() => tokenToUser(token), [token]);
   const {
@@ -85,7 +86,7 @@ export const SessionProvider = ({ children }: Props) => {
   const setToken = useCallback(
     (newToken: string | null) => {
       setStoredToken(newToken);
-      adoptToken(newToken);
+      adoptToken(newToken, false);
     },
     [adoptToken, setStoredToken],
   );

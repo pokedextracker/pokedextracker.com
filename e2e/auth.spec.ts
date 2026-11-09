@@ -307,9 +307,12 @@ test.describe("other tabs", () => {
     await refetched;
 
     await expect(page.getByTestId("nav-dropdown")).toContainText(user.username);
-    await expect
-      .poll(() => other.evaluate(() => localStorage.getItem("token")))
-      .toBe(newcomer.token);
+    // Its check of the refetched user has run by now, and it kept the sign-in.
+    await expect(loginLink(page)).toHaveCount(0);
+    await expect(loginLink(other)).toHaveCount(0);
+    expect(await other.evaluate(() => localStorage.getItem("token"))).toBe(
+      newcomer.token,
+    );
   });
 
   test("signing in in one tab signs the others in", async ({

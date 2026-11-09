@@ -38,7 +38,7 @@ async function handleResponse(response: Response) {
 }
 
 // authToken is the token requests are sent with: the tab's own, which
-// SessionProvider keeps it in step with. Reading the saved one before
+// SessionProvider keeps in step. Reading the saved one before
 // every request could send none if it ever reads as empty while the tab is
 // still signed in, which an iPhone tab back from the background seemed to do
 // (Sentry FRONTEND-7). It starts as the saved one, for requests made before

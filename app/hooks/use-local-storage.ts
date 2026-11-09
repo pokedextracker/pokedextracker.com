@@ -7,7 +7,7 @@ export type SetLocalStorageFn<T> = (newValue: T) => void;
 
 interface Options<T> {
   defaultValue?: T;
-  // Given, this tab follows changes another tab makes to the saved value:
+  // When given, this tab follows changes another tab makes to the saved value:
   // this is called with the new value, then this tab's copy changes. Nothing
   // is written back, so the tabs can't write over each other.
   onOtherTabChange?: (newValue: T) => void;
@@ -40,10 +40,14 @@ export function useLocalStorage<T>(
   });
 
   // Another tab's change fires a storage event here, but a tab's own changes
-  // don't. A null key means all of localStorage was cleared.
+  // don't. A null key means all of localStorage was cleared. Changes to
+  // sessionStorage fire it too, and are ignored.
   const followOtherTabs = Boolean(options.onOtherTabChange);
   const handleOtherTabChange = useEffectEvent((newValue: string | null) => {
     const value = parseValue(newValue, options);
+    if (value === storedValue) {
+      return;
+    }
     options.onOtherTabChange?.(value);
     setStoredValue(value);
   });
@@ -52,6 +56,9 @@ export function useLocalStorage<T>(
       return;
     }
     const handleStorage = (e: StorageEvent) => {
+      if (e.storageArea !== window.localStorage) {
+        return;
+      }
       if (e.key === key || e.key === null) {
         handleOtherTabChange(e.key === null ? null : e.newValue);
       }
