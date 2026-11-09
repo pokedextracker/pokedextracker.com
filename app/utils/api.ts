@@ -43,11 +43,17 @@ async function handleResponse(response: Response) {
 // still signed in, which an iPhone tab back from the background seemed to do
 // (Sentry FRONTEND-7). It starts as the saved one, for requests made before
 // the session is set up.
-let authToken: string | null = localStorage.getItem(TOKEN_KEY);
+let authToken: string | null = null;
 
+// setAuthToken also shares the token with the analytics hook the server adds
+// to the page (pkg/server/analytics.go), so the events it tags agree with the
+// tab too. Null there means signed out; undefined means the app hasn't loaded.
 export function setAuthToken(token: string | null) {
   authToken = token;
+  window.pokedexTrackerToken = token;
 }
+
+setAuthToken(localStorage.getItem(TOKEN_KEY));
 
 function getHeaders() {
   return {

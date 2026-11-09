@@ -19,8 +19,16 @@ type BeforeSend = (
 ) => Record<string, unknown>;
 
 // beforeSend runs the hook with storage holding token, under production's key.
-function beforeSend(token: string | null, storage?: Partial<Storage>) {
-  const window: { umamiBeforeSend?: BeforeSend } = {};
+// appToken is the token the app shares once it has loaded, if it has.
+function beforeSend(
+  token: string | null,
+  storage?: Partial<Storage>,
+  appToken?: string | null,
+) {
+  const window: {
+    umamiBeforeSend?: BeforeSend;
+    pokedexTrackerToken?: string | null;
+  } = { pokedexTrackerToken: appToken };
   const localStorage = storage ?? {
     getItem: (key: string) => (key === "token" ? token : null),
   };
@@ -56,6 +64,16 @@ describe("analytics identify hook", () => {
     expect(beforeSend(value)).toEqual(
       id === undefined ? { url: "/" } : { url: "/", id: String(id) },
     );
+  });
+
+  // Once the app has loaded, the tab's own token wins over the saved one, so
+  // a saved one that reads as empty, or another tab's, doesn't change it.
+  it("uses the app's token once it's loaded", () => {
+    const ash = token({ id: 42, username: "ash" });
+    const misty = token({ id: 7, username: "misty" });
+    expect(beforeSend(null, undefined, ash)).toEqual({ url: "/", id: "42" });
+    expect(beforeSend(misty, undefined, ash)).toEqual({ url: "/", id: "42" });
+    expect(beforeSend(ash, undefined, null)).toEqual({ url: "/" });
   });
 
   it("sends the event anyway when storage is blocked", () => {
