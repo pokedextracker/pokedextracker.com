@@ -27,11 +27,11 @@ describe("groupApiErrors", () => {
   });
 
   it("keeps the rest of the event", () => {
+    const event: { message: string; fingerprint?: string[] } = {
+      message: "x",
+    };
     expect(
-      groupApiErrors(
-        { message: "x" },
-        { originalException: apiError(403, "forbidden") },
-      ),
+      groupApiErrors(event, { originalException: apiError(403, "forbidden") }),
     ).toEqual({ message: "x", fingerprint: ["{{ default }}", "forbidden"] });
   });
 
