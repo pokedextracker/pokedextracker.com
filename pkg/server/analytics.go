@@ -56,13 +56,16 @@ func analyticsEnabled(cfg *config.Config) bool {
 // a visit still does, which can't be helped: the pageviews before it were
 // anonymous.)
 //
-// It reads the token the way tokenToUser does (app/utils/state.ts), from
-// production's key (app/utils/token.ts). A token it can't read counts as
-// signed out. app/utils/analytics.test.ts runs it against the same tokens.
+// The token is the tab's own, which the app shares once it has loaded
+// (setAuthToken in app/utils/api.ts), so it agrees with the tab's requests
+// even if the saved one reads as empty for a moment. Before then, it's the
+// saved one, under production's key (app/utils/token.ts). It reads the token
+// the way tokenToUser does (app/utils/state.ts), and one it can't read counts
+// as signed out. app/utils/analytics.test.ts runs it against the same tokens.
 const analyticsIdentify = `<script>
       window.umamiBeforeSend = function (type, payload) {
         try {
-          var token = localStorage.getItem("token");
+          var token = window.pokedexTrackerToken !== undefined ? window.pokedexTrackerToken : localStorage.getItem("token");
           if (token) {
             var claims = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
             var user = JSON.parse(atob(claims));
