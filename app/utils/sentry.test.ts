@@ -3,8 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 import { PokedexTrackerError } from "./api";
 import { groupApiErrors } from "./sentry";
 
-// The config reads the server's settings off window when it's imported, and
-// these tests don't run in a browser.
+// Importing the config and api reads and writes window (the server's
+// settings, localStorage, the shared token), and these tests don't run in a
+// browser.
 vi.hoisted(() => vi.stubGlobal("window", {}));
 
 function apiError(status: number, code?: string) {
@@ -23,6 +24,15 @@ describe("groupApiErrors", () => {
     expect(
       groupApiErrors({}, { originalException: apiError(401, "deleted_user") }),
     ).toEqual({ fingerprint: ["{{ default }}", "deleted_user"] });
+  });
+
+  it("keeps the rest of the event", () => {
+    expect(
+      groupApiErrors(
+        { message: "x" },
+        { originalException: apiError(403, "forbidden") },
+      ),
+    ).toEqual({ message: "x", fingerprint: ["{{ default }}", "forbidden"] });
   });
 
   it("leaves everything else to Sentry's grouping", () => {
