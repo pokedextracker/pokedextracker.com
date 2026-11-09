@@ -148,12 +148,10 @@ test("marking on a deleted account signs the tab out", async ({
   request,
 }) => {
   const user = await createUser(request);
-  await signIn(page, user);
-  await page.goto(`/u/${user.username}/${user.slug}`);
-  await expect(page.getByTestId("nav-dropdown")).toContainText(user.username);
-
   // Fetching the user again would find it gone and sign the tab out on its
-  // own, so the tab keeps getting the account as it was.
+  // own, so the tab always gets the account as it was. That starts before the
+  // page loads: it fetches the user several times, and one still on its way
+  // when the account is deleted would come back a 404.
   const before = await (
     await request.get(`/api/users/${user.username}`)
   ).json();
@@ -162,6 +160,10 @@ test("marking on a deleted account signs the tab out", async ({
       ? route.fulfill({ json: before })
       : route.fallback(),
   );
+  await signIn(page, user);
+  await page.goto(`/u/${user.username}/${user.slug}`);
+  await expect(page.getByTestId("nav-dropdown")).toContainText(user.username);
+
   const deleted = await request.delete(`/api/users/${user.username}`, {
     headers: { Authorization: `Bearer ${user.token}` },
   });
