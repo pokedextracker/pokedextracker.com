@@ -8,6 +8,8 @@
 MAIN_ROOT=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
 test -f "$MAIN_ROOT/.env" && . "$MAIN_ROOT/.env"
 test -f .env && . .env
+# sentry-cli reads the token from the environment.
+export SENTRY_AUTH_TOKEN
 
 NOW=$(date +'%s')
 IMAGE="ghcr.io/pokedextracker/pokedextracker.com"
@@ -95,15 +97,33 @@ if [ -n "$SENTRY_AUTH_TOKEN" ]; then
   fi
   # The site works without source maps, so a failed upload is a warning
   # rather than a reason to stop the deploy.
-  if ! SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" pnpm exec sentry-cli sourcemaps upload \
+  if ! pnpm exec sentry-cli sourcemaps upload \
     --org pokedextracker \
     --project frontend \
     "$WEB_DIR/assets"; then
     echo -e "\n\033[1;33m==> Couldn't upload the source maps; continuing\033[0m"
   fi
+
+  echo
+  echo -e "\033[1;32m==> Creating the ${TAG} release in Sentry with its commits\033[0m"
+  echo
+
+  # The release is the deploy version, which both the frontend and the API
+  # report. Sentry only resolves an issue from a "Fixes FRONTEND-8" commit once
+  # that commit is in a release, so attach the commits since the last release
+  # (--auto reads them from this checkout and matches them to the GitHub repo
+  # connected in Sentry). Like the source maps, this is a warning, not a reason
+  # to stop the deploy.
+  if ! (
+    pnpm exec sentry-cli releases new --org pokedextracker --project frontend --project backend "${TAG}" &&
+      pnpm exec sentry-cli releases set-commits --org pokedextracker "${TAG}" --auto --ignore-missing &&
+      pnpm exec sentry-cli releases finalize --org pokedextracker "${TAG}"
+  ); then
+    echo -e "\n\033[1;33m==> Couldn't create the release in Sentry; continuing\033[0m"
+  fi
 else
   echo
-  echo -e "\033[1;33m==> Skipping uploading source maps to Sentry\033[0m"
+  echo -e "\033[1;33m==> Skipping uploading source maps and creating the release in Sentry\033[0m"
   echo
 fi
 
@@ -114,6 +134,12 @@ echo
 fly deploy \
   --config .fly/staging.toml \
   --image ${IMAGE}:${TAG}
+
+if [ -n "$SENTRY_AUTH_TOKEN" ]; then
+  # Shows which environments a release reached on its page in Sentry.
+  pnpm exec sentry-cli deploys new --org pokedextracker --release "${TAG}" --env staging ||
+    echo -e "\n\033[1;33m==> Couldn't record the staging deploy in Sentry; continuing\033[0m"
+fi
 
 echo
 echo -e "\033[1;33m==> Deployed to staging. If everything looks good and you want to deploy to"
