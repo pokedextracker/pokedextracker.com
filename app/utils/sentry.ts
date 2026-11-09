@@ -23,15 +23,18 @@ export function groupApiErrors<E extends { fingerprint?: string[] }>(
 // initSentry turns on error reporting for uncaught errors and unhandled
 // rejections. Development sends nothing. Errors only count when they come from
 // the site's own scripts, so ones from browser extensions and injected scripts
-// don't use up the quota. That check needs a stack trace, so extension errors
-// that come without one are dropped by their message instead.
+// don't use up the quota. That means the bundles under /assets/, not the page
+// itself: in-app browsers like the Google app on iOS inject scripts that report
+// the page's URL as theirs, and the page's own inline scripts either run before
+// Sentry starts or catch their errors. The check needs a stack trace, so
+// extension errors that come without one are dropped by their message instead.
 export function initSentry() {
   Sentry.init({
     dsn: Config.SENTRY_DSN,
     enabled: Config.ENVIRONMENT !== "development",
     environment: Config.ENVIRONMENT,
     release: Config.VERSION,
-    allowUrls: [/^https:\/\/(staging\.)?pokedextracker\.com\//],
+    allowUrls: [/^https:\/\/(staging\.)?pokedextracker\.com\/assets\//],
     ignoreErrors: [
       // A Safari extension on iOS failing to message its own tab. The site
       // never calls the extension API.
