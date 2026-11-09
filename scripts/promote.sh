@@ -12,6 +12,13 @@
 # The fly configs are relative to the repo root.
 cd "$(dirname "${0}")/.."
 
+# Load any secrets (SENTRY_AUTH_TOKEN for recording the deploy) the same way
+# scripts/deploy.sh does: the main checkout's .env, then this worktree's own.
+MAIN_ROOT=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
+test -f "${MAIN_ROOT}/.env" && . "${MAIN_ROOT}/.env"
+test -f .env && . .env
+export SENTRY_AUTH_TOKEN
+
 IMAGE="ghcr.io/pokedextracker/pokedextracker.com"
 TAG="${1}"
 
@@ -62,4 +69,14 @@ echo
 # Production is already deployed by now, so a failure here is only a warning.
 if ! docker buildx imagetools create --tag "${IMAGE}:latest" "${IMAGE}:${TAG}"; then
   echo -e "\n\033[1;33m==> Couldn't tag ${TAG} as latest; production is still deployed\033[0m"
+fi
+
+# scripts/deploy.sh created the release when it deployed staging. This comes
+# last so a slow or unreachable Sentry can't hold up tagging latest, and like
+# that step it's only a warning.
+if [ -n "${SENTRY_AUTH_TOKEN}" ]; then
+  pnpm exec sentry-cli deploys new --org pokedextracker --release "${TAG}" --env production ||
+    echo -e "\n\033[1;33m==> Couldn't record the production deploy in Sentry\033[0m"
+else
+  echo -e "\n\033[1;33m==> Skipping recording the production deploy in Sentry (no SENTRY_AUTH_TOKEN)\033[0m"
 fi
