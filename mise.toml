@@ -5,6 +5,7 @@ pnpm = "12.14.0"
 "github:air-verse/air" = "1.67.4"
 "github:golangci/golangci-lint" = "2.13.2"
 "github:gzuidhof/tygo" = "0.2.21"
+jq = "1.8.2"
 
 [env]
 # Local secrets (deploy tokens, credentials for pulling data) live in .env,
@@ -234,6 +235,11 @@ description = "Deploy the site to pokedextracker-staging, then pokedextracker-pr
 # The deploy script uploads source maps with sentry-cli, a frontend dependency.
 depends = ["install:web"]
 run = "./scripts/deploy.sh"
+
+[tasks."deploy:production"]
+description = "Deploy an image that staging is already running to production, then tag it as latest"
+usage = 'arg "<tag>" help="The image tag staging is running, like af7ceb1 (mise deploy prints it)"'
+run = './scripts/promote.sh "$usage_tag"'
 
 # === Other ===
 

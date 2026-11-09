@@ -205,9 +205,12 @@ from the `Dockerfile`, pushes it to the GitHub Container Registry
 (`ghcr.io/pokedextracker/pokedextracker.com`), uploads source maps to Sentry,
 and deploys it to the `pokedextracker-staging` app on [Fly.io](https://fly.io/).
 Once you've checked staging, type `yes` at the prompt to deploy the same image
-to `pokedextracker-production`. Anything else skips production. Each image is
-tagged with its commit's short SHA, and `latest` moves to that image once it's
-deployed to production, so `latest` is always what production is running.
+to `pokedextracker-production`. Anything else skips production, and
+`mise deploy:production <tag>` deploys it later, once staging checks out. It
+only deploys the image staging's machines are running, so production never
+gets one that skipped staging. Each image is tagged with its commit's short
+SHA, and `latest` moves to that image once it's deployed to production, so
+`latest` is always what production is running.
 Pushing uses your `gh` login, which needs the `write:packages` scope once:
 
 ```sh
