@@ -175,7 +175,12 @@ export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
       </div>
 
       <div className={mainClassName(showInfo)} data-testid="info-main">
-        <div className="flex shrink-0 items-center border-b-2 border-info-edge bg-info pt-15 pr-15 pb-15 pl-8">
+        {/* Keyed so the name is new text for each Pokémon, which Google
+            Translate translates again. See CONTRIBUTING.md. */}
+        <div
+          className="flex shrink-0 items-center border-b-2 border-info-edge bg-info pt-15 pr-15 pb-15 pl-8"
+          key={pokemon.id}
+        >
           <i
             className={`${iconClass(pokemon, dex, infoIconCircle)} mx-10 my-0`}
           />
@@ -183,15 +188,14 @@ export function Info({ selectedPokemon, setSelectedPokemon }: Props) {
             <PokemonName name={pokemon.name} />
           </h1>
           <h2 className="m-0 font-secondary text-16 font-normal">
-            #
-            {padding(
+            {`#${padding(
               dex.dex_type.tags.includes("regional")
                 ? pokemon.dex_number === -1
                   ? "---"
                   : pokemon.dex_number
                 : nationalId(pokemon.national_id),
               dex.total >= 1000 ? 4 : 3,
-            )}
+            )}`}
           </h2>
         </div>
 

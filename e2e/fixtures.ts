@@ -46,6 +46,11 @@ export const test = base.extend({
 
 export { expect };
 
+// tile finds a Pokémon's tile in a dex by its name.
+export function tile(page: Page, name: string) {
+  return page.getByTestId("pokemon").filter({ hasText: name });
+}
+
 export const PASSWORD = "e2e-password";
 
 // Tests run in parallel against one database, so each one makes its own users.

@@ -269,7 +269,9 @@ export function DexCreate({ onRequestClose }: Props) {
           <Alert message={createDexMutation.error?.message} type="error" />
           <div className={formGroup}>
             <div className={formNote}>
-              /u/{session!.username}/{slug(title || "Living Dex")}
+              {/* One string, so Google Translate can't leave it stale as the
+                  title changes. See CONTRIBUTING.md. */}
+              {`/u/${session!.username}/${slug(title || "Living Dex")}`}
             </div>
             <label className={formLabel} htmlFor="dex_title">
               Title

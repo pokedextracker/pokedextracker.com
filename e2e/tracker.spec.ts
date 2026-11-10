@@ -1,10 +1,13 @@
 import type { Page } from "@playwright/test";
 
-import { createUser, expect, SERVER_ERROR, signIn, test } from "./fixtures";
-
-function tile(page: Page, name: string) {
-  return page.getByTestId("pokemon").filter({ hasText: name });
-}
+import {
+  createUser,
+  expect,
+  SERVER_ERROR,
+  signIn,
+  test,
+  tile,
+} from "./fixtures";
 
 // toggleCaught clicks a tile and waits for the API to save the change, so a
 // reload right after sees it.

@@ -379,7 +379,9 @@ export function DexEdit({ dex, onRequestClose }: Props) {
           />
           <div className={formGroup}>
             <div className={formNote}>
-              /u/{session!.username}/{slug(title || "Living Dex")}
+              {/* One string, so Google Translate can't leave it stale as the
+                  title changes. See CONTRIBUTING.md. */}
+              {`/u/${session!.username}/${slug(title || "Living Dex")}`}
             </div>
             <label className={formLabel} htmlFor="dex_title">
               Title
@@ -494,7 +496,9 @@ export function DexEdit({ dex, onRequestClose }: Props) {
             }
             type="submit"
           >
-            {isConfirmingUpdate ? "Confirm" : ""} Edit{" "}
+            {/* In its own span: adding "Confirm" next to text that Google
+                Translate swapped out crashes React. See CONTRIBUTING.md. */}
+            <span>{isConfirmingUpdate ? "Confirm Edit" : "Edit"}</span>{" "}
             <FontAwesomeIcon
               className={buttonIcon}
               icon={faLongArrowAltRight}

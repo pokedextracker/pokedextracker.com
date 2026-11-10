@@ -88,7 +88,7 @@ function NavBar() {
           icon={isNightMode ? faSun : faMoon}
         />
         <TooltipText variant="nav">
-          Night Mode {isNightMode ? "Off" : "On"}
+          {isNightMode ? "Night Mode Off" : "Night Mode On"}
         </TooltipText>
       </a>
       <a
@@ -126,7 +126,9 @@ function NavBar() {
                     to={`/u/${session.username}/${dex.slug}`}
                   >
                     <FontAwesomeIcon className={itemIcon} icon={faTh} />{" "}
-                    {dex.title}
+                    {/* In its own span, so Google Translate can't leave a
+                        renamed title stale. See CONTRIBUTING.md. */}
+                    <span>{dex.title}</span>
                   </Link>
                 </li>
               ))}
