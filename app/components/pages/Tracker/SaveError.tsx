@@ -22,7 +22,9 @@ export function SaveError() {
       role="alert"
     >
       <FontAwesomeIcon className="mr-2 text-10" icon={faExclamationCircle} />
-      {saveError}
+      {/* In its own span, so Google Translate can't leave a new message
+          stale. See CONTRIBUTING.md. */}
+      <span>{saveError}</span>
       <button
         aria-label="Close"
         className="absolute top-1/2 right-12 -translate-y-1/2 cursor-pointer border-0 bg-transparent p-8 text-12 text-gray-400 transition-all duration-100 ease-out hover:text-gray-600 dark:hover:text-white"

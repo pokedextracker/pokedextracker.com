@@ -63,8 +63,13 @@ export function Header({ profile = false }: Props) {
   return (
     <div className="flex items-center">
       {/* A long username can be wider than a phone, so it breaks onto the next
-          line instead of running off the side. */}
-      <h1 className="relative m-0 inline-block min-w-0 text-40 wrap-break-word text-strong max-750:text-32">
+          line instead of running off the side. It's keyed so a new title is
+          new text, which Google Translate translates again. See
+          CONTRIBUTING.md. */}
+      <h1
+        className="relative m-0 inline-block min-w-0 text-40 wrap-break-word text-strong max-750:text-32"
+        key={title}
+      >
         {title.slice(0, lastSpace + 1)}
         <span className="whitespace-nowrap">
           {title.slice(lastSpace + 1)}

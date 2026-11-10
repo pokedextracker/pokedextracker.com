@@ -23,4 +23,8 @@ Some guidelines you should follow when submitting a PR:
   to it in `app/` (`*.test.ts`). Run them with `mise test:web`.
 - Changes to how the site works should keep the end-to-end tests passing. Run them with `mise test:e2e`, and add a test
   in `e2e/` for new pages or flows. CI runs them in Chromium, Firefox, and WebKit.
+- Text that can change while it's on screen should be one string that's the only child of its element, like
+  `<span>{label}</span>`, or the element should have a `key` that changes with it. Avoid mixing it with other text, like
+  `{verb} All`. Google Translate swaps text nodes out from under React, so otherwise the page shows stale text or
+  crashes. The tests in `e2e/translate.spec.ts` act like Google Translate.
 - Before submitting the PR, you should make sure that your code is formatted (`mise format`) and passes the linters by running `mise lint`.
