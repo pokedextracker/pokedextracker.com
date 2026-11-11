@@ -50,7 +50,7 @@ var testLookup = fakeLookup{
 	users: map[string]*users.User{
 		"ash": {
 			Username:    "ash",
-			DateCreated: time.Date(2020, 5, 1, 0, 0, 0, 0, time.UTC),
+			DateCreated: time.Date(2020, 5, 1, 9, 30, 15, 0, time.FixedZone("PDT", -7*60*60)),
 			Dexes: []*dexes.Dex{
 				scarlet,
 				{Title: "Empty", Caught: 0, Total: 400},
@@ -145,7 +145,7 @@ func TestProfiles(t *testing.T) {
 	assert.Contains(t, pg.Head, `<link rel="canonical" href="https://pokedextracker.com/u/ash" />`)
 	assert.Contains(t, pg.Head, `<meta property="og:type" content="profile" />`)
 	assert.Contains(t, pg.Head, `"@type":"ProfilePage"`)
-	assert.Contains(t, pg.Head, `"dateCreated":"2020-05-01"`)
+	assert.Contains(t, pg.Head, `"dateCreated":"2020-05-01T16:30:15Z"`)
 	assert.NotContains(t, pg.Head, "noindex")
 }
 

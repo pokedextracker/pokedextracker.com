@@ -225,7 +225,7 @@ func profilePage(ctx context.Context, username, origin string, lookup pageLookup
 		jsonLD: []any{map[string]any{
 			"@context":    "https://schema.org",
 			"@type":       "ProfilePage",
-			"dateCreated": user.DateCreated.UTC().Format("2006-01-02"),
+			"dateCreated": user.DateCreated.UTC().Format(time.RFC3339),
 			"mainEntity": map[string]any{
 				"@type": "Person",
 				"name":  user.Username,

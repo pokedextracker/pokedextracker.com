@@ -21,6 +21,8 @@ test("a profile's HTML has its own title and description", async ({
     `${user.username}&#39;s Living Dex progress on Pokédex Tracker: Living Dex (0/237).`,
   );
   expect(html).toContain('"@type":"ProfilePage"');
+  // Google rejects a date on its own here; it needs a full date and time.
+  expect(html).toMatch(/"dateCreated":"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z"/);
 });
 
 test("a dex's HTML has its own title and description", async ({ request }) => {
