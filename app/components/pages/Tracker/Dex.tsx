@@ -70,11 +70,13 @@ export function Dex({
     ));
   }, [groupedCaptures, dex.total, setSelectedPokemon]);
 
+  const showSearchResults = query.length > 0 || hideCaught;
+
   return (
     // A printed dex is scaled to 70%, so two boxes fit on a Letter or A4 page.
     // Its column gets 2px more there: at 70%, six tiles' rounded widths can
     // come to more than the column's, which would wrap each row at five.
-    <div className="flex-[1_0_auto] px-0 py-100 print:[zoom:0.7] max-750:p-15 max-400:pr-35">
+    <div className="@container flex-[1_0_auto] px-0 py-100 print:[container-type:normal] print:[zoom:0.7] max-750:p-15 max-400:pr-35">
       <div className={`${wrapper} print:w-664`}>
         <Scroll onClick={onScrollButtonClick} showScroll={showScrollButton} />
         <Notification />
@@ -96,7 +98,7 @@ export function Dex({
         <div className="mt-20 flex justify-between max-750:mt-15">
           <Progress caught={caught} total={total} />
         </div>
-        {query.length > 0 || hideCaught ? (
+        {showSearchResults && (
           <SearchResults
             captures={captures}
             hideCaught={hideCaught}
@@ -105,10 +107,15 @@ export function Dex({
             setQuery={setQuery}
             setSelectedPokemon={setSelectedPokemon}
           />
-        ) : (
-          boxes
         )}
       </div>
+      {!showSearchResults && (
+        <div
+          className={`${wrapper} @min-[84.25rem]:grid @min-[84.25rem]:w-1348 @min-[84.25rem]:grid-cols-2 @min-[84.25rem]:gap-x-24 print:w-664`}
+        >
+          {boxes}
+        </div>
+      )}
     </div>
   );
 }
